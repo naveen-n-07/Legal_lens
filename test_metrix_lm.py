@@ -1,5 +1,5 @@
 """
-test_metrix_lm.py - System Integration & Stage 1 Package Detection Test Suite
+test_metrix_lm.py - System Integration, Stage 1 Package Detection & RBAC Security Test Suite
 """
 
 import sys
@@ -17,6 +17,39 @@ from app.pdf_service import PDFReportGenerator
 from app.ocr.ocr_service import PaddleOCRService
 from app.ocr.declaration_extractor import DeclarationExtractor
 from app.package_detection.detector import PackageDetector
+from app.auth.rbac import verify_password, get_password_hash, RequireRole, VALID_ROLES
+from app.models import User
+
+class TestRBACSecurityAndAuth(unittest.TestCase):
+
+    def test_01_valid_rbac_roles_defined(self):
+        """RBAC Test: Ensures 3 distinct roles are defined."""
+        self.assertIn("admin", VALID_ROLES)
+        self.assertIn("inspector", VALID_ROLES)
+        self.assertIn("reviewing_officer", VALID_ROLES)
+
+    def test_02_password_hashing_and_verification(self):
+        """RBAC Test: Ensures password hashing and verification works securely."""
+        raw_pass = "AdminPass2026!"
+        hashed = get_password_hash(raw_pass)
+        self.assertTrue(verify_password(raw_pass, hashed))
+        self.assertFalse(verify_password("WrongPassword123", hashed))
+
+    def test_03_require_role_authorization_guard(self):
+        """RBAC Test: Validates RequireRole guard authorization and forbidden rejection."""
+        admin_guard = RequireRole(["admin"])
+        admin_user = User(id="ADM-1", name="Admin User", email="admin@gov.in", role="admin", hashed_password="x", designation="Admin", zone_office="HQ")
+        inspector_user = User(id="INS-1", name="Inspector User", email="inspector@gov.in", role="inspector", hashed_password="x", designation="Inspector", zone_office="HQ")
+
+        # Admin user passes admin guard
+        res = admin_guard(admin_user)
+        self.assertEqual(res.role, "admin")
+
+        # Inspector user blocked by admin guard
+        from fastapi import HTTPException
+        with self.assertRaises(HTTPException) as ctx:
+            admin_guard(inspector_user)
+        self.assertEqual(ctx.exception.status_code, 403)
 
 class TestStage1PackageDetection(unittest.TestCase):
 

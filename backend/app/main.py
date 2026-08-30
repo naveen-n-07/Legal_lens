@@ -1,5 +1,5 @@
 """
-main.py - METRIX-LM FastAPI Application Entry Point
+main.py - METRIX-LM FastAPI Application Entry Point & Multi-Role Seeder
 """
 
 import json
@@ -13,6 +13,7 @@ from app.models import User, ComplianceRuleDB
 from app.auth import get_password_hash
 
 from app.api.auth_routes import router as auth_router
+from app.api.admin_routes import router as admin_router
 from app.api.inspection_routes import router as inspection_router
 from app.api.report_routes import router as report_router
 from app.api.analytics_routes import router as analytics_router
@@ -43,6 +44,7 @@ app.add_middleware(
 
 # Register API Routers
 app.include_router(auth_router, prefix=settings.API_V1_STR)
+app.include_router(admin_router, prefix=settings.API_V1_STR)
 app.include_router(inspection_router, prefix=settings.API_V1_STR)
 app.include_router(report_router, prefix=settings.API_V1_STR)
 app.include_router(analytics_router, prefix=settings.API_V1_STR)
@@ -54,27 +56,67 @@ def startup_event():
     Base.metadata.create_all(bind=engine)
     db = SessionLocal()
 
-    # Upsert Single Official Account: officer.test@legalmetrology.gov.in
-    existing_user = db.query(User).filter(User.id == "OFF-2026").first()
-    if existing_user:
-        existing_user.email = "officer.test@legalmetrology.gov.in"
-        existing_user.hashed_password = get_password_hash("OfficialTestPass123!")
-        existing_user.name = "Official Inspector"
-        existing_user.designation = "Senior Legal Metrology Officer"
-        existing_user.zone_office = "Central Ministry HQ, New Delhi"
-        db.commit()
-    else:
-        user = User(
-            id="OFF-2026",
-            name="Official Inspector",
-            email="officer.test@legalmetrology.gov.in",
-            hashed_password=get_password_hash("OfficialTestPass123!"),
-            designation="Senior Legal Metrology Officer",
-            zone_office="Central Ministry HQ, New Delhi",
-            role="inspector"
-        )
-        db.add(user)
-        db.commit()
+    # Seed 3 User Accounts for 3 Distinct RBAC Roles
+    users_to_seed = [
+        {
+            "id": "ADM-2026",
+            "name": "System Administrator",
+            "email": "admin@legalmetrology.gov.in",
+            "password": "AdminPass2026!",
+            "designation": "System & Legal Rule Administrator",
+            "zone_office": "Central Ministry HQ, New Delhi",
+            "role": "admin"
+        },
+        {
+            "id": "INS-2026",
+            "name": "Field Inspector",
+            "email": "inspector@legalmetrology.gov.in",
+            "password": "InspectorPass2026!",
+            "designation": "Field Enforcement Inspector",
+            "zone_office": "Northern Zonal Enforcement Office",
+            "role": "inspector"
+        },
+        {
+            "id": "OFF-2026",
+            "name": "Reviewing Senior Officer",
+            "email": "officer.test@legalmetrology.gov.in",
+            "password": "OfficialTestPass123!",
+            "designation": "Senior Legal Metrology Officer",
+            "zone_office": "Central Ministry HQ, New Delhi",
+            "role": "reviewing_officer"
+        },
+        {
+            "id": "OFF-2026-ALIAS",
+            "name": "Reviewing Officer Lead",
+            "email": "officer@legalmetrology.gov.in",
+            "password": "OfficialTestPass123!",
+            "designation": "Adjudication Lead Officer",
+            "zone_office": "Central Ministry HQ, New Delhi",
+            "role": "reviewing_officer"
+        }
+    ]
+
+    for u_info in users_to_seed:
+        existing = db.query(User).filter(User.email == u_info["email"]).first()
+        if existing:
+            existing.name = u_info["name"]
+            existing.hashed_password = get_password_hash(u_info["password"])
+            existing.designation = u_info["designation"]
+            existing.zone_office = u_info["zone_office"]
+            existing.role = u_info["role"]
+            db.commit()
+        else:
+            new_u = User(
+                id=u_info["id"],
+                name=u_info["name"],
+                email=u_info["email"],
+                hashed_password=get_password_hash(u_info["password"]),
+                designation=u_info["designation"],
+                zone_office=u_info["zone_office"],
+                role=u_info["role"]
+            )
+            db.add(new_u)
+            db.commit()
 
     # Seed Versioned Statutory Rules Dataset (Rules 1-34 + Schedules 1-7)
     dataset_json_path = r"c:\SIH\legal_metrology_rules_2011.json"

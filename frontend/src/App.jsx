@@ -10,6 +10,7 @@ import InspectionUpload from './pages/InspectionUpload';
 import OfficerReview from './pages/OfficerReview';
 import AuditHistory from './pages/AuditHistory';
 import Reports from './pages/Reports';
+import AdminControl from './pages/AdminControl';
 
 export default function App() {
   const [user, setUser] = useState(null);
@@ -41,6 +42,15 @@ export default function App() {
     return <Login onLoginSuccess={handleLoginSuccess} />;
   }
 
+  const role = user.role || 'inspector';
+
+  // Role-Based Default Landing Route
+  const getDefaultLandingRoute = () => {
+    if (role === 'admin') return '/admin/control';
+    if (role === 'reviewing_officer') return '/officer/review';
+    return '/scanner';
+  };
+
   return (
     <div className="min-h-screen bg-slate-950 flex flex-col">
       <Navbar user={user} onLogout={handleLogout} />
@@ -50,14 +60,29 @@ export default function App() {
 
         <main className="flex-1 overflow-y-auto bg-slate-900">
           <Routes>
-            <Route path="/" element={<Navigate to="/scanner" replace />} />
+            <Route path="/" element={<Navigate to={getDefaultLandingRoute()} replace />} />
+            
+            {/* Common Routes */}
             <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/scanner" element={<LiveScanner />} />
-            <Route path="/inspection/new" element={<InspectionUpload />} />
-            <Route path="/officer/review" element={<OfficerReview />} />
             <Route path="/history" element={<AuditHistory />} />
             <Route path="/reports" element={<Reports />} />
-            <Route path="*" element={<Navigate to="/scanner" replace />} />
+
+            {/* Field Inspector Routes */}
+            <Route path="/scanner" element={<LiveScanner />} />
+            <Route path="/inspection/new" element={<InspectionUpload />} />
+
+            {/* Reviewing Officer Routes */}
+            <Route path="/officer/review" element={<OfficerReview />} />
+
+            {/* Admin Only Routes */}
+            <Route 
+              path="/admin/control" 
+              element={
+                role === 'admin' ? <AdminControl /> : <Navigate to={getDefaultLandingRoute()} replace />
+              } 
+            />
+
+            <Route path="*" element={<Navigate to={getDefaultLandingRoute()} replace />} />
           </Routes>
         </main>
       </div>
