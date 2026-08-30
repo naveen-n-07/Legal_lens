@@ -1,0 +1,8 @@
+# YOLOv8 Dataset Configuration for Packaged Commodity Detection (Stage 1)
+path: c:/SIH/dataset
+train: images/train
+val: images/val
+test: images/test
+
+names:
+  0: package

@@ -1,0 +1,11 @@
+{
+  "name": "metrix-lm-root",
+  "version": "1.0.0",
+  "private": true,
+  "description": "METRIX-LM Single Terminal Unified Runner",
+  "scripts": {
+    "dev": "node start_dev.js",
+    "start": "node start_dev.js",
+    "build": "npm run build --prefix frontend"
+  }
+}

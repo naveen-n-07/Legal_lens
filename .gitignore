@@ -1,0 +1,29 @@
+# Node & Dependencies
+node_modules/
+frontend/node_modules/
+
+# Build & Output Directories
+frontend/dist/
+dist/
+outputs/
+logs/
+*.log
+
+# Python & Virtual Environments
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+venv/
+env/
+.env
+
+# SQLite Database Files
+*.db
+*.sqlite
+*.sqlite3
+
+# OS Files
+.DS_Store
+Thumbs.db
