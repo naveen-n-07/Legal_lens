@@ -16,14 +16,14 @@ import cv2  # type: ignore
 import numpy as np  # type: ignore
 
 try:
-    from app.ocr_service import OpenCVOCRService
-    from app.rule_engine import RuleEngine
-    from app.pdf_service import PDFReportGenerator
-    from app.ocr.ocr_service import PaddleOCRService
-    from app.ocr.declaration_extractor import DeclarationExtractor
-    from app.package_detection.detector import PackageDetector
-    from app.auth.rbac import verify_password, get_password_hash, RequireRole, VALID_ROLES
-    from app.models import User
+    from app.ocr_service import OpenCVOCRService  # type: ignore
+    from app.rule_engine import RuleEngine  # type: ignore
+    from app.pdf_service import PDFReportGenerator  # type: ignore
+    from app.ocr.ocr_service import PaddleOCRService  # type: ignore
+    from app.ocr.declaration_extractor import DeclarationExtractor  # type: ignore
+    from app.package_detection.detector import PackageDetector  # type: ignore
+    from app.auth.rbac import verify_password, get_password_hash, RequireRole, VALID_ROLES  # type: ignore
+    from app.models import User  # type: ignore
 except ImportError:
     from backend.app.ocr_service import OpenCVOCRService  # type: ignore
     from backend.app.rule_engine import RuleEngine  # type: ignore
@@ -61,7 +61,7 @@ class TestRBACSecurityAndAuth(unittest.TestCase):
 
         # Inspector user blocked by admin guard
         try:
-            from fastapi import HTTPException
+            from fastapi import HTTPException  # type: ignore
         except ImportError:
             from backend.fastapi import HTTPException  # type: ignore
             
