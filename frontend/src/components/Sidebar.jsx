@@ -9,8 +9,10 @@ import {
   Gavel,
   QrCode,
   Lock,
+  User,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  PlusCircle
 } from 'lucide-react';
 
 export default function Sidebar({ user, collapsed, setCollapsed }) {
@@ -33,11 +35,13 @@ export default function Sidebar({ user, collapsed, setCollapsed }) {
       { path: '/reports', label: 'Analytics & PDF Reports', icon: FileText },
     ];
   } else {
-    // Default: inspector
+    // Role: Field Inspector
     navItems = [
+      { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+      { path: '/inspection/new', label: 'New Inspection', icon: PlusCircle },
       { path: '/scanner', label: 'Live Camera Scanner', icon: Camera, badge: 'LIVE' },
-      { path: '/inspection/new', label: 'New Inspection Scan', icon: QrCode },
-      { path: '/history', label: 'My Inspection History', icon: History },
+      { path: '/history', label: 'Inspection History', icon: History },
+      { path: '/profile', label: 'Profile', icon: User },
     ];
   }
 

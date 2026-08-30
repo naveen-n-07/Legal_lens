@@ -6,6 +6,8 @@ import Footer from './components/Footer';
 
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
+import InspectorDashboard from './pages/InspectorDashboard';
+import InspectorProfile from './pages/InspectorProfile';
 import LiveScanner from './pages/LiveScanner';
 import InspectionUpload from './pages/InspectionUpload';
 import OfficerReview from './pages/OfficerReview';
@@ -18,7 +20,6 @@ export default function App() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   useEffect(() => {
-    // Check if user was previously logged in
     const storedUser = localStorage.getItem('metrix_user');
     if (storedUser) {
       try {
@@ -49,7 +50,7 @@ export default function App() {
   const getDefaultLandingRoute = () => {
     if (role === 'admin') return '/admin/control';
     if (role === 'reviewing_officer') return '/officer/review';
-    return '/scanner';
+    return '/dashboard';
   };
 
   return (
@@ -64,14 +65,20 @@ export default function App() {
             <Routes>
               <Route path="/" element={<Navigate to={getDefaultLandingRoute()} replace />} />
               
-              {/* Common Routes */}
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/history" element={<AuditHistory />} />
-              <Route path="/reports" element={<Reports />} />
-
-              {/* Field Inspector Routes */}
+              {/* Role-Sensitive Dashboard */}
+              <Route 
+                path="/dashboard" 
+                element={role === 'inspector' ? <InspectorDashboard user={user} /> : <Dashboard />} 
+              />
+              
+              {/* Field Inspector Core Routes */}
               <Route path="/scanner" element={<LiveScanner />} />
               <Route path="/inspection/new" element={<InspectionUpload />} />
+              <Route path="/profile" element={<InspectorProfile user={user} />} />
+              
+              {/* Common Inspection History & Reports */}
+              <Route path="/history" element={<AuditHistory />} />
+              <Route path="/reports" element={<Reports />} />
 
               {/* Reviewing Officer Routes */}
               <Route path="/officer/review" element={<OfficerReview />} />
