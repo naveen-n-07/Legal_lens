@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Filter, FileText, ExternalLink, Download } from 'lucide-react';
+import { Search, Filter, FileText, ExternalLink, Download, Clock } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import StatusBadge from '../components/StatusBadge';
 import api from '../services/api';
@@ -8,52 +8,49 @@ export default function AuditHistory() {
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL');
-  const [inspections, setInspections] = useState([
-    {
-      id: 'INS-2026-08913',
-      product_name: 'Organic Multifloreal Honey 500g',
-      category: 'Food & Beverages',
-      location: 'Connaught Place Supermarket, Store #14',
-      inspector_name: 'Inspector Rajesh Kumar',
-      overall_status: '7B: VIOLATION / MANUAL REVIEW',
-      overall_confidence: 88.62,
-      created_at: '2026-08-29 22:30'
-    },
-    {
-      id: 'INS-2026-08912',
-      product_name: 'Amul Salted Butter 500g',
-      category: 'Food & Beverages',
-      location: 'Chandni Chowk Godown #12',
-      inspector_name: 'Inspector Rajesh Kumar',
-      overall_status: '7A: COMPLIANT',
-      overall_confidence: 97.40,
-      created_at: '2026-08-29 21:15'
-    },
-    {
-      id: 'INS-2026-08911',
-      product_name: 'Imported Almond Oil 200ml',
-      category: 'Personal Care',
-      location: 'Karol Bagh Store #04',
-      inspector_name: 'Inspector Rajesh Kumar',
-      overall_status: '7B: VIOLATION / MANUAL REVIEW',
-      overall_confidence: 79.10,
-      created_at: '2026-08-29 19:40'
-    }
-  ]);
+  const [inspections, setInspections] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    api.get('/inspections')
-      .then((res) => {
-        if (res.data && res.data.length > 0) setInspections(res.data);
-      })
-      .catch(() => {});
+    fetchInspections();
   }, []);
 
+  const fetchInspections = async () => {
+    setLoading(true);
+    try {
+      const res = await api.get('/inspections');
+      if (res.data && res.data.length > 0) {
+        setInspections(res.data);
+      } else {
+        // Retrieve current active user inspection from local storage if available
+        const current = localStorage.getItem('current_inspection');
+        if (current) {
+          try {
+            setInspections([JSON.parse(current)]);
+          } catch (e) {
+            setInspections([]);
+          }
+        }
+      }
+    } catch (e) {
+      const current = localStorage.getItem('current_inspection');
+      if (current) {
+        try {
+          setInspections([JSON.parse(current)]);
+        } catch (err) {
+          setInspections([]);
+        }
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const filteredInspections = inspections.filter((item) => {
-    const matchesSearch = item.product_name.toLowerCase().includes(search.toLowerCase()) ||
-                          item.id.toLowerCase().includes(search.toLowerCase()) ||
-                          item.location.toLowerCase().includes(search.toLowerCase());
-    const matchesStatus = statusFilter === 'ALL' || item.overall_status.includes(statusFilter);
+    const matchesSearch = item.product_name?.toLowerCase().includes(search.toLowerCase()) ||
+                          item.id?.toLowerCase().includes(search.toLowerCase()) ||
+                          item.location?.toLowerCase().includes(search.toLowerCase());
+    const matchesStatus = statusFilter === 'ALL' || item.overall_status?.includes(statusFilter);
     return matchesSearch && matchesStatus;
   });
 
@@ -118,33 +115,42 @@ export default function AuditHistory() {
               </tr>
             </thead>
             <tbody className="divide-y divide-[#E2E8F0] text-[#1E293B]">
-              {filteredInspections.map((item) => (
-                <tr key={item.id} className="hover:bg-slate-50 transition">
-                  <td className="p-4 font-black font-mono text-red-700">{item.id}</td>
-                  <td className="p-4 font-black text-[#1E293B]">{item.product_name}</td>
-                  <td className="p-4 text-[#64748B] font-bold">{item.category}</td>
-                  <td className="p-4 text-[#64748B] font-semibold">{item.location}</td>
-                  <td className="p-4 text-[#1E293B] font-bold">{item.inspector_name}</td>
-                  <td className="p-4">
-                    <StatusBadge status={item.overall_status} />
-                  </td>
-                  <td className="p-4 text-right space-x-2">
-                    <button
-                      onClick={() => navigate('/officer/review', { state: { inspection: item } })}
-                      className="px-4 py-2 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white rounded-lg font-black text-xs transition shadow-sm"
-                    >
-                      Audit View
-                    </button>
-                    <button
-                      onClick={() => handleDownloadPDF(item.id)}
-                      title="Download PDF"
-                      className="p-2 bg-[#F1F5F9] hover:bg-slate-200 text-[#334155] rounded-lg transition border border-[#E2E8F0]"
-                    >
-                      <Download className="w-4 h-4" />
-                    </button>
+              {filteredInspections.length > 0 ? (
+                filteredInspections.map((item) => (
+                  <tr key={item.id} className="hover:bg-slate-50 transition">
+                    <td className="p-4 font-black font-mono text-red-700">{item.id}</td>
+                    <td className="p-4 font-black text-[#1E293B]">{item.product_name}</td>
+                    <td className="p-4 text-[#64748B] font-bold">{item.category}</td>
+                    <td className="p-4 text-[#64748B] font-semibold">{item.location}</td>
+                    <td className="p-4 text-[#1E293B] font-bold">{item.inspector_name || 'Official Inspector'}</td>
+                    <td className="p-4">
+                      <StatusBadge status={item.overall_status} />
+                    </td>
+                    <td className="p-4 text-right space-x-2">
+                      <button
+                        onClick={() => navigate('/officer/review', { state: { inspection: item } })}
+                        className="px-4 py-2 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white rounded-lg font-black text-xs transition shadow-sm"
+                      >
+                        Audit View
+                      </button>
+                      <button
+                        onClick={() => handleDownloadPDF(item.id)}
+                        title="Download PDF"
+                        className="p-2 bg-[#F1F5F9] hover:bg-slate-200 text-[#334155] rounded-lg transition border border-[#E2E8F0]"
+                      >
+                        <Download className="w-4 h-4" />
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={7} className="p-12 text-center text-[#64748B] font-semibold">
+                    <Clock className="w-8 h-8 text-[#64748B] mx-auto mb-2" />
+                    <span>No statutory inspection records found. Use Live Camera Scanner to perform a scan.</span>
                   </td>
                 </tr>
-              ))}
+              )}
             </tbody>
           </table>
         </div>

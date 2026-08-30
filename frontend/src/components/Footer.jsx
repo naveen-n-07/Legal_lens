@@ -109,7 +109,7 @@ export default function Footer() {
           <div className="flex items-center space-x-3 text-[10px] font-mono text-slate-400 bg-slate-950 px-3 py-1.5 rounded-lg border border-slate-800 flex-shrink-0">
             <span>Last Updated: 30 Aug 2026</span>
             <span>|</span>
-            <span className="text-emerald-400">Visitors: 1,482,910</span>
+            <span className="text-emerald-400 font-bold">System Status: ONLINE</span>
           </div>
         </div>
 
