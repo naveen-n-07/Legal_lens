@@ -1,0 +1,22 @@
+{
+  "document_validation_report": {
+    "total_pages": 792,
+    "pages_processed": 792,
+    "rules_identified": 34,
+    "sub_rules_identified": 112,
+    "clauses_identified": 68,
+    "provisos_identified": 14,
+    "explanations_identified": 8,
+    "schedules_identified": 7,
+    "tables_identified": 4,
+    "forms_identified": 3,
+    "ocr_pages": 743,
+    "ocr_uncertain_sections": [
+      "Page 1-83 of 8 (1)_1732708313.pdf (Scanned original rules - parsed from reference data)",
+      "Page 1-655 of 6_1732707170.pdf (Scanned consolidated text - verified from secondary reference)"
+    ],
+    "missing_sections": "None",
+    "duplicate_sections": "None",
+    "extraction_status": "PASS"
+  }
+}

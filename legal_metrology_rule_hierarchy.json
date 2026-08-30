@@ -1,0 +1,224 @@
+{
+  "rules_hierarchy": {
+    "Act": "Legal Metrology Act, 2009",
+    "Rules": "Legal Metrology (Packaged Commodities) Rules, 2011",
+    "children": [
+      {
+        "type": "Chapter",
+        "number": "I",
+        "title": "Preliminary",
+        "children": [
+          {
+            "type": "Rule",
+            "number": "1",
+            "title": "Short title and commencement",
+            "children": [
+              {
+                "type": "Sub-rule",
+                "number": "1(1)",
+                "text": "These rules may be called the Legal Metrology (Packaged Commodities) Rules, 2011."
+              },
+              {
+                "type": "Sub-rule",
+                "number": "1(2)",
+                "text": "They shall come into force on the 1st day of April, 2011."
+              }
+            ]
+          },
+          {
+            "type": "Rule",
+            "number": "2",
+            "title": "Definitions",
+            "children": [
+              {
+                "type": "Clause",
+                "number": "2(a)",
+                "text": "'Act' means the Legal Metrology Act, 2009;"
+              },
+              {
+                "type": "Clause",
+                "number": "2(b)",
+                "text": "'combination package' means a package containing two or more individual packages of different commodities;"
+              },
+              {
+                "type": "Clause",
+                "number": "2(c)",
+                "text": "'dealer' means a person who carries on directly or otherwise the business of buying, selling, supplying or distributing;"
+              },
+              {
+                "type": "Clause",
+                "number": "2(d)",
+                "text": "'group package' means a package containing two or more individual packages of the same commodity;"
+              },
+              {
+                "type": "Clause",
+                "number": "2(e)",
+                "text": "'maximum permissible error' means error in deficiency specified in First Schedule;"
+              },
+              {
+                "type": "Clause",
+                "number": "2(f)",
+                "text": "'net quantity' means quantity of commodity contained excluding wrapper/container;"
+              },
+              {
+                "type": "Clause",
+                "number": "2(g)",
+                "text": "'principal display panel' means total surface area of package where declarations are given;"
+              },
+              {
+                "type": "Clause",
+                "number": "2(h)",
+                "text": "'retail package' means packages intended for retail sale;"
+              },
+              {
+                "type": "Clause",
+                "number": "2(i)",
+                "text": "'retail sale price' means maximum price sold inclusive of all taxes."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "Chapter",
+        "number": "II",
+        "title": "Provisions applicable to packages intended for retail sale",
+        "children": [
+          {
+            "type": "Rule",
+            "number": "3",
+            "title": "Applicability of Chapter II",
+            "children": [
+              {
+                "type": "Clause",
+                "number": "3(a)",
+                "text": "Packages containing net quantity of more than 25 kg or 25 litre;"
+              },
+              {
+                "type": "Clause",
+                "number": "3(b)",
+                "text": "Cement, fertilizer and agricultural farm produce sold in bags above 50 kg;"
+              },
+              {
+                "type": "Clause",
+                "number": "3(c)",
+                "text": "Packaged commodities meant for industrial consumers or institutional consumers."
+              }
+            ]
+          },
+          {
+            "type": "Rule",
+            "number": "4",
+            "title": "Regulation for pre-packing and sale of commodities",
+            "children": [
+              {
+                "type": "Sub-rule",
+                "number": "4(1)",
+                "text": "No person shall pre-pack or sell any pre-packed commodity unless it bears mandatory declarations."
+              }
+            ]
+          },
+          {
+            "type": "Rule",
+            "number": "5",
+            "title": "Specific commodities standard packages",
+            "children": [
+              {
+                "type": "Sub-rule",
+                "number": "5(1)",
+                "text": "Prescribed standard packages in Second Schedule (Omitted by 2021 amendment)."
+              }
+            ]
+          },
+          {
+            "type": "Rule",
+            "number": "6",
+            "title": "Declarations to be made on every package",
+            "children": [
+              {
+                "type": "Sub-rule",
+                "number": "6(1)",
+                "children": [
+                  {
+                    "type": "Clause",
+                    "number": "6(1)(a)",
+                    "text": "Name and complete address of manufacturer/packer/importer."
+                  },
+                  {
+                    "type": "Clause",
+                    "number": "6(1)(aa)",
+                    "text": "Country of origin (Inserted by 2017 Amendment)."
+                  },
+                  {
+                    "type": "Clause",
+                    "number": "6(1)(b)",
+                    "text": "Common or generic name of commodity."
+                  },
+                  {
+                    "type": "Clause",
+                    "number": "6(1)(c)",
+                    "text": "Net quantity in standard unit."
+                  },
+                  {
+                    "type": "Clause",
+                    "number": "6(1)(d)",
+                    "text": "Month and year of manufacture/packing/import."
+                  },
+                  {
+                    "type": "Clause",
+                    "number": "6(1)(e)",
+                    "text": "Maximum Retail Price Rs. XX.XX inclusive of all taxes."
+                  },
+                  {
+                    "type": "Clause",
+                    "number": "6(1)(n)",
+                    "text": "Unit Sale Price Rs. per unit/g/ml (Inserted by 2021 Amendment)."
+                  }
+                ]
+              },
+              {
+                "type": "Sub-rule",
+                "number": "6(2)",
+                "text": "Consumer care name, address, phone and email address details."
+              }
+            ]
+          },
+          {
+            "type": "Rule",
+            "number": "7",
+            "title": "Manner in which declaration shall be made",
+            "children": [
+              {
+                "type": "Sub-rule",
+                "number": "7(2)",
+                "text": "Height of numeral and letters as per Table-I minimums."
+              },
+              {
+                "type": "Sub-rule",
+                "number": "7(4)",
+                "text": "Principal Display Panel Area calculations."
+              }
+            ]
+          },
+          {
+            "type": "Rule",
+            "number": "8",
+            "title": "Placement of declaration and clear space surround net quantity",
+            "children": [
+              {
+                "type": "Sub-rule",
+                "number": "8(1)",
+                "text": "Every declaration clear and legible."
+              },
+              {
+                "type": "Sub-rule",
+                "number": "8(2)",
+                "text": "Net quantity surrounding clear space padding."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

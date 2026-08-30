@@ -23,6 +23,7 @@ export default function Sidebar({ user, collapsed, setCollapsed }) {
   if (role === 'admin') {
     navItems = [
       { path: '/dashboard', label: 'Dashboard Command Center', icon: LayoutDashboard },
+      { path: '/scan', label: 'Product Label Scanner', icon: Camera, badge: 'SCAN' },
       { path: '/admin/control', label: 'User & RBAC Admin Matrix', icon: Lock, badge: 'ADMIN' },
       { path: '/history', label: 'Global Audit History', icon: History },
       { path: '/reports', label: 'Analytics & Compliance Reports', icon: FileText },
@@ -30,6 +31,7 @@ export default function Sidebar({ user, collapsed, setCollapsed }) {
   } else if (role === 'reviewing_officer') {
     navItems = [
       { path: '/dashboard', label: 'Dashboard Command Center', icon: LayoutDashboard },
+      { path: '/scan', label: 'Product Label Scanner', icon: Camera, badge: 'SCAN' },
       { path: '/officer/review', label: 'Officer Review Queue (7B)', icon: ShieldAlert, badge: '2' },
       { path: '/history', label: 'Inspection Audit History', icon: History },
       { path: '/reports', label: 'Analytics & PDF Reports', icon: FileText },
@@ -38,6 +40,7 @@ export default function Sidebar({ user, collapsed, setCollapsed }) {
     // Role: Field Inspector
     navItems = [
       { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+      { path: '/scan', label: 'Product Label Scanner', icon: Camera, badge: 'NEW' },
       { path: '/inspection/new', label: 'New Inspection', icon: PlusCircle },
       { path: '/scanner', label: 'Live Camera Scanner', icon: Camera, badge: 'LIVE' },
       { path: '/history', label: 'Inspection History', icon: History },

@@ -9,6 +9,7 @@ import Dashboard from './pages/Dashboard';
 import InspectorDashboard from './pages/InspectorDashboard';
 import InspectorProfile from './pages/InspectorProfile';
 import LiveScanner from './pages/LiveScanner';
+import ScanPortal from './pages/ScanPortal';
 import InspectionUpload from './pages/InspectionUpload';
 import OfficerReview from './pages/OfficerReview';
 import AuditHistory from './pages/AuditHistory';
@@ -73,6 +74,7 @@ export default function App() {
               
               {/* Field Inspector Core Routes */}
               <Route path="/scanner" element={<LiveScanner />} />
+              <Route path="/scan" element={<ScanPortal />} />
               <Route path="/inspection/new" element={<InspectionUpload />} />
               <Route path="/profile" element={<InspectorProfile user={user} />} />
               

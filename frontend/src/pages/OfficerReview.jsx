@@ -42,58 +42,9 @@ export default function OfficerReview() {
     if (stored) {
       try {
         const parsed = JSON.parse(stored);
-        const pTitle = (parsed.product_name || "Packaged Commodity").trim();
-        const cleanTitle = pTitle.charAt(0).toUpperCase() + pTitle.slice(1);
-        const slug = cleanTitle.toLowerCase().replace(/[^a-z0-9]/g, '');
-
-        parsed.product_name = cleanTitle;
-
-        if (!parsed.company_profile || !parsed.company_profile.company_name || parsed.company_profile.company_name.includes("Enterprise")) {
-          parsed.company_profile = {
-            company_name: `${cleanTitle} Foods & Commodities Pvt. Ltd.`,
-            cin: "L15400DL2015PTC284910",
-            gstin: "07AAAAA0000A1Z5",
-            lmpc_cert_number: "LMPC-DEL-2026-0814",
-            lmpc_cert_expiry: "2027-12-31",
-            has_attached_certificate_scan: true,
-            provenance: "AUTO_EXTRACTED_VERIFIED"
-          };
-        }
-
-        if (!parsed.customer_care || !parsed.customer_care.email || parsed.customer_care.email.includes("legalpack")) {
-          parsed.customer_care = {
-            designated_name_role: "Consumer Complaint Officer",
-            postal_address: `${cleanTitle} Industrial Park, Plot 14, Okhla Phase-III, New Delhi - 110020`,
-            email: `care@${slug || 'consumer'}.in`,
-            phone: "1800-11-8899",
-            provenance: "AUTO_EXTRACTED_VERIFIED"
-          };
-        }
-
-        const compName = parsed.company_profile.company_name;
-        const cEmail = parsed.customer_care.email;
-        const cPhone = parsed.customer_care.phone;
-
-        if (!parsed.bounding_boxes || parsed.bounding_boxes.some(b => b.text?.includes("Organic Pure Honey"))) {
-          parsed.bounding_boxes = [
-            { id: "box-1", text: `Product Generic Name: ${cleanTitle}`, confidence: 98.0, x: 8.0, y: 12.0, w: 60.0, h: 6.0, statutory_tag: "Rule 6(1)(b) Generic Name", provenance: "AUTO_EXTRACTED_VERIFIED" },
-            { id: "box-2", text: "MRP ₹45.00 (inclusive of all taxes)", confidence: 97.0, x: 8.0, y: 24.0, w: 55.0, h: 6.0, statutory_tag: "Rule 6(1)(e) Maximum Retail Price (MRP)", provenance: "AUTO_EXTRACTED_VERIFIED" },
-            { id: "box-3", text: "Declared Net Quantity: 200 g", confidence: 96.0, x: 8.0, y: 36.0, w: 45.0, h: 6.0, statutory_tag: "Rule 6(1)(c) Declared Net Quantity", provenance: "AUTO_EXTRACTED_VERIFIED" },
-            { id: "box-4", text: "Month/Year of Mfg: 08/2026", confidence: 94.0, x: 8.0, y: 48.0, w: 50.0, h: 6.0, statutory_tag: "Rule 6(1)(d) Month/Year of Manufacture", provenance: "AUTO_EXTRACTED_VERIFIED" },
-            { id: "box-5", text: `Manufacturer Name & Address: ${compName}, New Delhi - 110020`, confidence: 95.0, x: 8.0, y: 60.0, w: 70.0, h: 6.0, statutory_tag: "Rule 6(1)(a) Manufacturer Name & Address", provenance: "AUTO_EXTRACTED_VERIFIED" },
-            { id: "box-6", text: `Consumer Care Contact: ${cPhone}, Email: ${cEmail}`, confidence: 95.0, x: 8.0, y: 72.0, w: 65.0, h: 6.0, statutory_tag: "Rule 6(2) Consumer Care Framework", provenance: "AUTO_EXTRACTED_VERIFIED" },
-            { id: "box-7", text: `Rule 7 Numeral Height: 3.2mm (Statutory Min: 2.5mm)`, confidence: 94.5, x: 8.0, y: 84.0, w: 60.0, h: 6.0, statutory_tag: "Rule 7 Table-I Numeral Height", provenance: "AUTO_EXTRACTED_VERIFIED" }
-          ];
-        }
-
-        parsed.ocr_raw_text_immutable = parsed.bounding_boxes.map(b => b.text).join("\n");
-        localStorage.setItem('current_inspection', JSON.stringify(parsed));
-
         setInspection(parsed);
         setOfficerDecision(parsed.overall_status?.includes('7B') ? '7B VIOLATION' : '7A COMPLIANT');
-        setComments(parsed.overall_status?.includes('7B') 
-          ? 'Rule 7 evidence reviewed: Attesting statutory compliance determination.' 
-          : `Reviewed all 5-section statutory declarations for ${cleanTitle} packaging label.`);
+        setComments(`Reviewed all statutory compliance declarations for ${parsed.product_name || 'packaged commodity'} packaging label.`);
       } catch (e) {
         setInspection(null);
       }

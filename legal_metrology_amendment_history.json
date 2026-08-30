@@ -1,0 +1,102 @@
+[
+  {
+    "notification_number": "G.S.R. 202(E)",
+    "notification_date": "2011-03-07",
+    "effective_date": "2011-04-01",
+    "affected_rule": "ALL",
+    "original_wording": "N/A (Original Rules)",
+    "amended_wording": "Legal Metrology (Packaged Commodities) Rules, 2011 promulgated.",
+    "change_type": "ORIGINAL_PROMULGATION",
+    "notes": "First establishment of the unified rules framework."
+  },
+  {
+    "notification_number": "G.S.R. 784(E)",
+    "notification_date": "2011-10-24",
+    "effective_date": "2012-04-01",
+    "affected_rule": "Rule 6, Rule 19, Rule 26",
+    "original_wording": "Initial rules wording",
+    "amended_wording": "Amends net quantity declarations and inspection sampling limits.",
+    "change_type": "SUBSTITUTION",
+    "notes": "First official amendment rules."
+  },
+  {
+    "notification_number": "G.S.R. 858(E)",
+    "notification_date": "2016-09-07",
+    "effective_date": "2016-09-07",
+    "affected_rule": "Rule 5",
+    "original_wording": "Rule 5 standard pack sizes",
+    "amended_wording": "Adds standards override for essential items.",
+    "change_type": "INSERTION",
+    "notes": "Essential commodities override provisions."
+  },
+  {
+    "notification_number": "G.S.R. 629(E)",
+    "notification_date": "2017-06-23",
+    "effective_date": "2018-01-01",
+    "affected_rule": "Rule 2, Rule 6(1)(aa), Rule 6(1)(e), Rule 7(2)",
+    "original_wording": "No e-commerce rules, no Country of Origin requirements, simpler font sizes.",
+    "amended_wording": "Inserts E-commerce entities definitions, G.S.R. 629(E) Table-I substituted minimum font heights, inserts Country of Origin (aa), prohibits Dual MRP.",
+    "change_type": "SUBSTITUTION",
+    "notes": "Major reform standardizing fonts and e-commerce labels."
+  },
+  {
+    "notification_number": "G.S.R. 779(E)",
+    "notification_date": "2021-11-02",
+    "effective_date": "2022-04-01",
+    "affected_rule": "Rule 5, Rule 6, Second Schedule",
+    "original_wording": "Mandatory standard sizes in Second Schedule under Rule 5. No Unit Sale Price.",
+    "amended_wording": "Omits Rule 5 and Second Schedule entirely. Introduces Unit Sale Price (USP) declaration.",
+    "change_type": "OMISSION_AND_SUBSTITUTION",
+    "notes": "Removed restrictions on standard quantities; introduced Unit Sale Price."
+  },
+  {
+    "notification_number": "G.S.R. 648(E)",
+    "notification_date": "2022-08-22",
+    "effective_date": "2023-01-01",
+    "affected_rule": "Rule 26",
+    "original_wording": "No specific clothing loose sale exemption.",
+    "amended_wording": "Inserts loose garment sale exemptions under Rule 26(h) to allow point-of-sale inspections.",
+    "change_type": "INSERTION",
+    "notes": "Relaxes declarations for garment trade."
+  },
+  {
+    "notification_number": "G.S.R. 722(E)",
+    "notification_date": "2023-10-06",
+    "effective_date": "2024-01-01",
+    "affected_rule": "Rule 2, Rule 6",
+    "original_wording": "Simple definitions of combination packages.",
+    "amended_wording": "Refines definition of combination package and spares/accessories warranty exemptions.",
+    "change_type": "SUBSTITUTION",
+    "notes": "Servicing spares warranty exemption."
+  },
+  {
+    "notification_number": "G.S.R. 778(E)",
+    "notification_date": "2025-10-23",
+    "effective_date": "2025-10-23",
+    "affected_rule": "Rule 2(r), Rule 7(2)",
+    "original_wording": "Medical devices subject to standard PCR rules.",
+    "amended_wording": "Exempts medical devices if compliant with Medical Device Rules 2017. Font size amendments.",
+    "change_type": "INSERTION",
+    "notes": "Harmonizes medical devices declarations."
+  },
+  {
+    "notification_number": "G.S.R. 881(E)",
+    "notification_date": "2025-12-02",
+    "effective_date": "2026-02-01",
+    "affected_rule": "Rule 26(a)",
+    "original_wording": "All packages <= 10g/ml exempt from declarations.",
+    "amended_wording": "Overrides exemption for pan masala; pan masala <= 10g must bear declarations.",
+    "change_type": "SUBSTITUTION",
+    "notes": "Pan masala anti-avoidance provision."
+  },
+  {
+    "notification_number": "G.S.R. 128(E)",
+    "notification_date": "2026-02-13",
+    "effective_date": "2026-07-01",
+    "affected_rule": "Rule 6(10)",
+    "original_wording": "No country of origin search filter requirement.",
+    "amended_wording": "Inserts Rule 6(10a) mandating searchable Country of Origin filters for e-commerce.",
+    "change_type": "INSERTION",
+    "notes": "Mandates digital marketplace origin transparency."
+  }
+]

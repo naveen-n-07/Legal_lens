@@ -205,5 +205,73 @@ class TestRule7StatutoryAudit(unittest.TestCase):
         pdf_bytes = PDFReportGenerator.generate_inspection_certificate(mock_data)
         self.assertGreater(len(pdf_bytes), 3000)
 
+class TestScannerEndpoints(unittest.TestCase):
+    def setUp(self):
+        try:
+            from fastapi.testclient import TestClient  # type: ignore
+            from app.main import app
+            from app.database import Base, engine
+            Base.metadata.create_all(bind=engine)
+            self.client = TestClient(app)
+        except ImportError:
+            from backend.fastapi.testclient import TestClient  # type: ignore
+            from backend.app.main import app
+            from backend.app.database import Base, engine
+            Base.metadata.create_all(bind=engine)
+            self.client = TestClient(app)
+
+    def test_process_image_endpoint(self):
+        """Tests POST /api/process-image quality checks and output URLs."""
+        img = np.zeros((100, 100, 3), dtype=np.uint8)
+        _, img_encoded = cv2.imencode('.png', img)
+        response = self.client.post(
+            "/api/process-image",
+            files={"file": ("test.png", img_encoded.tobytes(), "image/png")}
+        )
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertIn("quality", data)
+        self.assertIn("original_url", data)
+        self.assertIn("processed_url", data)
+        self.assertEqual(data["quality"]["resolution"], "100x100")
+
+    def test_ocr_endpoint(self):
+        """Tests POST /api/ocr raw text output."""
+        img = np.zeros((100, 100, 3), dtype=np.uint8)
+        _, img_encoded = cv2.imencode('.png', img)
+        response = self.client.post(
+            "/api/ocr",
+            files={"file": ("test.png", img_encoded.tobytes(), "image/png")}
+        )
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertIn("text", data)
+        self.assertIn("confidence", data)
+        self.assertIn("results", data)
+
+    def test_scan_endpoint_and_get_session(self):
+        """Tests full pipeline scan POST /api/scan and session retrieval GET /api/scan/{scan_id}."""
+        img = np.zeros((100, 100, 3), dtype=np.uint8)
+        _, img_encoded = cv2.imencode('.png', img)
+        response = self.client.post(
+            "/api/scan",
+            files=[("files", ("test.png", img_encoded.tobytes(), "image/png"))]
+        )
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertIn("scan_id", data)
+        self.assertIn("original_urls", data)
+        self.assertIn("processed_urls", data)
+        self.assertIn("quality", data)
+        self.assertIn("raw_text", data)
+        self.assertIn("extracted_declarations", data)
+
+        scan_id = data["scan_id"]
+        get_response = self.client.get(f"/api/scan/{scan_id}")
+        self.assertEqual(get_response.status_code, 200)
+        get_data = get_response.json()
+        self.assertEqual(get_data["scan_id"], scan_id)
+        self.assertEqual(len(get_data["original_urls"]), 1)
+
 if __name__ == "__main__":
     unittest.main()

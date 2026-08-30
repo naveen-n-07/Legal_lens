@@ -128,3 +128,16 @@ class AuditLog(Base):
     resource_id = Column(String, nullable=True)
     details = Column(Text, nullable=True)
     timestamp = Column(DateTime, default=datetime.utcnow)
+
+class ScanSession(Base):
+    __tablename__ = "scan_sessions"
+
+    id = Column(String, primary_key=True, index=True)
+    original_image_url = Column(String, nullable=True)
+    processed_image_url = Column(String, nullable=True)
+    quality_score = Column(Integer, nullable=False, default=100)
+    quality_metrics_json = Column(Text, nullable=True)
+    raw_ocr_json = Column(Text, nullable=True)
+    normalized_declarations_json = Column(Text, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+

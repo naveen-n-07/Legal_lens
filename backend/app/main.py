@@ -9,7 +9,7 @@ from fastapi.staticfiles import StaticFiles  # type: ignore
 from fastapi.middleware.cors import CORSMiddleware  # type: ignore
 from app.config import settings
 from app.database import Base, engine, SessionLocal
-from app.models import User, ComplianceRuleDB
+from app.models import User, ComplianceRuleDB, ScanSession
 from app.auth import get_password_hash
 
 from app.api.auth_routes import router as auth_router
@@ -19,6 +19,7 @@ from app.api.report_routes import router as report_router
 from app.api.analytics_routes import router as analytics_router
 from app.api.ocr_routes import router as ocr_router
 from app.api.detection_routes import router as detection_router
+from app.api.scanner_routes import router as scanner_router
 
 RESULTS_DIR = r"c:\SIH\backend\results"
 os.makedirs(RESULTS_DIR, exist_ok=True)
@@ -50,6 +51,7 @@ app.include_router(report_router, prefix=settings.API_V1_STR)
 app.include_router(analytics_router, prefix=settings.API_V1_STR)
 app.include_router(ocr_router)
 app.include_router(detection_router)
+app.include_router(scanner_router)
 
 @app.on_event("startup")
 def startup_event():

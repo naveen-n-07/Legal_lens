@@ -1,0 +1,98 @@
+[
+  {
+    "rule_id": "LM-PCR-2011-R06-S01-A",
+    "rule": "6",
+    "sub_rule": "6(1)",
+    "requirement_type": "MANDATORY_DECLARATION",
+    "field": "manufacturer_packer_importer_details",
+    "condition": "applicable_package",
+    "validation_method": "OCR",
+    "validation_logic": "required_field_present",
+    "failure_condition": "manufacturer_details_not_detected",
+    "severity": "HIGH"
+  },
+  {
+    "rule_id": "LM-PCR-2011-R06-S01-B",
+    "rule": "6",
+    "sub_rule": "6(1)",
+    "requirement_type": "MANDATORY_DECLARATION",
+    "field": "common_generic_name",
+    "condition": "applicable_package",
+    "validation_method": "OCR",
+    "validation_logic": "required_field_present",
+    "failure_condition": "commodity_name_not_detected",
+    "severity": "HIGH"
+  },
+  {
+    "rule_id": "LM-PCR-2011-R06-S01-C",
+    "rule": "6",
+    "sub_rule": "6(1)",
+    "requirement_type": "MANDATORY_DECLARATION",
+    "field": "net_quantity",
+    "condition": "applicable_package",
+    "validation_method": "OCR",
+    "validation_logic": "unit_validation",
+    "failure_condition": "net_quantity_missing_or_invalid_symbol",
+    "severity": "HIGH"
+  },
+  {
+    "rule_id": "LM-PCR-2011-R06-S01-E",
+    "rule": "6",
+    "sub_rule": "6(1)",
+    "requirement_type": "MANDATORY_DECLARATION",
+    "field": "mrp",
+    "condition": "applicable_package",
+    "validation_method": "OCR",
+    "validation_logic": "mrp_syntax_check",
+    "failure_condition": "mrp_missing_or_taxes_phrase_missing",
+    "severity": "HIGH"
+  },
+  {
+    "rule_id": "LM-PCR-2011-R06-S02",
+    "rule": "6",
+    "sub_rule": "6(2)",
+    "requirement_type": "MANDATORY_DECLARATION",
+    "field": "consumer_care_details",
+    "condition": "applicable_package",
+    "validation_method": "OCR",
+    "validation_logic": "consumer_care_fields_check",
+    "failure_condition": "consumer_care_missing_attributes",
+    "severity": "HIGH"
+  },
+  {
+    "rule_id": "LM-PCR-2011-R07-S02",
+    "rule": "7",
+    "sub_rule": "7(2)",
+    "requirement_type": "VISUAL_METRICS",
+    "field": "font_size_height",
+    "condition": "scale_calibrated",
+    "validation_method": "COMPUTER_VISION",
+    "validation_logic": "font_size_check",
+    "failure_condition": "letter_height_falls_below_table_1",
+    "severity": "MEDIUM"
+  },
+  {
+    "rule_id": "LM-PCR-2011-R08",
+    "rule": "8",
+    "sub_rule": "8(1)",
+    "requirement_type": "VISUAL_LAYOUT",
+    "field": "net_quantity_clear_space",
+    "condition": "applicable_package",
+    "validation_method": "COMPUTER_VISION",
+    "validation_logic": "location_check",
+    "failure_condition": "net_quantity_crowded",
+    "severity": "MEDIUM"
+  },
+  {
+    "rule_id": "LM-PCR-2011-R10",
+    "rule": "10",
+    "sub_rule": "10(1)",
+    "requirement_type": "MANDATORY_DECLARATION",
+    "field": "unit_sale_price",
+    "condition": "single_retail_packaged_commodity",
+    "validation_method": "OCR",
+    "validation_logic": "unit_sale_price_check",
+    "failure_condition": "unit_sale_price_missing",
+    "severity": "HIGH"
+  }
+]

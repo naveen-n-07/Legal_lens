@@ -31,7 +31,7 @@ async def process_packaging_image(
     image_bytes = await file.read()
     
     # 1. Image Blur & AI Dimension Auto-Detection
-    ocr_result = OpenCVOCRService.extract_bounding_boxes_and_text(image_bytes)
+    ocr_result = OpenCVOCRService.extract_bounding_boxes_and_text(image_bytes, product_name=product_name, filename=file.filename)
     if not ocr_result["success"]:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
@@ -54,15 +54,11 @@ async def process_packaging_image(
         "pdp_height_cm": final_pdp_h,
         "pdp_width_cm": final_pdp_w,
         "measured_font_mm": final_font_mm,
-        "company_name": "Acme Foods Pvt Ltd",
-        "cin": "L15400DL2015PTC284910",
-        "gstin": "07AAAAA0000A1Z5",
-        "lmpc_cert_number": "LMPC/DL/2022/8941",
-        "lmpc_cert_expiry": "2027-12-31"
+        "bounding_boxes": bounding_boxes
     }
 
     # 2. 5-Section Evaluation against Statutory Rule Matrix
-    eval_result = RuleEngine.evaluate_5_section_compliance(payload, raw_text)
+    eval_result = RuleEngine.evaluate_5_section_compliance(payload, raw_text, db=db)
 
     inspection_id = f"INS-2026-METRIX-{int(datetime.utcnow().timestamp())}"
 

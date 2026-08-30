@@ -1,0 +1,44 @@
+[
+  {
+    "exception_id": "EX-001",
+    "rule_id": "LM-PCR-2011-R03-S1",
+    "condition": "Package net quantity is more than 25 kg or 25 litres",
+    "effect": "requirement_not_applicable",
+    "source_text": "The provisions of this Chapter shall not apply to: (a) packages of commodities containing quantity of more than 25 kg or 25 litre;"
+  },
+  {
+    "exception_id": "EX-002",
+    "rule_id": "LM-PCR-2011-R03-S1",
+    "condition": "Cement, fertilizer, or agricultural farm produce sold in bags above 50 kg",
+    "effect": "requirement_not_applicable",
+    "source_text": "The provisions of this Chapter shall not apply to: (b) cement, fertilizer and agricultural farm produce sold in bags above 50 kg;"
+  },
+  {
+    "exception_id": "EX-003",
+    "rule_id": "LM-PCR-2011-R03-S1",
+    "condition": "Packaged commodities meant for industrial or institutional consumers",
+    "effect": "requirement_not_applicable",
+    "source_text": "The provisions of this Chapter shall not apply to: (c) packaged commodities meant for industrial consumers or institutional consumers."
+  },
+  {
+    "exception_id": "EX-004",
+    "rule_id": "LM-PCR-2011-R10-S1",
+    "condition": "Small packages having capacity of 10 cm3 or less",
+    "effect": "address_declaration_exempt",
+    "source_text": "Provided that where the package is very small and it is not reasonably practicable to declare... the name and complete address of the manufacturer... it shall be sufficient if the name and city of the manufacturer are declared."
+  },
+  {
+    "exception_id": "EX-005",
+    "rule_id": "LM-PCR-2011-R26-A",
+    "condition": "Packages containing net quantity of 10g or 10ml or less (Except Tobacco/Pan Masala)",
+    "effect": "declaration_requirements_exempt",
+    "source_text": "The provisions of this Chapter shall not apply to: (a) packages containing net quantity of 10g or 10ml or less;"
+  },
+  {
+    "exception_id": "EX-006",
+    "rule_id": "LM-PCR-2011-R26-A",
+    "condition": "Garments or hosiery items sold in loose form at point of sale",
+    "effect": "declaration_requirements_exempt",
+    "source_text": "Loose garments are exempt from full declarations provided they state size, manufacturer name/address, MRP, net quantity (1 piece), and helpline (Inserted by G.S.R. 648(E))."
+  }
+]
