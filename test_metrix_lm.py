@@ -69,6 +69,32 @@ class TestRBACSecurityAndAuth(unittest.TestCase):
             admin_guard(inspector_user)
         self.assertEqual(ctx.exception.status_code, 403)
 
+class TestAnomalyAndFraudDetection(unittest.TestCase):
+
+    def test_01_gibberish_consonant_sequence_detected(self):
+        """Fraud Test: Flags gibberish consonant strings like 'Xxgfchf' as suspicious."""
+        res = RuleEngine.detect_fabricated_or_suspicious_text("Xxgfchf Brand")
+        self.assertTrue(res["is_suspicious"])
+        self.assertTrue(len(res["reason"]) > 0)
+
+    def test_02_prohibited_placeholder_keyword_detected(self):
+        """Fraud Test: Flags prohibited placeholder keywords like 'lorem ipsum' as suspicious."""
+        res = RuleEngine.detect_fabricated_or_suspicious_text("lorem ipsum commodity item")
+        self.assertTrue(res["is_suspicious"])
+        self.assertIn("placeholder", res["reason"].lower())
+
+    def test_03_legitimate_commodity_name_passes(self):
+        """Fraud Test: Verifies legitimate commodity names pass sanity checks cleanly."""
+        res = RuleEngine.detect_fabricated_or_suspicious_text("Organic Pure Whole Wheat Flour 5kg")
+        self.assertFalse(res["is_suspicious"])
+
+    def test_04_fraud_evaluator_triggers_route_7b(self):
+        """Fraud Test: Ensures evaluation matrix flags suspicious data and triggers Route 7B."""
+        payload = {"product_name": "Xxgfchf Brand", "generic_name": "Xxgfchf"}
+        eval_res = RuleEngine.evaluate_5_section_compliance(payload, "Xxgfchf Brand Label")
+        self.assertTrue(eval_res["is_suspicious"])
+        self.assertEqual(eval_res["overall_status"], "7B: VIOLATION / MANUAL REVIEW")
+
 class TestStage1PackageDetection(unittest.TestCase):
 
     def test_01_stage_1_package_detection_and_cropping(self):

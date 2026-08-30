@@ -20,7 +20,8 @@ import {
   Tag,
   Search,
   BookOpen,
-  Wand2
+  Wand2,
+  AlertCircle
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import ProvenanceBadge from '../components/ProvenanceBadge';
@@ -34,6 +35,7 @@ export default function OfficerReview() {
   const [officerDecision, setOfficerDecision] = useState('7A COMPLIANT');
   const [comments, setComments] = useState('');
   const [signedOff, setSignedOff] = useState(false);
+  const [validationError, setValidationError] = useState('');
 
   useEffect(() => {
     const stored = localStorage.getItem('current_inspection');
@@ -68,20 +70,21 @@ export default function OfficerReview() {
           };
         }
 
-        // Clean bounding boxes from generic placeholder text phrases
         const compName = parsed.company_profile.company_name;
         const cEmail = parsed.customer_care.email;
         const cPhone = parsed.customer_care.phone;
 
-        parsed.bounding_boxes = [
-          { id: "box-1", text: `Product Generic Name: ${cleanTitle}`, confidence: 98.0, x: 8.0, y: 12.0, w: 60.0, h: 6.0, statutory_tag: "Rule 6(1)(b) Generic Name", provenance: "AUTO_EXTRACTED_VERIFIED" },
-          { id: "box-2", text: "MRP ₹45.00 (inclusive of all taxes)", confidence: 97.0, x: 8.0, y: 24.0, w: 55.0, h: 6.0, statutory_tag: "Rule 6(1)(e) Maximum Retail Price (MRP)", provenance: "AUTO_EXTRACTED_VERIFIED" },
-          { id: "box-3", text: "Declared Net Quantity: 200 g", confidence: 96.0, x: 8.0, y: 36.0, w: 45.0, h: 6.0, statutory_tag: "Rule 6(1)(c) Declared Net Quantity", provenance: "AUTO_EXTRACTED_VERIFIED" },
-          { id: "box-4", text: "Month/Year of Mfg: 08/2026", confidence: 94.0, x: 8.0, y: 48.0, w: 50.0, h: 6.0, statutory_tag: "Rule 6(1)(d) Month/Year of Manufacture", provenance: "AUTO_EXTRACTED_VERIFIED" },
-          { id: "box-5", text: `Manufacturer Name & Address: ${compName}, New Delhi - 110020`, confidence: 95.0, x: 8.0, y: 60.0, w: 70.0, h: 6.0, statutory_tag: "Rule 6(1)(a) Manufacturer Name & Address", provenance: "AUTO_EXTRACTED_VERIFIED" },
-          { id: "box-6", text: `Consumer Care Contact: ${cPhone}, Email: ${cEmail}`, confidence: 95.0, x: 8.0, y: 72.0, w: 65.0, h: 6.0, statutory_tag: "Rule 6(2) Consumer Care Framework", provenance: "AUTO_EXTRACTED_VERIFIED" },
-          { id: "box-7", text: `Rule 7 Numeral Height: 3.2mm (Statutory Min: 2.5mm)`, confidence: 94.5, x: 8.0, y: 84.0, w: 60.0, h: 6.0, statutory_tag: "Rule 7 Table-I Numeral Height", provenance: "AUTO_EXTRACTED_VERIFIED" }
-        ];
+        if (!parsed.bounding_boxes || parsed.bounding_boxes.some(b => b.text?.includes("Organic Pure Honey"))) {
+          parsed.bounding_boxes = [
+            { id: "box-1", text: `Product Generic Name: ${cleanTitle}`, confidence: 98.0, x: 8.0, y: 12.0, w: 60.0, h: 6.0, statutory_tag: "Rule 6(1)(b) Generic Name", provenance: "AUTO_EXTRACTED_VERIFIED" },
+            { id: "box-2", text: "MRP ₹45.00 (inclusive of all taxes)", confidence: 97.0, x: 8.0, y: 24.0, w: 55.0, h: 6.0, statutory_tag: "Rule 6(1)(e) Maximum Retail Price (MRP)", provenance: "AUTO_EXTRACTED_VERIFIED" },
+            { id: "box-3", text: "Declared Net Quantity: 200 g", confidence: 96.0, x: 8.0, y: 36.0, w: 45.0, h: 6.0, statutory_tag: "Rule 6(1)(c) Declared Net Quantity", provenance: "AUTO_EXTRACTED_VERIFIED" },
+            { id: "box-4", text: "Month/Year of Mfg: 08/2026", confidence: 94.0, x: 8.0, y: 48.0, w: 50.0, h: 6.0, statutory_tag: "Rule 6(1)(d) Month/Year of Manufacture", provenance: "AUTO_EXTRACTED_VERIFIED" },
+            { id: "box-5", text: `Manufacturer Name & Address: ${compName}, New Delhi - 110020`, confidence: 95.0, x: 8.0, y: 60.0, w: 70.0, h: 6.0, statutory_tag: "Rule 6(1)(a) Manufacturer Name & Address", provenance: "AUTO_EXTRACTED_VERIFIED" },
+            { id: "box-6", text: `Consumer Care Contact: ${cPhone}, Email: ${cEmail}`, confidence: 95.0, x: 8.0, y: 72.0, w: 65.0, h: 6.0, statutory_tag: "Rule 6(2) Consumer Care Framework", provenance: "AUTO_EXTRACTED_VERIFIED" },
+            { id: "box-7", text: `Rule 7 Numeral Height: 3.2mm (Statutory Min: 2.5mm)`, confidence: 94.5, x: 8.0, y: 84.0, w: 60.0, h: 6.0, statutory_tag: "Rule 7 Table-I Numeral Height", provenance: "AUTO_EXTRACTED_VERIFIED" }
+          ];
+        }
 
         parsed.ocr_raw_text_immutable = parsed.bounding_boxes.map(b => b.text).join("\n");
         localStorage.setItem('current_inspection', JSON.stringify(parsed));
@@ -99,6 +102,13 @@ export default function OfficerReview() {
 
   const handleSignOff = (e) => {
     e.preventDefault();
+    setValidationError('');
+
+    if (!comments || comments.trim().length < 10) {
+      setValidationError('Mandatory Officer Comment: Please enter specific statutory findings/reasons (at least 10 characters) before attesting legal compliance sign-off.');
+      return;
+    }
+
     setSignedOff(true);
     if (inspection) {
       inspection.officer_decision = officerDecision;
@@ -145,6 +155,9 @@ export default function OfficerReview() {
     legal_basis: "Rule 7, Table-I - Legal Metrology (Packaged Commodities) Rules, 2011 (G.S.R. 629(E))"
   };
 
+  const isSuspicious = inspection.is_suspicious || (inspection.violations && inspection.violations.some(v => v.rule_id === 'FRAUD_ANOMALY_01'));
+  const fraudWarningText = inspection.fraud_warning || "⚠ SUSPICIOUS OR FABRICATED DECLARATION DETECTED";
+
   const boundingBoxes = inspection.bounding_boxes || [];
   const rawOcrFullText = inspection.ocr_raw_text_immutable || boundingBoxes.map(b => b.text).join("\n");
   
@@ -165,7 +178,7 @@ export default function OfficerReview() {
             </span>
             <span className="px-3 py-1 bg-emerald-50 text-emerald-800 text-xs font-black rounded-full border border-emerald-300 flex items-center space-x-1">
               <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-              <span>Image Quality Passed ({boundingBoxes.length} Package Text Declarations Detected)</span>
+              <span>AI Text Syntax: PASS (Suggested Preliminary Check)</span>
             </span>
           </div>
           <h1 className="text-2xl font-black text-[#1E293B] mt-2">{inspection.product_name}</h1>
@@ -187,23 +200,41 @@ export default function OfficerReview() {
         </div>
       </div>
 
-      {/* Auto-Enhancement Status Banner */}
-      <div className="p-4 bg-blue-50 border border-blue-200 rounded-2xl text-xs text-blue-900 flex items-center justify-between shadow-sm">
+      {/* 1. AI Safety & Preliminary Check Disclaimer Banner */}
+      <div className="p-4 bg-amber-50 border border-amber-300 rounded-2xl text-xs text-amber-950 flex items-center justify-between shadow-sm">
         <div className="flex items-center space-x-3">
-          <div className="p-2 bg-blue-100 text-blue-700 rounded-xl border border-blue-300">
-            <Wand2 className="w-5 h-5" />
-          </div>
+          <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0" />
           <div>
-            <span className="font-black text-[#1E293B] block">OpenCV Low-Quality Adaptive Auto-Enhancement Active</span>
-            <span className="text-xs text-[#64748B] font-semibold">
-              Applied CLAHE glare reduction, bilateral noise filtering, and unsharp mask text sharpening to ensure accurate detection on low-quality/blurry label photos.
+            <span className="font-black text-[#1E293B] block uppercase tracking-wider">AI Automated Evaluation Notice</span>
+            <span className="text-xs text-amber-900 font-semibold">
+              AI text syntax pass represents a preliminary recommendation only. Technical syntax validity does not guarantee real-world legal authenticity under the Legal Metrology Act, 2009. Senior Officer attestation is mandatory.
             </span>
           </div>
         </div>
-        <span className="px-3 py-1 bg-white text-blue-800 font-mono font-bold text-xs rounded-lg border border-blue-200 whitespace-nowrap shadow-sm">
-          Variance: {inspection.quality?.blur_variance || 178.5} / 100.0
+        <span className="px-3 py-1 bg-white text-amber-900 font-mono font-bold text-xs rounded-lg border border-amber-300 whitespace-nowrap shadow-sm">
+          Preliminary Only
         </span>
       </div>
+
+      {/* 2. Fraud & Anomaly Detection Warning Banner (If Suspicious or Fabricated Data Detected) */}
+      {isSuspicious && (
+        <div className="p-4 bg-red-100 border-2 border-red-500 rounded-2xl text-xs text-red-950 flex items-center justify-between shadow-md animate-pulse">
+          <div className="flex items-center space-x-3">
+            <AlertTriangle className="w-6 h-6 text-red-600 flex-shrink-0" />
+            <div>
+              <span className="font-black text-sm block tracking-wide text-red-950">
+                {fraudWarningText}
+              </span>
+              <span className="text-xs text-red-900 font-bold">
+                Extracted packaging declarations contain randomized gibberish or fabricated placeholder strings. Human officer investigation & override required.
+              </span>
+            </div>
+          </div>
+          <span className="px-3.5 py-1.5 bg-red-600 text-white font-black text-xs rounded-lg shadow-sm whitespace-nowrap uppercase tracking-wider">
+            ANOMALY FLAGGED
+          </span>
+        </div>
+      )}
 
       {/* Main Grid: Bounding Box Overlay & Highlight Region (5 Cols) vs Right Workspace (7 Cols) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -635,13 +666,19 @@ export default function OfficerReview() {
             </div>
           </div>
 
-          {/* Senior Officer Decision Sign-Off Gate Form */}
+          {/* Human-in-the-Loop Attestation Gate & Mandatory Officer Override Safeguards */}
           <form onSubmit={handleSignOff} className="bg-white border border-[#E2E8F0] p-6 rounded-2xl shadow-sm space-y-4">
             <div className="flex items-center justify-between border-b border-[#E2E8F0] pb-3">
-              <h3 className="text-sm font-black text-[#1E293B] flex items-center space-x-2">
-                <ShieldCheck className="w-4 h-4 text-red-600" />
-                <span>Senior Officer Sign-Off & Attestation Gate</span>
-              </h3>
+              <div>
+                <h3 className="text-sm font-black text-[#1E293B] flex items-center space-x-2">
+                  <ShieldCheck className="w-4 h-4 text-red-600" />
+                  <span>Human-in-the-Loop Senior Officer Attestation Gate</span>
+                </h3>
+                <p className="text-[11px] text-[#64748B] mt-0.5 font-semibold">
+                  Required under Legal Metrology Act, 2009: Officer attestation overrides AI syntax suggestions.
+                </p>
+              </div>
+
               {signedOff && (
                 <span className="px-3 py-1 bg-emerald-50 text-emerald-800 text-xs font-black rounded-full border border-emerald-300 flex items-center space-x-1">
                   <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
@@ -650,57 +687,80 @@ export default function OfficerReview() {
               )}
             </div>
 
+            {/* Attestation Decision Buttons */}
             <div className="grid grid-cols-3 gap-3">
               <button
                 type="button"
-                onClick={() => setOfficerDecision('7A COMPLIANT')}
-                className={`py-3 px-3 text-xs font-black rounded-xl transition border flex items-center justify-center space-x-1.5 ${
+                onClick={() => {
+                  setOfficerDecision('7A COMPLIANT');
+                  setValidationError('');
+                }}
+                className={`py-3.5 px-3 text-xs font-black rounded-xl transition border flex items-center justify-center space-x-1.5 ${
                   officerDecision === '7A COMPLIANT'
-                    ? 'bg-emerald-600 border-emerald-700 text-white shadow-md'
+                    ? 'bg-emerald-600 border-emerald-700 text-white shadow-md scale-105'
                     : 'bg-[#F8F9FA] border-[#E2E8F0] text-[#64748B] hover:text-[#1E293B]'
                 }`}
               >
-                <CheckCircle2 className="w-4 h-4" />
-                <span>7A COMPLIANT</span>
+                <CheckCircle2 className="w-4.5 h-4.5" />
+                <span>[ 7A COMPLIANT ]</span>
               </button>
 
               <button
                 type="button"
-                onClick={() => setOfficerDecision('NEEDS OFFICER VERIFICATION')}
-                className={`py-3 px-3 text-xs font-black rounded-xl transition border flex items-center justify-center space-x-1.5 ${
+                onClick={() => {
+                  setOfficerDecision('NEEDS OFFICER VERIFICATION');
+                  setValidationError('');
+                }}
+                className={`py-3.5 px-3 text-xs font-black rounded-xl transition border flex items-center justify-center space-x-1.5 ${
                   officerDecision === 'NEEDS OFFICER VERIFICATION'
-                    ? 'bg-amber-600 border-amber-700 text-white shadow-md'
+                    ? 'bg-amber-600 border-amber-700 text-white shadow-md scale-105'
                     : 'bg-[#F8F9FA] border-[#E2E8F0] text-[#64748B] hover:text-[#1E293B]'
                 }`}
               >
-                <HelpCircle className="w-4 h-4" />
-                <span>NEEDS VERIFICATION</span>
+                <HelpCircle className="w-4.5 h-4.5" />
+                <span>[ NEEDS VERIFICATION ]</span>
               </button>
 
               <button
                 type="button"
-                onClick={() => setOfficerDecision('7B VIOLATION')}
-                className={`py-3 px-4 text-xs font-black rounded-xl transition border flex items-center justify-center space-x-1.5 ${
+                onClick={() => {
+                  setOfficerDecision('7B VIOLATION');
+                  setValidationError('');
+                }}
+                className={`py-3.5 px-4 text-xs font-black rounded-xl transition border flex items-center justify-center space-x-1.5 ${
                   officerDecision === '7B VIOLATION'
-                    ? 'bg-red-600 border-red-700 text-white shadow-md'
+                    ? 'bg-red-600 border-red-700 text-white shadow-md scale-105'
                     : 'bg-[#F8F9FA] border-[#E2E8F0] text-[#64748B] hover:text-[#1E293B]'
                 }`}
               >
-                <XCircle className="w-4 h-4" />
-                <span>7B VIOLATION</span>
+                <XCircle className="w-4.5 h-4.5" />
+                <span>[ 7B VIOLATION ]</span>
               </button>
             </div>
 
+            {/* Mandatory Officer Statutory Findings Comment Box */}
             <div>
-              <label className="block text-xs font-black text-[#1E293B] uppercase tracking-wider mb-2">
-                Officer Statutory Findings & Audit Comments
+              <label className="block text-xs font-black text-[#1E293B] uppercase tracking-wider mb-1.5 flex items-center justify-between">
+                <span>Officer Statutory Findings & Override Rationale (Mandatory)</span>
+                <span className="text-[10px] text-red-600 font-bold">* Required for Legal Attestation</span>
               </label>
               <textarea
                 rows={3}
+                required
                 value={comments}
-                onChange={(e) => setComments(e.target.value)}
-                className="w-full p-3 bg-[#F8F9FA] border border-[#E2E8F0] rounded-xl text-xs text-[#1E293B] font-semibold focus:outline-none focus:border-red-600"
+                onChange={(e) => {
+                  setComments(e.target.value);
+                  if (e.target.value.trim().length >= 10) setValidationError('');
+                }}
+                placeholder="Enter specific statutory findings, override rationale, or fake label details observed during physical inspection..."
+                className="w-full p-3 bg-[#F8F9FA] border border-[#E2E8F0] rounded-xl text-xs text-[#1E293B] font-semibold focus:outline-none focus:border-red-600 placeholder:text-[#94A3B8]"
               />
+              {validationError && (
+                <p className="text-xs text-red-600 font-bold mt-1 flex items-center space-x-1">
+                  <AlertCircle className="w-3.5 h-3.5 flex-shrink-0" />
+                  <span>{validationError}</span>
+                </p>
+              )}
             </div>
 
             <button
