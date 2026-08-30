@@ -3,6 +3,7 @@ admin_routes.py - System Administration, User Management & Compliance Rule Matri
 """
 
 from typing import List, Optional, Dict, Any
+from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException, status  # type: ignore
 from pydantic import BaseModel, EmailStr  # type: ignore
 from sqlalchemy.orm import Session  # type: ignore
@@ -70,7 +71,7 @@ def create_new_user(payload: CreateUserPayload, db: Session = Depends(get_db), c
             detail=f"User with email '{payload.email}' already exists."
         )
 
-    user_id = payload.id or f"USR-{Date.now().toString() if False else '2026'}-{db.query(User).count() + 1}"
+    user_id = payload.id or f"USR-2026-{db.query(User).count() + 1}"
     new_user = User(
         id=user_id,
         name=payload.name,
