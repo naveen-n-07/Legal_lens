@@ -8,16 +8,19 @@ export default {
     extend: {
       colors: {
         navy: {
-          900: '#0F172A',
-          800: '#1E293B',
-          700: '#334155',
+          900: '#0B1325',
+          800: '#152238',
+          700: '#1E293B',
         },
         gov: {
-          blue: '#2563EB',
-          indigo: '#312E81',
-          green: '#16A34A',
-          amber: '#D97706',
-          red: '#DC2626',
+          crimson: '#D32F2F',
+          red: '#C62828',
+          darkred: '#B71C1C',
+          saffron: '#FF9933',
+          green: '#138808',
+          navy: '#1A365D',
+          blue: '#1E40AF',
+          lightbg: '#F8FAFC',
         }
       }
     },

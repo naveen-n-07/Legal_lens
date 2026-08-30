@@ -7,7 +7,6 @@ import {
   History, 
   FileText, 
   Gavel,
-  Users,
   QrCode,
   Lock,
   ChevronLeft,
@@ -43,8 +42,10 @@ export default function Sidebar({ user, collapsed, setCollapsed }) {
   }
 
   return (
-    <aside className={`bg-navy-800 border-r border-slate-700 transition-all duration-300 flex flex-col ${collapsed ? 'w-20' : 'w-64'}`}>
-      <div className="p-4 flex-1 space-y-1">
+    <aside className={`bg-white border-r border-slate-200 shadow-sm transition-all duration-300 flex flex-col ${collapsed ? 'w-20' : 'w-64'}`}>
+      
+      {/* Navigation Links */}
+      <div className="p-4 flex-1 space-y-1.5">
         {navItems.map((item) => {
           const Icon = item.icon;
           return (
@@ -52,22 +53,22 @@ export default function Sidebar({ user, collapsed, setCollapsed }) {
               key={item.path}
               to={item.path}
               className={({ isActive }) =>
-                `flex items-center space-x-3 px-3.5 py-3 rounded-lg text-sm font-semibold transition ${
+                `flex items-center space-x-3 px-3.5 py-3 rounded-xl text-xs font-black transition ${
                   isActive
-                    ? 'bg-gov-blue text-white shadow-md'
-                    : 'text-slate-300 hover:bg-slate-700/60 hover:text-white'
+                    ? 'bg-gradient-to-r from-red-600 to-red-700 text-white shadow-md'
+                    : 'text-slate-700 hover:bg-slate-100 hover:text-red-700'
                 }`
               }
             >
-              <Icon className="w-5 h-5 flex-shrink-0" />
+              <Icon className="w-4 h-4 flex-shrink-0" />
               {!collapsed && <span className="truncate">{item.label}</span>}
               {!collapsed && item.badge && (
-                <span className={`ml-auto text-xs px-2 py-0.5 rounded-full font-bold border ${
+                <span className={`ml-auto text-[10px] px-2 py-0.5 rounded-full font-bold border ${
                   item.badge === 'LIVE' 
-                    ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40 animate-pulse' 
+                    ? 'bg-emerald-100 text-emerald-800 border-emerald-300 animate-pulse' 
                     : item.badge === 'ADMIN'
-                      ? 'bg-indigo-500/20 text-indigo-300 border-indigo-500/40'
-                      : 'bg-amber-500/20 text-amber-300 border-amber-500/40'
+                      ? 'bg-purple-100 text-purple-800 border-purple-300'
+                      : 'bg-amber-100 text-amber-800 border-amber-300'
                 }`}>
                   {item.badge}
                 </span>
@@ -77,14 +78,14 @@ export default function Sidebar({ user, collapsed, setCollapsed }) {
         })}
       </div>
 
-      {/* Role Indicator Card */}
+      {/* Official Role Indicator Card */}
       {!collapsed && (
-        <div className="p-4 m-3 bg-slate-900/80 rounded-xl border border-slate-700 text-xs space-y-1">
-          <div className="flex items-center space-x-2 font-bold text-indigo-300">
-            <Gavel className="w-4 h-4 text-indigo-400" />
-            <span className="uppercase">{role?.replace('_', ' ')} MODE</span>
+        <div className="p-4 m-3 bg-slate-50 rounded-xl border border-slate-200 text-xs space-y-1 shadow-inner">
+          <div className="flex items-center space-x-2 font-black text-red-700">
+            <Gavel className="w-4 h-4 text-red-600" />
+            <span className="uppercase">{role?.replace('_', ' ')} PRIVILEGES</span>
           </div>
-          <p className="text-slate-400 text-[11px] leading-relaxed">
+          <p className="text-slate-600 text-[11px] font-medium leading-relaxed">
             {role === 'admin' 
               ? 'Full system access & RBAC user administration active.' 
               : role === 'reviewing_officer' 
@@ -94,10 +95,10 @@ export default function Sidebar({ user, collapsed, setCollapsed }) {
         </div>
       )}
 
-      {/* Collapse Toggle */}
+      {/* Sidebar Collapse Toggle */}
       <button
         onClick={() => setCollapsed(!collapsed)}
-        className="p-3 border-t border-slate-700 text-slate-400 hover:text-white flex items-center justify-center hover:bg-slate-700/40"
+        className="p-3 border-t border-slate-200 text-slate-500 hover:text-slate-900 flex items-center justify-center hover:bg-slate-100 transition"
       >
         {collapsed ? <ChevronRight className="w-5 h-5" /> : <ChevronLeft className="w-5 h-5" />}
       </button>

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Sidebar from './components/Sidebar';
+import Footer from './components/Footer';
 
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
@@ -52,38 +53,42 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 flex flex-col">
+    <div className="min-h-screen bg-slate-100 flex flex-col font-sans">
       <Navbar user={user} onLogout={handleLogout} />
 
       <div className="flex-1 flex overflow-hidden">
         <Sidebar user={user} collapsed={sidebarCollapsed} setCollapsed={setSidebarCollapsed} />
 
-        <main className="flex-1 overflow-y-auto bg-slate-900">
-          <Routes>
-            <Route path="/" element={<Navigate to={getDefaultLandingRoute()} replace />} />
-            
-            {/* Common Routes */}
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/history" element={<AuditHistory />} />
-            <Route path="/reports" element={<Reports />} />
+        <main className="flex-1 overflow-y-auto bg-slate-50 flex flex-col justify-between">
+          <div>
+            <Routes>
+              <Route path="/" element={<Navigate to={getDefaultLandingRoute()} replace />} />
+              
+              {/* Common Routes */}
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/history" element={<AuditHistory />} />
+              <Route path="/reports" element={<Reports />} />
 
-            {/* Field Inspector Routes */}
-            <Route path="/scanner" element={<LiveScanner />} />
-            <Route path="/inspection/new" element={<InspectionUpload />} />
+              {/* Field Inspector Routes */}
+              <Route path="/scanner" element={<LiveScanner />} />
+              <Route path="/inspection/new" element={<InspectionUpload />} />
 
-            {/* Reviewing Officer Routes */}
-            <Route path="/officer/review" element={<OfficerReview />} />
+              {/* Reviewing Officer Routes */}
+              <Route path="/officer/review" element={<OfficerReview />} />
 
-            {/* Admin Only Routes */}
-            <Route 
-              path="/admin/control" 
-              element={
-                role === 'admin' ? <AdminControl /> : <Navigate to={getDefaultLandingRoute()} replace />
-              } 
-            />
+              {/* Admin Only Routes */}
+              <Route 
+                path="/admin/control" 
+                element={
+                  role === 'admin' ? <AdminControl /> : <Navigate to={getDefaultLandingRoute()} replace />
+                } 
+              />
 
-            <Route path="*" element={<Navigate to={getDefaultLandingRoute()} replace />} />
-          </Routes>
+              <Route path="*" element={<Navigate to={getDefaultLandingRoute()} replace />} />
+            </Routes>
+          </div>
+
+          <Footer />
         </main>
       </div>
     </div>

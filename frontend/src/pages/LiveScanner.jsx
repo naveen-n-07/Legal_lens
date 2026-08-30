@@ -339,29 +339,30 @@ export default function LiveScanner() {
   };
 
   return (
-    <div className="p-6 max-w-6xl mx-auto space-y-6">
+    <div className="p-6 max-w-7xl mx-auto space-y-6">
+      
       {/* Title Banner & Scan Mode Switcher */}
-      <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <div className="inline-flex items-center space-x-2 px-3 py-1 bg-blue-950 text-blue-400 text-xs font-bold rounded-lg border border-blue-800 mb-2">
+          <div className="inline-flex items-center space-x-2 px-3 py-1 bg-red-50 text-red-700 text-xs font-black rounded-lg border border-red-200 mb-2">
             <ShieldCheck className="w-3.5 h-3.5" />
-            <span>Legal Metrology Rules, 2011 Compliance System</span>
+            <span>Legal Metrology Rules, 2011 Compliance Scanner</span>
           </div>
-          <h1 className="text-2xl font-black text-white">Commodity Packaging Inspection Scanner</h1>
-          <p className="text-xs text-slate-400 mt-1">
+          <h1 className="text-2xl font-black text-slate-900">Commodity Packaging Inspection Scanner</h1>
+          <p className="text-xs text-slate-500 font-semibold mt-0.5">
             Choose live camera feed or upload a label photograph to run complete PaddleOCR extraction and Rule 7 statutory check.
           </p>
         </div>
 
         {/* Scan Mode Switcher Buttons */}
-        <div className="flex items-center bg-slate-950 p-1.5 rounded-xl border border-slate-800 space-x-1">
+        <div className="flex items-center bg-slate-100 p-1.5 rounded-xl border border-slate-200 space-x-1">
           <button
             type="button"
             onClick={() => setScanMode('camera')}
-            className={`px-4 py-2 rounded-lg text-xs font-extrabold transition flex items-center space-x-2 ${
+            className={`px-4 py-2 rounded-lg text-xs font-black transition flex items-center space-x-2 ${
               scanMode === 'camera'
-                ? 'bg-blue-600 text-white shadow-md'
-                : 'text-slate-400 hover:text-white'
+                ? 'bg-red-600 text-white shadow-md'
+                : 'text-slate-600 hover:text-slate-900'
             }`}
           >
             <Camera className="w-4 h-4" />
@@ -371,10 +372,10 @@ export default function LiveScanner() {
           <button
             type="button"
             onClick={() => setScanMode('upload')}
-            className={`px-4 py-2 rounded-lg text-xs font-extrabold transition flex items-center space-x-2 ${
+            className={`px-4 py-2 rounded-lg text-xs font-black transition flex items-center space-x-2 ${
               scanMode === 'upload'
-                ? 'bg-blue-600 text-white shadow-md'
-                : 'text-slate-400 hover:text-white'
+                ? 'bg-red-600 text-white shadow-md'
+                : 'text-slate-600 hover:text-slate-900'
             }`}
           >
             <UploadCloud className="w-4 h-4" />
@@ -384,8 +385,8 @@ export default function LiveScanner() {
       </div>
 
       {errorMessage && (
-        <div className="p-4 bg-rose-950/80 border border-rose-500/50 text-rose-300 text-xs rounded-2xl flex items-center space-x-3">
-          <AlertTriangle className="w-5 h-5 text-rose-400 flex-shrink-0" />
+        <div className="p-4 bg-red-50 border border-red-200 text-red-700 text-xs rounded-2xl flex items-center space-x-3">
+          <AlertTriangle className="w-5 h-5 text-red-600 flex-shrink-0" />
           <span className="font-semibold">{errorMessage}</span>
         </div>
       )}
@@ -394,13 +395,13 @@ export default function LiveScanner() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         
         {/* Left Side: Viewfinder / Upload Area (7 Cols) */}
-        <div className="lg:col-span-7 bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-xl space-y-4">
-          <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-            <h3 className="text-sm font-extrabold text-white flex items-center space-x-2">
-              {scanMode === 'camera' ? <Camera className="w-4 h-4 text-blue-400" /> : <FileImage className="w-4 h-4 text-blue-400" />}
+        <div className="lg:col-span-7 bg-white border border-slate-200 p-6 rounded-2xl shadow-sm space-y-4">
+          <div className="flex items-center justify-between border-b border-slate-200 pb-3">
+            <h3 className="text-sm font-black text-slate-900 flex items-center space-x-2">
+              {scanMode === 'camera' ? <Camera className="w-4 h-4 text-red-600" /> : <FileImage className="w-4 h-4 text-red-600" />}
               <span>{scanMode === 'camera' ? 'Live Camera Stream Viewfinder' : 'Packaging Image File Upload'}</span>
             </h3>
-            <span className="text-[11px] font-bold text-slate-400">
+            <span className="text-xs font-black text-red-700 bg-red-50 px-2.5 py-1 rounded border border-red-200">
               Side {scanningSide} Active
             </span>
           </div>
@@ -455,7 +456,7 @@ export default function LiveScanner() {
 
           {/* VIEW MODE 2: Image File Upload Dropzone */}
           {scanMode === 'upload' && (
-            <div className="border-2 border-dashed border-slate-800 hover:border-blue-500/50 bg-slate-950/80 rounded-2xl p-6 text-center transition cursor-pointer relative min-h-[380px] flex items-center justify-center">
+            <div className="border-2 border-dashed border-slate-300 hover:border-red-500 bg-slate-50 rounded-2xl p-6 text-center transition cursor-pointer relative min-h-[380px] flex items-center justify-center">
               <input
                 type="file"
                 accept="image/*"
@@ -464,17 +465,17 @@ export default function LiveScanner() {
               />
               {previewUrl ? (
                 <div className="space-y-3">
-                  <img src={previewUrl} alt="Uploaded Packaging Label" className="max-h-72 mx-auto rounded-xl shadow-lg border border-slate-800 object-contain bg-slate-900 p-2" />
-                  <span className="text-xs text-emerald-400 font-bold block">✓ File Loaded: {selectedFile?.name}</span>
+                  <img src={previewUrl} alt="Uploaded Packaging Label" className="max-h-72 mx-auto rounded-xl shadow-lg border border-slate-300 object-contain bg-white p-2" />
+                  <span className="text-xs text-emerald-700 font-black block">✓ File Loaded: {selectedFile?.name}</span>
                 </div>
               ) : (
                 <div className="space-y-3 py-8">
-                  <div className="p-4 bg-blue-950/50 text-blue-400 rounded-2xl inline-block border border-blue-800">
+                  <div className="p-4 bg-red-50 text-red-600 rounded-2xl inline-block border border-red-200">
                     <UploadCloud className="w-10 h-10" />
                   </div>
                   <div>
-                    <span className="text-sm font-bold text-white block">Click or Drag & Drop Packaging Photo</span>
-                    <span className="text-xs text-slate-400 block mt-1">Supports PNG, JPG, WEBP up to 25MB</span>
+                    <span className="text-sm font-black text-slate-900 block">Click or Drag & Drop Packaging Photo</span>
+                    <span className="text-xs text-slate-500 font-semibold block mt-1">Supports PNG, JPG, WEBP up to 25MB</span>
                   </div>
                 </div>
               )}
@@ -487,13 +488,13 @@ export default function LiveScanner() {
               type="button"
               onClick={handleProcessScan}
               disabled={processing}
-              className="flex-1 py-3.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 disabled:opacity-50 text-white font-extrabold text-xs rounded-xl transition shadow-xl flex items-center justify-center space-x-2"
+              className="flex-1 py-3.5 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 disabled:opacity-50 text-white font-extrabold text-xs rounded-xl transition shadow-lg flex items-center justify-center space-x-2"
             >
               {processing ? (
                 <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
               ) : (
                 <>
-                  <Zap className="w-4 h-4 text-amber-400" />
+                  <Zap className="w-4 h-4 text-amber-300" />
                   <span>PROCESS & ANALYZE PACKAGING DECLARATIONS</span>
                 </>
               )}
@@ -503,9 +504,9 @@ export default function LiveScanner() {
               <button
                 type="button"
                 onClick={handleNextSideScan}
-                className="px-4 py-3.5 bg-slate-950 hover:bg-slate-800 border border-slate-800 text-slate-300 text-xs font-bold rounded-xl transition flex items-center space-x-1.5"
+                className="px-4 py-3.5 bg-slate-100 hover:bg-slate-200 border border-slate-300 text-slate-700 text-xs font-bold rounded-xl transition flex items-center space-x-1.5"
               >
-                <RotateCw className="w-4 h-4 text-indigo-400" />
+                <RotateCw className="w-4 h-4 text-red-600" />
                 <span>Scan Next Side</span>
               </button>
             )}
@@ -513,9 +514,9 @@ export default function LiveScanner() {
         </div>
 
         {/* Right Side: Statutory Results Workspace (5 Cols) */}
-        <div className="lg:col-span-5 bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-xl space-y-5">
-          <h3 className="text-sm font-extrabold text-white flex items-center space-x-2 border-b border-slate-800 pb-3">
-            <ShieldCheck className="w-4 h-4 text-emerald-400" />
+        <div className="lg:col-span-5 bg-white border border-slate-200 p-6 rounded-2xl shadow-sm space-y-5">
+          <h3 className="text-sm font-black text-slate-900 flex items-center space-x-2 border-b border-slate-200 pb-3">
+            <ShieldCheck className="w-4 h-4 text-red-600" />
             <span>Statutory Compliance Decision</span>
           </h3>
 
@@ -525,58 +526,58 @@ export default function LiveScanner() {
               {/* Status Badge */}
               <div className={`p-4 rounded-2xl border flex items-center justify-between ${
                 scanResult.overall_status?.includes('7A') 
-                  ? 'bg-emerald-950/60 border-emerald-500/50 text-emerald-300' 
-                  : 'bg-amber-950/60 border-amber-500/50 text-amber-300'
+                  ? 'bg-emerald-50 border-emerald-300 text-emerald-900' 
+                  : 'bg-red-50 border-red-300 text-red-900'
               }`}>
                 <div className="flex items-center space-x-3">
-                  <CheckCircle2 className="w-6 h-6 text-emerald-400" />
+                  <CheckCircle2 className="w-6 h-6 text-emerald-600" />
                   <div>
-                    <span className="text-xs uppercase font-extrabold tracking-wider block">Compliance Decision</span>
-                    <span className="text-lg font-black">{scanResult.overall_status}</span>
+                    <span className="text-[10px] uppercase font-black tracking-wider block">Compliance Decision</span>
+                    <span className="text-base font-black">{scanResult.overall_status}</span>
                   </div>
                 </div>
-                <span className="text-xs font-mono font-bold px-3 py-1 rounded-full bg-slate-950 border border-slate-800">
+                <span className="text-xs font-mono font-bold px-3 py-1 rounded-full bg-white border border-slate-200">
                   Conf: {scanResult.overall_confidence}%
                 </span>
               </div>
 
               {/* Scanned Declarations Checklist */}
-              <div className="space-y-2 bg-slate-950 border border-slate-800 p-3.5 rounded-xl">
-                <span className="text-[11px] font-bold text-slate-400 block uppercase tracking-wider mb-2">
+              <div className="space-y-2 bg-slate-50 border border-slate-200 p-3.5 rounded-xl">
+                <span className="text-[11px] font-black text-slate-500 block uppercase tracking-wider mb-2">
                   Scanned Declarations Check
                 </span>
 
                 <div className="space-y-2">
-                  <div className="flex items-center justify-between text-xs p-2 bg-slate-900 rounded-lg">
-                    <span className="text-slate-300 font-semibold">Rule 6(1)(b) Product Name</span>
-                    <span className="text-emerald-400 font-bold">✓ PASS</span>
+                  <div className="flex items-center justify-between text-xs p-2 bg-white rounded-lg border border-slate-200">
+                    <span className="text-slate-800 font-bold">Rule 6(1)(b) Product Name</span>
+                    <span className="text-emerald-700 font-black">✓ PASS</span>
                   </div>
 
-                  <div className="flex items-center justify-between text-xs p-2 bg-slate-900 rounded-lg">
-                    <span className="text-slate-300 font-semibold">Rule 6(1)(e) MRP Tax Clause</span>
-                    <span className="text-emerald-400 font-bold">✓ PASS</span>
+                  <div className="flex items-center justify-between text-xs p-2 bg-white rounded-lg border border-slate-200">
+                    <span className="text-slate-800 font-bold">Rule 6(1)(e) MRP Tax Clause</span>
+                    <span className="text-emerald-700 font-black">✓ PASS</span>
                   </div>
 
-                  <div className="flex items-center justify-between text-xs p-2 bg-slate-900 rounded-lg">
-                    <span className="text-slate-300 font-semibold">Rule 6(1)(c) Declared Net Qty</span>
-                    <span className="text-emerald-400 font-bold">✓ PASS</span>
+                  <div className="flex items-center justify-between text-xs p-2 bg-white rounded-lg border border-slate-200">
+                    <span className="text-slate-800 font-bold">Rule 6(1)(c) Declared Net Qty</span>
+                    <span className="text-emerald-700 font-black">✓ PASS</span>
                   </div>
 
-                  <div className="flex items-center justify-between text-xs p-2 bg-slate-900 rounded-lg">
-                    <span className="text-slate-300 font-semibold">Rule 7 Table-I Numeral Height</span>
-                    <span className="text-emerald-400 font-bold">✓ PASS (3.2 mm)</span>
+                  <div className="flex items-center justify-between text-xs p-2 bg-white rounded-lg border border-slate-200">
+                    <span className="text-slate-800 font-bold">Rule 7 Table-I Numeral Height</span>
+                    <span className="text-emerald-700 font-black">✓ PASS (3.2 mm)</span>
                   </div>
                 </div>
               </div>
 
               {/* Scanned Sides Log */}
-              <div className="p-3.5 bg-slate-950 border border-slate-800 rounded-xl space-y-2">
-                <span className="text-[11px] font-bold text-slate-400 block uppercase tracking-wider">
+              <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
+                <span className="text-[11px] font-black text-slate-500 block uppercase tracking-wider">
                   Multi-Side Scanner Audit ({scannedSides.length} Sides Scanned)
                 </span>
                 <div className="flex items-center space-x-2">
                   {scannedSides.map((s, idx) => (
-                    <span key={idx} className="px-3 py-1 bg-blue-950 text-blue-400 font-mono font-bold text-xs rounded-lg border border-blue-800">
+                    <span key={idx} className="px-3 py-1 bg-red-100 text-red-800 font-mono font-bold text-xs rounded-lg border border-red-200">
                       Side {s.side} ✓
                     </span>
                   ))}
@@ -587,16 +588,16 @@ export default function LiveScanner() {
               <button
                 type="button"
                 onClick={handleViewFullReport}
-                className="w-full py-3.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold text-xs rounded-xl transition shadow-xl flex items-center justify-center space-x-2"
+                className="w-full py-3.5 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-extrabold text-xs rounded-xl transition shadow-lg flex items-center justify-center space-x-2"
               >
                 <span>OPEN DETAILED 5-SECTION AUDIT WORKSPACE →</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
             </div>
           ) : (
-            <div className="py-20 text-center space-y-3 text-slate-500">
-              <Sparkles className="w-10 h-10 mx-auto text-slate-700" />
-              <p className="text-xs">
+            <div className="py-20 text-center space-y-3 text-slate-400">
+              <Sparkles className="w-10 h-10 mx-auto text-slate-300" />
+              <p className="text-xs font-medium">
                 Select camera or upload image on the left and press <b>PROCESS & ANALYZE</b> to run statutory evaluation.
               </p>
             </div>
