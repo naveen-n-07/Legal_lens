@@ -5,20 +5,34 @@ test_metrix_lm.py - System Integration, Stage 1 Package Detection & RBAC Securit
 import sys
 import os
 
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "backend")))
+# Add backend directory to sys.path
+backend_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "backend"))
+if backend_path not in sys.path:
+    sys.path.insert(0, backend_path)
 
 import unittest
 import json
 import cv2  # type: ignore
 import numpy as np  # type: ignore
-from app.ocr_service import OpenCVOCRService
-from app.rule_engine import RuleEngine
-from app.pdf_service import PDFReportGenerator
-from app.ocr.ocr_service import PaddleOCRService
-from app.ocr.declaration_extractor import DeclarationExtractor
-from app.package_detection.detector import PackageDetector
-from app.auth.rbac import verify_password, get_password_hash, RequireRole, VALID_ROLES
-from app.models import User
+
+try:
+    from app.ocr_service import OpenCVOCRService
+    from app.rule_engine import RuleEngine
+    from app.pdf_service import PDFReportGenerator
+    from app.ocr.ocr_service import PaddleOCRService
+    from app.ocr.declaration_extractor import DeclarationExtractor
+    from app.package_detection.detector import PackageDetector
+    from app.auth.rbac import verify_password, get_password_hash, RequireRole, VALID_ROLES
+    from app.models import User
+except ImportError:
+    from backend.app.ocr_service import OpenCVOCRService  # type: ignore
+    from backend.app.rule_engine import RuleEngine  # type: ignore
+    from backend.app.pdf_service import PDFReportGenerator  # type: ignore
+    from backend.app.ocr.ocr_service import PaddleOCRService  # type: ignore
+    from backend.app.ocr.declaration_extractor import DeclarationExtractor  # type: ignore
+    from backend.app.package_detection.detector import PackageDetector  # type: ignore
+    from backend.app.auth.rbac import verify_password, get_password_hash, RequireRole, VALID_ROLES  # type: ignore
+    from backend.app.models import User  # type: ignore
 
 class TestRBACSecurityAndAuth(unittest.TestCase):
 
@@ -46,7 +60,11 @@ class TestRBACSecurityAndAuth(unittest.TestCase):
         self.assertEqual(res.role, "admin")
 
         # Inspector user blocked by admin guard
-        from fastapi import HTTPException
+        try:
+            from fastapi import HTTPException
+        except ImportError:
+            from backend.fastapi import HTTPException  # type: ignore
+            
         with self.assertRaises(HTTPException) as ctx:
             admin_guard(inspector_user)
         self.assertEqual(ctx.exception.status_code, 403)
