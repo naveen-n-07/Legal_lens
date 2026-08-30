@@ -42,7 +42,7 @@ export default function Sidebar({ user, collapsed, setCollapsed }) {
   }
 
   return (
-    <aside className={`bg-white border-r border-slate-200 shadow-sm transition-all duration-300 flex flex-col ${collapsed ? 'w-20' : 'w-64'}`}>
+    <aside className={`bg-[#F1F5F9] border-r border-[#E2E8F0] shadow-sm transition-all duration-300 flex flex-col ${collapsed ? 'w-20' : 'w-64'}`}>
       
       {/* Navigation Links */}
       <div className="p-4 flex-1 space-y-1.5">
@@ -53,10 +53,10 @@ export default function Sidebar({ user, collapsed, setCollapsed }) {
               key={item.path}
               to={item.path}
               className={({ isActive }) =>
-                `flex items-center space-x-3 px-3.5 py-3 rounded-xl text-xs font-black transition ${
+                `flex items-center space-x-3 px-3.5 py-3 rounded-xl text-xs font-extrabold transition border ${
                   isActive
-                    ? 'bg-gradient-to-r from-red-600 to-red-700 text-white shadow-md'
-                    : 'text-slate-700 hover:bg-slate-100 hover:text-red-700'
+                    ? 'bg-[#FEF2F2] text-[#DC2626] border-[#FCA5A5]/40 shadow-sm'
+                    : 'text-[#334155] border-transparent hover:bg-white hover:text-[#DC2626] hover:border-[#E2E8F0]'
                 }`
               }
             >
@@ -80,12 +80,12 @@ export default function Sidebar({ user, collapsed, setCollapsed }) {
 
       {/* Official Role Indicator Card */}
       {!collapsed && (
-        <div className="p-4 m-3 bg-slate-50 rounded-xl border border-slate-200 text-xs space-y-1 shadow-inner">
-          <div className="flex items-center space-x-2 font-black text-red-700">
-            <Gavel className="w-4 h-4 text-red-600" />
+        <div className="p-4 m-3 bg-white rounded-xl border border-[#E2E8F0] text-xs space-y-1 shadow-sm">
+          <div className="flex items-center space-x-2 font-black text-[#DC2626]">
+            <Gavel className="w-4 h-4 text-[#DC2626]" />
             <span className="uppercase">{role?.replace('_', ' ')} PRIVILEGES</span>
           </div>
-          <p className="text-slate-600 text-[11px] font-medium leading-relaxed">
+          <p className="text-[#64748B] text-[11px] font-medium leading-relaxed">
             {role === 'admin' 
               ? 'Full system access & RBAC user administration active.' 
               : role === 'reviewing_officer' 
@@ -98,7 +98,7 @@ export default function Sidebar({ user, collapsed, setCollapsed }) {
       {/* Sidebar Collapse Toggle */}
       <button
         onClick={() => setCollapsed(!collapsed)}
-        className="p-3 border-t border-slate-200 text-slate-500 hover:text-slate-900 flex items-center justify-center hover:bg-slate-100 transition"
+        className="p-3 border-t border-[#E2E8F0] text-[#64748B] hover:text-[#1E293B] flex items-center justify-center hover:bg-white transition"
       >
         {collapsed ? <ChevronRight className="w-5 h-5" /> : <ChevronLeft className="w-5 h-5" />}
       </button>

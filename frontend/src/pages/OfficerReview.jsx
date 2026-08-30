@@ -64,17 +64,17 @@ export default function OfficerReview() {
 
   if (!inspection) {
     return (
-      <div className="p-8 max-w-4xl mx-auto text-center space-y-6 bg-slate-900 border border-slate-800 rounded-3xl my-12 shadow-2xl">
-        <div className="p-4 bg-blue-950 text-blue-400 rounded-2xl inline-block border border-blue-800">
+      <div className="p-8 max-w-4xl mx-auto text-center space-y-6 bg-white border border-[#E2E8F0] rounded-3xl my-12 shadow-sm">
+        <div className="p-4 bg-red-50 text-red-600 rounded-2xl inline-block border border-red-200">
           <UploadCloud className="w-12 h-12" />
         </div>
-        <h2 className="text-2xl font-black text-white">No Packaging Scan Selected</h2>
-        <p className="text-sm text-slate-400 max-w-md mx-auto">
+        <h2 className="text-2xl font-black text-[#1E293B]">No Packaging Scan Selected</h2>
+        <p className="text-sm text-[#64748B] max-w-md mx-auto font-medium">
           Please upload a real commodity packaging image first to view auto-enhanced text letter extraction and 5-section statutory compliance analysis.
         </p>
         <button
           onClick={() => navigate('/inspection/new')}
-          className="px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-extrabold text-xs rounded-xl transition shadow-xl inline-flex items-center space-x-2"
+          className="px-6 py-3 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-black text-xs rounded-xl transition shadow-md inline-flex items-center space-x-2"
         >
           <span>UPLOAD PACKAGING IMAGE SCAN</span>
         </button>
@@ -117,20 +117,20 @@ export default function OfficerReview() {
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6">
       {/* Header Bar */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-xl">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white border border-[#E2E8F0] p-6 rounded-2xl shadow-sm">
         <div>
           <div className="flex items-center space-x-3">
-            <span className="px-3 py-1 bg-blue-950 text-blue-400 text-xs font-bold rounded-full border border-blue-800 flex items-center space-x-1">
-              <Wand2 className="w-3.5 h-3.5 text-indigo-400" />
-              <span>OpenCV Low-Quality Auto-Enhanced (Variance: {inspection.quality?.blur_variance || 178.5})</span>
+            <span className="px-3 py-1 bg-red-50 text-red-700 text-xs font-black rounded-full border border-red-200 flex items-center space-x-1">
+              <Wand2 className="w-3.5 h-3.5 text-red-600" />
+              <span>OpenCV Auto-Enhanced (Variance: {inspection.quality?.blur_variance || 178.5})</span>
             </span>
-            <span className="px-3 py-1 bg-emerald-950 text-emerald-400 text-xs font-bold rounded-full border border-emerald-800 flex items-center space-x-1">
-              <CheckCircle2 className="w-3 h-3" />
+            <span className="px-3 py-1 bg-emerald-50 text-emerald-800 text-xs font-black rounded-full border border-emerald-300 flex items-center space-x-1">
+              <CheckCircle2 className="w-3 h-3 text-emerald-600" />
               <span>Image Quality Passed ({boundingBoxes.length} Package Text Declarations Detected)</span>
             </span>
           </div>
-          <h1 className="text-2xl font-black text-white mt-2">{inspection.product_name}</h1>
-          <p className="text-xs text-slate-400 mt-1">
+          <h1 className="text-2xl font-black text-[#1E293B] mt-2">{inspection.product_name}</h1>
+          <p className="text-xs text-[#64748B] font-semibold mt-1">
             Category: {inspection.category} • Inspector: {inspection.inspector_name || 'Official Inspector'} • Location: {inspection.location}
           </p>
         </div>
@@ -140,28 +140,28 @@ export default function OfficerReview() {
             href={`http://localhost:8000/api/v1/reports/${inspection.id}/pdf`}
             target="_blank"
             rel="noreferrer"
-            className="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs font-bold transition flex items-center space-x-2 border border-slate-700 shadow-sm"
+            className="px-4 py-2.5 bg-[#F1F5F9] hover:bg-slate-200 text-[#1E293B] rounded-xl text-xs font-black transition flex items-center space-x-2 border border-[#E2E8F0]"
           >
-            <Download className="w-4 h-4 text-blue-400" />
+            <Download className="w-4 h-4 text-red-600" />
             <span>Export 5-Section PDF</span>
           </a>
         </div>
       </div>
 
       {/* Auto-Enhancement Status Banner */}
-      <div className="p-4 bg-indigo-950/60 border border-indigo-500/40 rounded-2xl text-xs text-indigo-200 flex items-center justify-between shadow-lg">
+      <div className="p-4 bg-blue-50 border border-blue-200 rounded-2xl text-xs text-blue-900 flex items-center justify-between shadow-sm">
         <div className="flex items-center space-x-3">
-          <div className="p-2 bg-indigo-600/30 text-indigo-400 rounded-xl border border-indigo-500/40">
+          <div className="p-2 bg-blue-100 text-blue-700 rounded-xl border border-blue-300">
             <Wand2 className="w-5 h-5" />
           </div>
           <div>
-            <span className="font-bold text-white block">OpenCV Low-Quality Adaptive Auto-Enhancement Active</span>
-            <span className="text-[11px] text-slate-300">
+            <span className="font-black text-[#1E293B] block">OpenCV Low-Quality Adaptive Auto-Enhancement Active</span>
+            <span className="text-[11px] text-[#64748B] font-medium">
               Applied CLAHE glare reduction, bilateral noise filtering, and unsharp mask text sharpening to ensure accurate detection on low-quality/blurry label photos.
             </span>
           </div>
         </div>
-        <span className="px-3 py-1 bg-indigo-950 text-indigo-300 font-mono font-bold text-[11px] rounded-lg border border-indigo-800 whitespace-nowrap">
+        <span className="px-3 py-1 bg-white text-blue-800 font-mono font-bold text-[11px] rounded-lg border border-blue-200 whitespace-nowrap shadow-sm">
           Variance: {inspection.quality?.blur_variance || 178.5} / 100.0
         </span>
       </div>
@@ -171,26 +171,26 @@ export default function OfficerReview() {
         
         {/* Left Interactive Bounding Box Highlight Panel */}
         <div className="lg:col-span-5 space-y-6">
-          <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl shadow-xl space-y-4">
+          <div className="bg-white border border-[#E2E8F0] p-5 rounded-2xl shadow-sm space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-extrabold text-white flex items-center space-x-2">
-                <Target className="w-4 h-4 text-blue-400" />
+              <h3 className="text-sm font-black text-[#1E293B] flex items-center space-x-2">
+                <Target className="w-4 h-4 text-red-600" />
                 <span>Detected Package Bounding Boxes ({filteredBoxes.length})</span>
               </h3>
-              <span className="text-[10px] bg-blue-950 text-blue-400 px-2 py-0.5 rounded font-mono border border-blue-800">
+              <span className="text-[10px] bg-red-50 text-red-700 px-2 py-0.5 rounded font-mono border border-red-200 font-bold">
                 Click Text to Highlight Box
               </span>
             </div>
 
             {/* Search Box Input */}
             <div className="relative">
-              <Search className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
+              <Search className="w-4 h-4 text-[#64748B] absolute left-3 top-3" />
               <input
                 type="text"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder="Search letters, numbers, or rules..."
-                className="w-full pl-9 pr-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:text-slate-600"
+                className="w-full pl-9 pr-3 py-2 bg-[#F8F9FA] border border-[#E2E8F0] rounded-xl text-xs text-[#1E293B] font-medium focus:outline-none focus:border-red-600"
               />
             </div>
 
@@ -210,7 +210,7 @@ export default function OfficerReview() {
                       className={`absolute border-2 transition-all cursor-pointer rounded ${
                         selectedBoxId === b.id 
                           ? 'border-emerald-400 bg-emerald-500/30 shadow-lg shadow-emerald-500/50 scale-105 z-20' 
-                          : 'border-blue-500/60 bg-blue-500/10 hover:border-blue-400 hover:bg-blue-500/20'
+                          : 'border-red-500/60 bg-red-500/10 hover:border-red-400 hover:bg-red-500/20'
                       }`}
                       style={{
                         top: `${b.y}%`,
@@ -229,8 +229,8 @@ export default function OfficerReview() {
 
             {/* Complete Declaration Text OCR Confidence List */}
             <div className="space-y-2">
-              <h4 className="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center space-x-1.5">
-                <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
+              <h4 className="text-xs font-black text-[#1E293B] uppercase tracking-wider flex items-center space-x-1.5">
+                <Sparkles className="w-3.5 h-3.5 text-red-600" />
                 <span>Detected Package Text Declarations & Statutory Tags</span>
               </h4>
               
@@ -241,18 +241,18 @@ export default function OfficerReview() {
                     onClick={() => setSelectedBoxId(b.id)}
                     className={`p-3 rounded-xl border transition cursor-pointer space-y-1 ${
                       selectedBoxId === b.id 
-                        ? 'bg-blue-950/80 border-blue-500 text-white' 
-                        : 'bg-slate-950 border-slate-800 text-slate-300 hover:border-slate-700'
+                        ? 'bg-red-50 border-red-400 text-red-900' 
+                        : 'bg-[#F8F9FA] border-[#E2E8F0] text-[#1E293B] hover:border-slate-300'
                     }`}
                   >
                     <div className="flex items-center justify-between text-xs">
-                      <span className="font-semibold truncate max-w-[220px] text-white">{b.text}</span>
-                      <span className="px-2 py-0.5 bg-emerald-950 text-emerald-400 font-mono font-bold text-[11px] rounded border border-emerald-800">
+                      <span className="font-bold truncate max-w-[220px] text-[#1E293B]">{b.text}</span>
+                      <span className="px-2 py-0.5 bg-emerald-100 text-emerald-900 font-mono font-bold text-[11px] rounded border border-emerald-300">
                         {b.confidence}%
                       </span>
                     </div>
                     {b.statutory_tag && (
-                      <div className="flex items-center space-x-1 text-[10px] text-blue-400">
+                      <div className="flex items-center space-x-1 text-[10px] text-red-700 font-bold">
                         <Tag className="w-3 h-3" />
                         <span>{b.statutory_tag}</span>
                       </div>
@@ -266,15 +266,15 @@ export default function OfficerReview() {
 
         {/* Right 5-Section Statutory Review Workspace (7 Cols) */}
         <div className="lg:col-span-7 space-y-6">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl shadow-xl overflow-hidden">
+          <div className="bg-white border border-[#E2E8F0] rounded-2xl shadow-sm overflow-hidden">
             
             {/* Tab Navigation Header */}
-            <div className="flex overflow-x-auto border-b border-slate-800 p-2 bg-slate-950/80 gap-1 scrollbar-none">
+            <div className="flex overflow-x-auto border-b border-[#E2E8F0] p-2 bg-[#F8F9FA] gap-1 scrollbar-none">
               <button
                 type="button"
                 onClick={() => setActiveTab('fulltext')}
-                className={`px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center space-x-1.5 whitespace-nowrap ${
-                  activeTab === 'fulltext' ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/30' : 'text-slate-400 hover:text-white'
+                className={`px-3.5 py-2 rounded-xl text-xs font-black transition flex items-center space-x-1.5 whitespace-nowrap ${
+                  activeTab === 'fulltext' ? 'bg-red-600 text-white shadow-md' : 'text-[#64748B] hover:text-[#1E293B]'
                 }`}
               >
                 <BookOpen className="w-3.5 h-3.5" />
@@ -284,8 +284,8 @@ export default function OfficerReview() {
               <button
                 type="button"
                 onClick={() => setActiveTab('pdp')}
-                className={`px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center space-x-1.5 whitespace-nowrap ${
-                  activeTab === 'pdp' ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/30' : 'text-slate-400 hover:text-white'
+                className={`px-3.5 py-2 rounded-xl text-xs font-black transition flex items-center space-x-1.5 whitespace-nowrap ${
+                  activeTab === 'pdp' ? 'bg-red-600 text-white shadow-md' : 'text-[#64748B] hover:text-[#1E293B]'
                 }`}
               >
                 <Gavel className="w-3.5 h-3.5" />
@@ -295,8 +295,8 @@ export default function OfficerReview() {
               <button
                 type="button"
                 onClick={() => setActiveTab('company')}
-                className={`px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center space-x-1.5 whitespace-nowrap ${
-                  activeTab === 'company' ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/30' : 'text-slate-400 hover:text-white'
+                className={`px-3.5 py-2 rounded-xl text-xs font-black transition flex items-center space-x-1.5 whitespace-nowrap ${
+                  activeTab === 'company' ? 'bg-red-600 text-white shadow-md' : 'text-[#64748B] hover:text-[#1E293B]'
                 }`}
               >
                 <Building2 className="w-3.5 h-3.5" />
@@ -306,8 +306,8 @@ export default function OfficerReview() {
               <button
                 type="button"
                 onClick={() => setActiveTab('technical')}
-                className={`px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center space-x-1.5 whitespace-nowrap ${
-                  activeTab === 'technical' ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/30' : 'text-slate-400 hover:text-white'
+                className={`px-3.5 py-2 rounded-xl text-xs font-black transition flex items-center space-x-1.5 whitespace-nowrap ${
+                  activeTab === 'technical' ? 'bg-red-600 text-white shadow-md' : 'text-[#64748B] hover:text-[#1E293B]'
                 }`}
               >
                 <FileText className="w-3.5 h-3.5" />
@@ -317,8 +317,8 @@ export default function OfficerReview() {
               <button
                 type="button"
                 onClick={() => setActiveTab('mpe')}
-                className={`px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center space-x-1.5 whitespace-nowrap ${
-                  activeTab === 'mpe' ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/30' : 'text-slate-400 hover:text-white'
+                className={`px-3.5 py-2 rounded-xl text-xs font-black transition flex items-center space-x-1.5 whitespace-nowrap ${
+                  activeTab === 'mpe' ? 'bg-red-600 text-white shadow-md' : 'text-[#64748B] hover:text-[#1E293B]'
                 }`}
               >
                 <Scale className="w-3.5 h-3.5" />
@@ -328,8 +328,8 @@ export default function OfficerReview() {
               <button
                 type="button"
                 onClick={() => setActiveTab('customercare')}
-                className={`px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center space-x-1.5 whitespace-nowrap ${
-                  activeTab === 'customercare' ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/30' : 'text-slate-400 hover:text-white'
+                className={`px-3.5 py-2 rounded-xl text-xs font-black transition flex items-center space-x-1.5 whitespace-nowrap ${
+                  activeTab === 'customercare' ? 'bg-red-600 text-white shadow-md' : 'text-[#64748B] hover:text-[#1E293B]'
                 }`}
               >
                 <PhoneCall className="w-3.5 h-3.5" />
@@ -343,13 +343,13 @@ export default function OfficerReview() {
               {/* FULL TEXT & LETTERS AUDIT TAB */}
               {activeTab === 'fulltext' && (
                 <div className="space-y-5">
-                  <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+                  <div className="flex items-center justify-between border-b border-[#E2E8F0] pb-3">
                     <div>
-                      <h4 className="text-sm font-extrabold text-white uppercase tracking-wider flex items-center space-x-2">
-                        <BookOpen className="w-4 h-4 text-blue-400" />
+                      <h4 className="text-sm font-black text-[#1E293B] uppercase tracking-wider flex items-center space-x-2">
+                        <BookOpen className="w-4 h-4 text-red-600" />
                         <span>Full Extracted Text Stream & Letter Legibility Audit</span>
                       </h4>
-                      <p className="text-[11px] text-slate-400 mt-0.5">
+                      <p className="text-[11px] text-[#64748B] mt-0.5 font-medium">
                         Rule 9 Manner of Declaration: Contrast, Hindi Devanagari / English Script & Legibility
                       </p>
                     </div>
@@ -358,33 +358,33 @@ export default function OfficerReview() {
 
                   {/* Character & Word Metrics */}
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
-                    <div className="p-3 bg-slate-950 border border-slate-800 rounded-xl">
-                      <span className="text-slate-400 block font-medium">Total Characters</span>
-                      <span className="text-base font-black text-white mt-0.5 block">{rawOcrFullText.length}</span>
+                    <div className="p-3 bg-[#F8F9FA] border border-[#E2E8F0] rounded-xl">
+                      <span className="text-[#64748B] block font-bold">Total Characters</span>
+                      <span className="text-base font-black text-[#1E293B] mt-0.5 block">{rawOcrFullText.length}</span>
                     </div>
 
-                    <div className="p-3 bg-slate-950 border border-slate-800 rounded-xl">
-                      <span className="text-slate-400 block font-medium">Total Words</span>
-                      <span className="text-base font-black text-blue-400 mt-0.5 block">{rawOcrFullText.split(/\s+/).length}</span>
+                    <div className="p-3 bg-[#F8F9FA] border border-[#E2E8F0] rounded-xl">
+                      <span className="text-[#64748B] block font-bold">Total Words</span>
+                      <span className="text-base font-black text-red-700 mt-0.5 block">{rawOcrFullText.split(/\s+/).length}</span>
                     </div>
 
-                    <div className="p-3 bg-slate-950 border border-slate-800 rounded-xl">
-                      <span className="text-slate-400 block font-medium">Detected Lines</span>
-                      <span className="text-base font-black text-emerald-400 mt-0.5 block">{boundingBoxes.length}</span>
+                    <div className="p-3 bg-[#F8F9FA] border border-[#E2E8F0] rounded-xl">
+                      <span className="text-[#64748B] block font-bold">Detected Lines</span>
+                      <span className="text-base font-black text-emerald-700 mt-0.5 block">{boundingBoxes.length}</span>
                     </div>
 
-                    <div className="p-3 bg-slate-950 border border-slate-800 rounded-xl">
-                      <span className="text-slate-400 block font-medium">Legibility Score</span>
-                      <span className="text-base font-black text-indigo-400 mt-0.5 block">98.5%</span>
+                    <div className="p-3 bg-[#F8F9FA] border border-[#E2E8F0] rounded-xl">
+                      <span className="text-[#64748B] block font-bold">Legibility Score</span>
+                      <span className="text-base font-black text-indigo-700 mt-0.5 block">98.5%</span>
                     </div>
                   </div>
 
                   {/* Full Text Stream Code Block */}
                   <div className="space-y-2">
-                    <span className="text-xs font-bold text-slate-300 uppercase tracking-wider block">
+                    <span className="text-xs font-black text-[#1E293B] uppercase tracking-wider block">
                       Full Untruncated Text & Letter Extraction Stream:
                     </span>
-                    <div className="p-4 bg-slate-950 border border-slate-800 rounded-xl font-mono text-xs text-slate-200 leading-relaxed max-h-64 overflow-y-auto whitespace-pre-wrap">
+                    <div className="p-4 bg-[#F8F9FA] border border-[#E2E8F0] rounded-xl font-mono text-xs text-[#1E293B] font-medium leading-relaxed max-h-64 overflow-y-auto whitespace-pre-wrap">
                       {rawOcrFullText}
                     </div>
                   </div>
@@ -394,13 +394,13 @@ export default function OfficerReview() {
               {/* RULE 7 EVIDENCE PANEL */}
               {activeTab === 'pdp' && (
                 <div className="space-y-5">
-                  <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+                  <div className="flex items-center justify-between border-b border-[#E2E8F0] pb-3">
                     <div>
-                      <h4 className="text-sm font-extrabold text-white uppercase tracking-wider flex items-center space-x-2">
-                        <Gavel className="w-4 h-4 text-blue-400" />
+                      <h4 className="text-sm font-black text-[#1E293B] uppercase tracking-wider flex items-center space-x-2">
+                        <Gavel className="w-4 h-4 text-red-600" />
                         <span>Rule 7 Numeral/Letter Height Statutory Evidence Panel</span>
                       </h4>
-                      <p className="text-[11px] text-slate-400 mt-0.5">
+                      <p className="text-[11px] text-[#64748B] mt-0.5 font-medium">
                         {rule7Ev.legal_basis}
                       </p>
                     </div>
@@ -410,82 +410,82 @@ export default function OfficerReview() {
                   {/* Decision Banner */}
                   <div className={`p-4 rounded-2xl border flex items-center justify-between ${
                     rule7Ev.result === 'COMPLIANT' 
-                      ? 'bg-emerald-950/60 border-emerald-500/50 text-emerald-300' 
+                      ? 'bg-emerald-50 border-emerald-300 text-emerald-900' 
                       : rule7Ev.result === 'POTENTIAL_VIOLATION' 
-                        ? 'bg-rose-950/60 border-rose-500/50 text-rose-300' 
-                        : 'bg-amber-950/60 border-amber-500/50 text-amber-300'
+                        ? 'bg-red-50 border-red-300 text-red-900' 
+                        : 'bg-amber-50 border-amber-300 text-amber-900'
                   }`}>
                     <div className="flex items-center space-x-3">
-                      {rule7Ev.result === 'COMPLIANT' && <CheckCircle2 className="w-6 h-6 text-emerald-400" />}
-                      {rule7Ev.result === 'POTENTIAL_VIOLATION' && <XCircle className="w-6 h-6 text-rose-400" />}
-                      {rule7Ev.result === 'NEEDS_OFFICER_VERIFICATION' && <HelpCircle className="w-6 h-6 text-amber-400" />}
+                      {rule7Ev.result === 'COMPLIANT' && <CheckCircle2 className="w-6 h-6 text-emerald-600" />}
+                      {rule7Ev.result === 'POTENTIAL_VIOLATION' && <XCircle className="w-6 h-6 text-red-600" />}
+                      {rule7Ev.result === 'NEEDS_OFFICER_VERIFICATION' && <HelpCircle className="w-6 h-6 text-amber-600" />}
                       <div>
-                        <span className="text-xs uppercase font-extrabold tracking-wider block">Rule 7 Statutory Decision</span>
+                        <span className="text-xs uppercase font-black tracking-wider block">Rule 7 Statutory Decision</span>
                         <span className="text-lg font-black">{rule7Ev.result?.replace(/_/g, " ")}</span>
                       </div>
                     </div>
-                    <span className="text-xs font-mono font-bold px-3 py-1 rounded-full bg-slate-950 border border-slate-800">
+                    <span className="text-xs font-mono font-bold px-3 py-1 rounded-full bg-white border border-slate-200">
                       Confidence: {rule7Ev.measurement_confidence || 94.0}%
                     </span>
                   </div>
 
                   {/* Structured Rule 7 Evidence Key-Value Table */}
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
-                    <div className="p-3 bg-slate-950 border border-slate-800 rounded-xl">
-                      <span className="text-slate-400 block font-medium">Statutory Rule</span>
-                      <span className="text-sm font-bold text-white mt-0.5 block">{rule7Ev.rule_id}</span>
+                    <div className="p-3 bg-[#F8F9FA] border border-[#E2E8F0] rounded-xl">
+                      <span className="text-[#64748B] block font-bold">Statutory Rule</span>
+                      <span className="text-sm font-black text-[#1E293B] mt-0.5 block">{rule7Ev.rule_id}</span>
                     </div>
 
-                    <div className="p-3 bg-slate-950 border border-slate-800 rounded-xl">
-                      <span className="text-slate-400 block font-medium">Applicable Table</span>
-                      <span className="text-sm font-bold text-blue-400 mt-0.5 block">{rule7Ev.table}</span>
+                    <div className="p-3 bg-[#F8F9FA] border border-[#E2E8F0] rounded-xl">
+                      <span className="text-[#64748B] block font-bold">Applicable Table</span>
+                      <span className="text-sm font-black text-red-700 mt-0.5 block">{rule7Ev.table}</span>
                     </div>
 
-                    <div className="p-3 bg-slate-950 border border-slate-800 rounded-xl">
-                      <span className="text-slate-400 block font-medium">Declaration Type</span>
-                      <span className="text-sm font-bold text-white mt-0.5 block truncate">{rule7Ev.declaration_type}</span>
+                    <div className="p-3 bg-[#F8F9FA] border border-[#E2E8F0] rounded-xl">
+                      <span className="text-[#64748B] block font-bold">Declaration Type</span>
+                      <span className="text-sm font-black text-[#1E293B] mt-0.5 block truncate">{rule7Ev.declaration_type}</span>
                     </div>
 
-                    <div className="p-3 bg-slate-950 border border-slate-800 rounded-xl">
-                      <span className="text-slate-400 block font-medium">PDP Area (A)</span>
-                      <span className="text-sm font-bold text-white mt-0.5 block">{rule7Ev.pdp_area_cm2 ? `${rule7Ev.pdp_area_cm2} cm²` : 'Unknown'}</span>
+                    <div className="p-3 bg-[#F8F9FA] border border-[#E2E8F0] rounded-xl">
+                      <span className="text-[#64748B] block font-bold">PDP Area (A)</span>
+                      <span className="text-sm font-black text-[#1E293B] mt-0.5 block">{rule7Ev.pdp_area_cm2 ? `${rule7Ev.pdp_area_cm2} cm²` : 'Unknown'}</span>
                     </div>
 
-                    <div className="p-3 bg-slate-950 border border-slate-800 rounded-xl">
-                      <span className="text-slate-400 block font-medium">Detected Numeral Height</span>
-                      <span className="text-sm font-black text-indigo-400 mt-0.5 block">
+                    <div className="p-3 bg-[#F8F9FA] border border-[#E2E8F0] rounded-xl">
+                      <span className="text-[#64748B] block font-bold">Detected Numeral Height</span>
+                      <span className="text-sm font-black text-indigo-700 mt-0.5 block">
                         {rule7Ev.measured_height_mm ? `${rule7Ev.measured_height_mm} mm` : 'Unverified'}
                       </span>
                     </div>
 
-                    <div className="p-3 bg-slate-950 border border-slate-800 rounded-xl">
-                      <span className="text-slate-400 block font-medium">Applicable Minimum</span>
-                      <span className="text-sm font-black text-emerald-400 mt-0.5 block">
+                    <div className="p-3 bg-[#F8F9FA] border border-[#E2E8F0] rounded-xl">
+                      <span className="text-[#64748B] block font-bold">Applicable Minimum</span>
+                      <span className="text-sm font-black text-emerald-700 mt-0.5 block">
                         {rule7Ev.required_height_mm ? `${rule7Ev.required_height_mm} mm` : 'N/A'}
                       </span>
                     </div>
 
-                    <div className="p-3 bg-slate-950 border border-slate-800 rounded-xl">
-                      <span className="text-slate-400 block font-medium">Difference</span>
+                    <div className="p-3 bg-[#F8F9FA] border border-[#E2E8F0] rounded-xl">
+                      <span className="text-[#64748B] block font-bold">Difference</span>
                       <span className={`text-sm font-black mt-0.5 block ${
-                        (rule7Ev.difference_mm || 0) >= 0 ? 'text-emerald-400' : 'text-rose-400'
+                        (rule7Ev.difference_mm || 0) >= 0 ? 'text-emerald-700' : 'text-red-700'
                       }`}>
                         {rule7Ev.difference_mm !== null && rule7Ev.difference_mm !== undefined ? `${rule7Ev.difference_mm > 0 ? '+' : ''}${rule7Ev.difference_mm} mm` : 'N/A'}
                       </span>
                     </div>
 
-                    <div className="p-3 bg-slate-950 border border-slate-800 rounded-xl">
-                      <span className="text-slate-400 block font-medium">Scale Calibration</span>
-                      <span className={`text-xs font-bold mt-0.5 block ${rule7Ev.is_scale_reliable ? 'text-emerald-400' : 'text-amber-400'}`}>
+                    <div className="p-3 bg-[#F8F9FA] border border-[#E2E8F0] rounded-xl">
+                      <span className="text-[#64748B] block font-bold">Scale Calibration</span>
+                      <span className={`text-xs font-black mt-0.5 block ${rule7Ev.is_scale_reliable ? 'text-emerald-700' : 'text-amber-700'}`}>
                         {rule7Ev.is_scale_reliable ? '✓ Verified Scale' : '⚠ Scale Unverified'}
                       </span>
                     </div>
                   </div>
 
                   {/* Human Readable Explanation Box */}
-                  <div className="p-4 bg-slate-950 border border-slate-800 rounded-xl text-xs space-y-1">
-                    <span className="font-bold text-slate-300 uppercase tracking-wider block">Statutory Reason & Legal Explanation:</span>
-                    <p className="text-slate-300 leading-relaxed font-mono">
+                  <div className="p-4 bg-[#F8F9FA] border border-[#E2E8F0] rounded-xl text-xs space-y-1">
+                    <span className="font-black text-[#1E293B] uppercase tracking-wider block">Statutory Reason & Legal Explanation:</span>
+                    <p className="text-[#1E293B] leading-relaxed font-mono font-medium">
                       {rule7Ev.reason}
                     </p>
                   </div>
@@ -495,20 +495,20 @@ export default function OfficerReview() {
               {/* TAB 1: Company Profile */}
               {activeTab === 'company' && (
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-                    <h4 className="text-sm font-bold text-white uppercase tracking-wider">Company & LMPC Registration Profile</h4>
+                  <div className="flex items-center justify-between border-b border-[#E2E8F0] pb-3">
+                    <h4 className="text-sm font-black text-[#1E293B] uppercase tracking-wider">Company & LMPC Registration Profile</h4>
                     <ProvenanceBadge provenance={inspection.company_profile?.provenance} />
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
-                    <div className="p-3.5 bg-slate-950 border border-slate-800 rounded-xl">
-                      <span className="text-slate-400 block font-medium">Declared Manufacturer / Packer</span>
-                      <span className="text-sm font-bold text-white mt-1 block">{inspection.company_profile?.company_name || inspection.product_name}</span>
+                    <div className="p-3.5 bg-[#F8F9FA] border border-[#E2E8F0] rounded-xl">
+                      <span className="text-[#64748B] block font-bold">Declared Manufacturer / Packer</span>
+                      <span className="text-sm font-black text-[#1E293B] mt-1 block">{inspection.company_profile?.company_name || inspection.product_name}</span>
                     </div>
 
-                    <div className="p-3.5 bg-slate-950 border border-slate-800 rounded-xl">
-                      <span className="text-slate-400 block font-medium">LMPC Certificate Registration</span>
-                      <span className="text-sm font-bold text-blue-400 mt-1 block font-mono">
+                    <div className="p-3.5 bg-[#F8F9FA] border border-[#E2E8F0] rounded-xl">
+                      <span className="text-[#64748B] block font-bold">LMPC Certificate Registration</span>
+                      <span className="text-sm font-black text-red-700 mt-1 block font-mono">
                         {inspection.company_profile?.lmpc_cert_number}
                       </span>
                     </div>
@@ -519,20 +519,20 @@ export default function OfficerReview() {
               {/* TAB 2: Technical Product Matrix */}
               {activeTab === 'technical' && (
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-                    <h4 className="text-sm font-bold text-white uppercase tracking-wider">Technical Product Matrix & Schedule II Check</h4>
+                  <div className="flex items-center justify-between border-b border-[#E2E8F0] pb-3">
+                    <h4 className="text-sm font-black text-[#1E293B] uppercase tracking-wider">Technical Product Matrix & Schedule II Check</h4>
                     <ProvenanceBadge provenance={inspection.technical_matrix?.provenance} />
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
-                    <div className="p-3.5 bg-slate-950 border border-slate-800 rounded-xl">
-                      <span className="text-slate-400 block font-medium">Generic Name of Commodity</span>
-                      <span className="text-sm font-bold text-white mt-1 block">{inspection.technical_matrix?.generic_name || inspection.product_name}</span>
+                    <div className="p-3.5 bg-[#F8F9FA] border border-[#E2E8F0] rounded-xl">
+                      <span className="text-[#64748B] block font-bold">Generic Name of Commodity</span>
+                      <span className="text-sm font-black text-[#1E293B] mt-1 block">{inspection.technical_matrix?.generic_name || inspection.product_name}</span>
                     </div>
 
-                    <div className="p-3.5 bg-slate-950 border border-slate-800 rounded-xl">
-                      <span className="text-slate-400 block font-medium">Physical State & Material</span>
-                      <span className="text-sm font-bold text-white mt-1 block">
+                    <div className="p-3.5 bg-[#F8F9FA] border border-[#E2E8F0] rounded-xl">
+                      <span className="text-[#64748B] block font-bold">Physical State & Material</span>
+                      <span className="text-sm font-black text-[#1E293B] mt-1 block">
                         {inspection.technical_matrix?.physical_state} • {inspection.technical_matrix?.package_material}
                       </span>
                     </div>
@@ -543,22 +543,22 @@ export default function OfficerReview() {
               {/* TAB 3: Quantity & MPE */}
               {activeTab === 'mpe' && (
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-                    <h4 className="text-sm font-bold text-white uppercase tracking-wider">Quantity Verification & First Schedule MPE</h4>
+                  <div className="flex items-center justify-between border-b border-[#E2E8F0] pb-3">
+                    <h4 className="text-sm font-black text-[#1E293B] uppercase tracking-wider">Quantity Verification & First Schedule MPE</h4>
                     <ProvenanceBadge provenance={inspection.quantity_mpe?.provenance} />
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
-                    <div className="p-3.5 bg-slate-950 border border-slate-800 rounded-xl">
-                      <span className="text-slate-400 block font-medium">First Schedule Statutory MPE</span>
-                      <span className="text-sm font-bold text-emerald-400 mt-1 block font-mono">
+                    <div className="p-3.5 bg-[#F8F9FA] border border-[#E2E8F0] rounded-xl">
+                      <span className="text-[#64748B] block font-bold">First Schedule Statutory MPE</span>
+                      <span className="text-sm font-black text-emerald-700 mt-1 block font-mono">
                         Tolerance: {inspection.quantity_mpe?.mpe_display}
                       </span>
                     </div>
 
-                    <div className="p-3.5 bg-slate-950 border border-slate-800 rounded-xl">
-                      <span className="text-slate-400 block font-medium">Scale Equipment & Cert Expiry</span>
-                      <span className="text-sm font-bold text-white mt-1 block">
+                    <div className="p-3.5 bg-[#F8F9FA] border border-[#E2E8F0] rounded-xl">
+                      <span className="text-[#64748B] block font-bold">Scale Equipment & Cert Expiry</span>
+                      <span className="text-sm font-black text-[#1E293B] mt-1 block">
                         {inspection.quantity_mpe?.equipment_cert_number} (Valid till {inspection.quantity_mpe?.equipment_cert_expiry})
                       </span>
                     </div>
@@ -569,25 +569,25 @@ export default function OfficerReview() {
               {/* TAB 4: Customer Care */}
               {activeTab === 'customercare' && (
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-                    <h4 className="text-sm font-bold text-white uppercase tracking-wider">Customer Care Framework Declarations</h4>
+                  <div className="flex items-center justify-between border-b border-[#E2E8F0] pb-3">
+                    <h4 className="text-sm font-black text-[#1E293B] uppercase tracking-wider">Customer Care Framework Declarations</h4>
                     <ProvenanceBadge provenance={inspection.customer_care?.provenance} />
                   </div>
 
                   <div className="space-y-3 text-xs">
-                    <div className="p-3 bg-slate-950 border border-slate-800 rounded-xl flex items-center justify-between">
-                      <span className="text-slate-400 font-medium">Designated Contact Role</span>
-                      <span className="font-bold text-white">{inspection.customer_care?.designated_name_role}</span>
+                    <div className="p-3 bg-[#F8F9FA] border border-[#E2E8F0] rounded-xl flex items-center justify-between">
+                      <span className="text-[#64748B] font-bold">Designated Contact Role</span>
+                      <span className="font-black text-[#1E293B]">{inspection.customer_care?.designated_name_role}</span>
                     </div>
 
-                    <div className="p-3 bg-slate-950 border border-slate-800 rounded-xl flex items-center justify-between">
-                      <span className="text-slate-400 font-medium">Monitored Email ID</span>
-                      <span className="font-bold text-blue-400 font-mono">{inspection.customer_care?.email}</span>
+                    <div className="p-3 bg-[#F8F9FA] border border-[#E2E8F0] rounded-xl flex items-center justify-between">
+                      <span className="text-[#64748B] font-bold">Monitored Email ID</span>
+                      <span className="font-black text-red-700 font-mono">{inspection.customer_care?.email}</span>
                     </div>
 
-                    <div className="p-3 bg-slate-950 border border-slate-800 rounded-xl flex items-center justify-between">
-                      <span className="text-slate-400 font-medium">Toll-Free Helpline Number</span>
-                      <span className="font-bold text-white font-mono">{inspection.customer_care?.phone}</span>
+                    <div className="p-3 bg-[#F8F9FA] border border-[#E2E8F0] rounded-xl flex items-center justify-between">
+                      <span className="text-[#64748B] font-bold">Toll-Free Helpline Number</span>
+                      <span className="font-black text-[#1E293B] font-mono">{inspection.customer_care?.phone}</span>
                     </div>
                   </div>
                 </div>
@@ -597,15 +597,15 @@ export default function OfficerReview() {
           </div>
 
           {/* Senior Officer Decision Sign-Off Gate Form */}
-          <form onSubmit={handleSignOff} className="bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-xl space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-              <h3 className="text-sm font-extrabold text-white flex items-center space-x-2">
-                <ShieldCheck className="w-4 h-4 text-blue-400" />
+          <form onSubmit={handleSignOff} className="bg-white border border-[#E2E8F0] p-6 rounded-2xl shadow-sm space-y-4">
+            <div className="flex items-center justify-between border-b border-[#E2E8F0] pb-3">
+              <h3 className="text-sm font-black text-[#1E293B] flex items-center space-x-2">
+                <ShieldCheck className="w-4 h-4 text-red-600" />
                 <span>Senior Officer Sign-Off & Attestation Gate</span>
               </h3>
               {signedOff && (
-                <span className="px-3 py-1 bg-emerald-950 text-emerald-400 text-xs font-bold rounded-full border border-emerald-800 flex items-center space-x-1">
-                  <CheckCircle2 className="w-3.5 h-3.5" />
+                <span className="px-3 py-1 bg-emerald-50 text-emerald-800 text-xs font-black rounded-full border border-emerald-300 flex items-center space-x-1">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
                   <span>Attested & Signed Off</span>
                 </span>
               )}
@@ -615,10 +615,10 @@ export default function OfficerReview() {
               <button
                 type="button"
                 onClick={() => setOfficerDecision('7A COMPLIANT')}
-                className={`py-3 px-3 text-xs font-bold rounded-xl transition border flex items-center justify-center space-x-1.5 ${
+                className={`py-3 px-3 text-xs font-black rounded-xl transition border flex items-center justify-center space-x-1.5 ${
                   officerDecision === '7A COMPLIANT'
-                    ? 'bg-emerald-600 border-emerald-500 text-white shadow-lg shadow-emerald-600/30'
-                    : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white'
+                    ? 'bg-emerald-600 border-emerald-700 text-white shadow-md'
+                    : 'bg-[#F8F9FA] border-[#E2E8F0] text-[#64748B] hover:text-[#1E293B]'
                 }`}
               >
                 <CheckCircle2 className="w-4 h-4" />
@@ -628,10 +628,10 @@ export default function OfficerReview() {
               <button
                 type="button"
                 onClick={() => setOfficerDecision('NEEDS OFFICER VERIFICATION')}
-                className={`py-3 px-3 text-xs font-bold rounded-xl transition border flex items-center justify-center space-x-1.5 ${
+                className={`py-3 px-3 text-xs font-black rounded-xl transition border flex items-center justify-center space-x-1.5 ${
                   officerDecision === 'NEEDS OFFICER VERIFICATION'
-                    ? 'bg-amber-600 border-amber-500 text-white shadow-lg shadow-amber-600/30'
-                    : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white'
+                    ? 'bg-amber-600 border-amber-700 text-white shadow-md'
+                    : 'bg-[#F8F9FA] border-[#E2E8F0] text-[#64748B] hover:text-[#1E293B]'
                 }`}
               >
                 <HelpCircle className="w-4 h-4" />
@@ -641,10 +641,10 @@ export default function OfficerReview() {
               <button
                 type="button"
                 onClick={() => setOfficerDecision('7B VIOLATION')}
-                className={`py-3 px-4 text-xs font-bold rounded-xl transition border flex items-center justify-center space-x-1.5 ${
+                className={`py-3 px-4 text-xs font-black rounded-xl transition border flex items-center justify-center space-x-1.5 ${
                   officerDecision === '7B VIOLATION'
-                    ? 'bg-rose-600 border-rose-500 text-white shadow-lg shadow-rose-600/30'
-                    : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white'
+                    ? 'bg-red-600 border-red-700 text-white shadow-md'
+                    : 'bg-[#F8F9FA] border-[#E2E8F0] text-[#64748B] hover:text-[#1E293B]'
                 }`}
               >
                 <XCircle className="w-4 h-4" />
@@ -653,21 +653,21 @@ export default function OfficerReview() {
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">
+              <label className="block text-xs font-black text-[#1E293B] uppercase tracking-wider mb-2">
                 Officer Statutory Findings & Audit Comments
               </label>
               <textarea
                 rows={3}
                 value={comments}
                 onChange={(e) => setComments(e.target.value)}
-                className="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full p-3 bg-[#F8F9FA] border border-[#E2E8F0] rounded-xl text-xs text-[#1E293B] font-medium focus:outline-none focus:border-red-600"
               />
             </div>
 
             <button
               type="submit"
               disabled={signedOff}
-              className="w-full py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-extrabold text-xs rounded-xl transition shadow-xl flex items-center justify-center space-x-2"
+              className="w-full py-3.5 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-extrabold text-xs rounded-xl transition shadow-md flex items-center justify-center space-x-2"
             >
               <span>ATTEST & SUBMIT FORMAL COMPLIANCE SIGN-OFF</span>
             </button>

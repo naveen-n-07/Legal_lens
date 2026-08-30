@@ -62,39 +62,39 @@ export default function AuditHistory() {
   };
 
   return (
-    <div className="p-8 space-y-8">
+    <div className="p-8 space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-extrabold text-white tracking-wide">
-            Inspection Audit History
+          <h1 className="text-2xl font-black text-[#1E293B] tracking-tight">
+            National Inspection Audit Registry
           </h1>
-          <p className="text-xs text-slate-400 mt-1">
-            Data-dense table view of statutory audits under the Legal Metrology Act, 2009
+          <p className="text-xs text-[#64748B] font-semibold mt-0.5">
+            Data-dense enforcement audit log under the Legal Metrology (Packaged Commodities) Rules, 2011
           </p>
         </div>
       </div>
 
       {/* Filter & Search Controls */}
-      <div className="p-4 bg-navy-800 border border-slate-700 rounded-xl flex flex-col sm:flex-row items-center justify-between gap-4 shadow">
+      <div className="p-4 bg-white border border-[#E2E8F0] rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4 shadow-[0_4px_6px_-1px_rgba(0,0,0,0.05)]">
         <div className="relative w-full sm:w-80">
-          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
+          <Search className="w-4 h-4 text-[#64748B] absolute left-3 top-3" />
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search by ID, product, location..."
-            className="w-full pl-9 pr-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-xs text-white focus:outline-none focus:border-gov-blue"
+            placeholder="Search by ID, commodity, location..."
+            className="w-full pl-9 pr-4 py-2 bg-[#F8F9FA] border border-[#E2E8F0] rounded-xl text-xs text-[#1E293B] font-medium focus:outline-none focus:border-red-600"
           />
         </div>
 
         <div className="flex items-center space-x-2 w-full sm:w-auto">
-          <Filter className="w-4 h-4 text-slate-400" />
+          <Filter className="w-4 h-4 text-[#64748B]" />
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-xs text-white focus:outline-none focus:border-gov-blue"
+            className="px-3 py-2 bg-[#F8F9FA] border border-[#E2E8F0] rounded-xl text-xs text-[#1E293B] font-bold focus:outline-none focus:border-red-600"
           >
-            <option value="ALL">All Statuses</option>
+            <option value="ALL">All Statutory Statuses</option>
             <option value="7A">7A Compliant</option>
             <option value="7B">7B Violation</option>
             <option value="PENDING">Pending Review</option>
@@ -103,10 +103,10 @@ export default function AuditHistory() {
       </div>
 
       {/* Widescreen Data Table */}
-      <div className="bg-navy-800 border border-slate-700 rounded-xl overflow-hidden shadow-lg">
+      <div className="bg-white border border-[#E2E8F0] rounded-2xl overflow-hidden shadow-[0_4px_6px_-1px_rgba(0,0,0,0.05)]">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="bg-slate-900/90 text-slate-400 uppercase font-bold border-b border-slate-700">
+            <thead className="bg-[#F8F9FA] text-[#64748B] uppercase font-black border-b border-[#E2E8F0]">
               <tr>
                 <th className="p-4">Inspection ID</th>
                 <th className="p-4">Product Commodity</th>
@@ -117,28 +117,28 @@ export default function AuditHistory() {
                 <th className="p-4 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-700/60 text-slate-200">
+            <tbody className="divide-y divide-[#E2E8F0] text-[#1E293B]">
               {filteredInspections.map((item) => (
-                <tr key={item.id} className="hover:bg-slate-700/40 transition">
-                  <td className="p-4 font-extrabold text-gov-blue">{item.id}</td>
-                  <td className="p-4 font-bold text-white">{item.product_name}</td>
-                  <td className="p-4 text-slate-300">{item.category}</td>
-                  <td className="p-4 text-slate-400">{item.location}</td>
-                  <td className="p-4 text-slate-300">{item.inspector_name}</td>
+                <tr key={item.id} className="hover:bg-slate-50 transition">
+                  <td className="p-4 font-black font-mono text-red-700">{item.id}</td>
+                  <td className="p-4 font-black text-[#1E293B]">{item.product_name}</td>
+                  <td className="p-4 text-[#64748B] font-semibold">{item.category}</td>
+                  <td className="p-4 text-[#64748B] font-medium">{item.location}</td>
+                  <td className="p-4 text-[#1E293B] font-bold">{item.inspector_name}</td>
                   <td className="p-4">
                     <StatusBadge status={item.overall_status} />
                   </td>
                   <td className="p-4 text-right space-x-2">
                     <button
                       onClick={() => navigate('/officer/review', { state: { inspection: item } })}
-                      className="px-3 py-1.5 bg-gov-blue hover:bg-blue-600 text-white rounded font-bold text-xs transition"
+                      className="px-3 py-1.5 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white rounded-lg font-black text-xs transition shadow-sm"
                     >
                       Audit View
                     </button>
                     <button
                       onClick={() => handleDownloadPDF(item.id)}
                       title="Download PDF"
-                      className="p-1.5 bg-slate-700 hover:bg-slate-600 text-slate-200 rounded transition"
+                      className="p-1.5 bg-[#F1F5F9] hover:bg-slate-200 text-[#334155] rounded-lg transition border border-[#E2E8F0]"
                     >
                       <Download className="w-3.5 h-3.5" />
                     </button>

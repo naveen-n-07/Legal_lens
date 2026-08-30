@@ -6,8 +6,8 @@ export default function ProvenanceBadge({ provenance }) {
 
   if (prov === 'AUTO_EXTRACTED_VERIFIED') {
     return (
-      <span className="inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-950/80 text-emerald-400 border border-emerald-500/30">
-        <CheckCircle2 className="w-3 h-3" />
+      <span className="inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-full text-[10px] font-black bg-emerald-50 text-emerald-900 border border-emerald-300">
+        <CheckCircle2 className="w-3 h-3 text-emerald-700" />
         <span>Auto-Extracted (Verified)</span>
       </span>
     );
@@ -15,8 +15,8 @@ export default function ProvenanceBadge({ provenance }) {
 
   if (prov === 'MANUALLY_ENTERED') {
     return (
-      <span className="inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-950/80 text-blue-400 border border-blue-500/30">
-        <UserCheck className="w-3 h-3" />
+      <span className="inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-full text-[10px] font-black bg-blue-50 text-blue-900 border border-blue-300">
+        <UserCheck className="w-3 h-3 text-blue-700" />
         <span>Manually Entered</span>
       </span>
     );
@@ -24,16 +24,16 @@ export default function ProvenanceBadge({ provenance }) {
 
   if (prov === 'NOT_PROVIDED_FLAGGED') {
     return (
-      <span className="inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-950/80 text-rose-400 border border-rose-500/30">
-        <AlertTriangle className="w-3 h-3" />
+      <span className="inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-full text-[10px] font-black bg-red-50 text-red-900 border border-red-300">
+        <AlertTriangle className="w-3 h-3 text-red-700" />
         <span>Not Provided (Flagged)</span>
       </span>
     );
   }
 
   return (
-    <span className="inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-950/80 text-amber-400 border border-amber-500/30">
-      <HelpCircle className="w-3 h-3" />
+    <span className="inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-full text-[10px] font-black bg-amber-50 text-amber-900 border border-amber-300">
+      <HelpCircle className="w-3 h-3 text-amber-700" />
       <span>Unverified (Requires Sign-off)</span>
     </span>
   );

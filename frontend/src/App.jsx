@@ -53,13 +53,13 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-100 flex flex-col font-sans">
+    <div className="min-h-screen bg-[#F8F9FA] flex flex-col font-sans">
       <Navbar user={user} onLogout={handleLogout} />
 
       <div className="flex-1 flex overflow-hidden">
         <Sidebar user={user} collapsed={sidebarCollapsed} setCollapsed={setSidebarCollapsed} />
 
-        <main className="flex-1 overflow-y-auto bg-slate-50 flex flex-col justify-between">
+        <main className="flex-1 overflow-y-auto bg-[#F8F9FA] flex flex-col justify-between">
           <div>
             <Routes>
               <Route path="/" element={<Navigate to={getDefaultLandingRoute()} replace />} />
