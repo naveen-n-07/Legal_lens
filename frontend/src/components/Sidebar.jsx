@@ -42,10 +42,10 @@ export default function Sidebar({ user, collapsed, setCollapsed }) {
   }
 
   return (
-    <aside className={`bg-[#F1F5F9] border-r border-[#E2E8F0] shadow-sm transition-all duration-300 flex flex-col ${collapsed ? 'w-20' : 'w-64'}`}>
+    <aside className={`bg-[#F1F5F9] border-r border-[#E2E8F0] shadow-sm transition-all duration-300 flex flex-col ${collapsed ? 'w-20' : 'w-72'}`}>
       
       {/* Navigation Links */}
-      <div className="p-4 flex-1 space-y-1.5">
+      <div className="p-4 flex-1 space-y-2">
         {navItems.map((item) => {
           const Icon = item.icon;
           return (
@@ -53,22 +53,22 @@ export default function Sidebar({ user, collapsed, setCollapsed }) {
               key={item.path}
               to={item.path}
               className={({ isActive }) =>
-                `flex items-center space-x-3 px-3.5 py-3 rounded-xl text-xs font-extrabold transition border ${
+                `flex items-center space-x-3.5 px-4 py-3.5 rounded-xl text-sm font-black transition border ${
                   isActive
-                    ? 'bg-[#FEF2F2] text-[#DC2626] border-[#FCA5A5]/40 shadow-sm'
-                    : 'text-[#334155] border-transparent hover:bg-white hover:text-[#DC2626] hover:border-[#E2E8F0]'
+                    ? 'bg-[#FEF2F2] text-[#DC2626] border-[#FCA5A5]/50 shadow-sm'
+                    : 'text-[#1E293B] border-transparent hover:bg-white hover:text-[#DC2626] hover:border-[#E2E8F0]'
                 }`
               }
             >
-              <Icon className="w-4 h-4 flex-shrink-0" />
+              <Icon className="w-5 h-5 flex-shrink-0" />
               {!collapsed && <span className="truncate">{item.label}</span>}
               {!collapsed && item.badge && (
-                <span className={`ml-auto text-[10px] px-2 py-0.5 rounded-full font-bold border ${
+                <span className={`ml-auto text-xs px-2.5 py-0.5 rounded-full font-black border ${
                   item.badge === 'LIVE' 
-                    ? 'bg-emerald-100 text-emerald-800 border-emerald-300 animate-pulse' 
+                    ? 'bg-emerald-100 text-emerald-900 border-emerald-300 animate-pulse' 
                     : item.badge === 'ADMIN'
-                      ? 'bg-purple-100 text-purple-800 border-purple-300'
-                      : 'bg-amber-100 text-amber-800 border-amber-300'
+                      ? 'bg-purple-100 text-purple-900 border-purple-300'
+                      : 'bg-amber-100 text-amber-900 border-amber-300'
                 }`}>
                   {item.badge}
                 </span>
@@ -80,12 +80,12 @@ export default function Sidebar({ user, collapsed, setCollapsed }) {
 
       {/* Official Role Indicator Card */}
       {!collapsed && (
-        <div className="p-4 m-3 bg-white rounded-xl border border-[#E2E8F0] text-xs space-y-1 shadow-sm">
-          <div className="flex items-center space-x-2 font-black text-[#DC2626]">
+        <div className="p-4 m-3 bg-white rounded-xl border border-[#E2E8F0] text-xs space-y-1.5 shadow-sm">
+          <div className="flex items-center space-x-2 font-black text-[#DC2626] text-xs">
             <Gavel className="w-4 h-4 text-[#DC2626]" />
             <span className="uppercase">{role?.replace('_', ' ')} PRIVILEGES</span>
           </div>
-          <p className="text-[#64748B] text-[11px] font-medium leading-relaxed">
+          <p className="text-[#64748B] text-xs font-semibold leading-relaxed">
             {role === 'admin' 
               ? 'Full system access & RBAC user administration active.' 
               : role === 'reviewing_officer' 
