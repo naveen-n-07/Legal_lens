@@ -45,9 +45,7 @@ export default function PackageDetection() {
       const formData = new FormData();
       formData.append('image', selectedFile);
 
-      const response = await api.post('/api/detect-package', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
+      const response = await api.post('/api/detect-package', formData);
 
       if (response.data.success) {
         setDetectionResult(response.data);

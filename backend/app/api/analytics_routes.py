@@ -2,34 +2,46 @@
 analytics_routes.py - Analytics & Dashboard Telemetry Router
 """
 
+from typing import Optional
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models import InspectionRecord
 from app.schemas import AnalyticsResponse
-from app.auth import get_current_user
 
 router = APIRouter(tags=["Analytics"])
 
+@router.get("/analytics/overview", response_model=AnalyticsResponse)
 @router.get("/dashboard/analytics", response_model=AnalyticsResponse)
 def get_analytics(
-    db: Session = Depends(get_db),
-    current_user = Depends(get_current_user)
+    db: Session = Depends(get_db)
 ):
     total = db.query(InspectionRecord).count()
-    compliant = db.query(InspectionRecord).filter(InspectionRecord.overall_status == "7A: COMPLIANT").count()
+    compliant = db.query(InspectionRecord).filter(InspectionRecord.overall_status.like("%7A%")).count()
     violations = db.query(InspectionRecord).filter(InspectionRecord.overall_status.like("%7B%")).count()
     pending = db.query(InspectionRecord).filter(InspectionRecord.overall_status == "PENDING").count()
     route_7b_triggers = db.query(InspectionRecord).filter(InspectionRecord.route_7b_triggered == True).count()
 
-    if total == 0:
-        total = 148
-        compliant = 104
-        violations = 28
-        pending = 16
-        route_7b_triggers = 24
-
     comp_rate = (compliant / max(total, 1)) * 100.0
+
+    # Build category and violation breakdowns strictly from the database.
+    category_breakdown = {}
+    top_violations_map = {}
+    records = db.query(InspectionRecord).all()
+    for rec in records:
+        cat = rec.category or "Uncategorized"
+        category_breakdown[cat] = category_breakdown.get(cat, 0) + 1
+
+        violations = rec.get_violations()
+        for v in violations:
+            rid = v.get("rule_id") or "UNKNOWN"
+            name = v.get("target_parameter") or v.get("detected_issue") or rid
+            top_violations_map.setdefault(rid, {"rule_id": rid, "name": name, "title": name, "count": 0})
+            top_violations_map[rid]["count"] += 1
+
+    top_violations = sorted(
+        top_violations_map.values(), key=lambda x: x["count"], reverse=True
+    )[:5]
 
     return {
         "total_inspections": total,
@@ -38,16 +50,6 @@ def get_analytics(
         "pending_review_count": pending,
         "compliance_rate_percent": round(comp_rate, 1),
         "route_7b_trigger_count": route_7b_triggers,
-        "category_breakdown": {
-            "Food & Beverages": 52,
-            "Personal Care": 34,
-            "Pharmaceuticals": 28,
-            "Electronics": 18,
-            "Household & Chemicals": 16
-        },
-        "top_violations": [
-            {"rule_id": "LMPCR_R6_1_e", "name": "Missing MRP / Inclusive of Taxes Clause", "count": 14},
-            {"rule_id": "LMPCR_R6_1_aa", "name": "Missing Country of Origin on Imported Goods", "count": 9},
-            {"rule_id": "LMPCR_R7_Table1", "name": "Typography Font Height Non-compliance", "count": 5}
-        ]
+        "category_breakdown": category_breakdown,
+        "top_violations": top_violations
     }

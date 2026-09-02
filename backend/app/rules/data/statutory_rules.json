@@ -1,0 +1,278 @@
+[
+  {
+    "rule_id": "LM-PCR-2011-R06-S1-A",
+    "regulation": "Legal Metrology (Packaged Commodities) Rules, 2011",
+    "regulation_section": "Rule 6(1)(a)",
+    "product_category": "ALL",
+    "field_name": "manufacturer",
+    "rule_type": "MANDATORY_FIELD",
+    "condition": {
+      "operator": "present"
+    },
+    "required": true,
+    "severity": "HIGH",
+    "error_message": "Name and complete address of the manufacturer, packer or importer is mandatory and was not detected.",
+    "explanation": "Rule 6(1)(a) requires the name and complete address of the manufacturer, packer, or importer to be declared on every pre-packaged commodity.",
+    "version": "2026.1.0",
+    "source_reference": "G.S.R. 202(E) as amended up to G.S.R. 629(E), Ministry of Consumer Affairs",
+    "is_active": true
+  },
+  {
+    "rule_id": "LM-PCR-2011-R06-S1-B",
+    "regulation": "Legal Metrology (Packaged Commodities) Rules, 2011",
+    "regulation_section": "Rule 6(1)(b)",
+    "product_category": "ALL",
+    "field_name": "product_name",
+    "rule_type": "MANDATORY_FIELD",
+    "condition": {
+      "operator": "present"
+    },
+    "required": true,
+    "severity": "HIGH",
+    "error_message": "Common or generic name of the commodity is missing from the package label.",
+    "explanation": "Rule 6(1)(b) mandates that the common or generic name of the commodity contained in the package must be prominently declared.",
+    "version": "2026.1.0",
+    "source_reference": "Rule 6(1)(b) - Legal Metrology (Packaged Commodities) Rules, 2011",
+    "is_active": true
+  },
+  {
+    "rule_id": "LM-PCR-2011-R06-S1-C-QTY",
+    "regulation": "Legal Metrology (Packaged Commodities) Rules, 2011",
+    "regulation_section": "Rule 6(1)(c)",
+    "product_category": "ALL",
+    "field_name": "net_quantity",
+    "rule_type": "MANDATORY_FIELD",
+    "condition": {
+      "operator": "present"
+    },
+    "required": true,
+    "severity": "HIGH",
+    "error_message": "Net quantity declaration is mandatory and was not detected on the package.",
+    "explanation": "Rule 6(1)(c) requires the net quantity in terms of standard unit of weight, measure, or number to be declared.",
+    "version": "2026.1.0",
+    "source_reference": "Rule 6(1)(c) - Legal Metrology (Packaged Commodities) Rules, 2011",
+    "is_active": true
+  },
+  {
+    "rule_id": "LM-PCR-2011-R06-S1-C-UNIT",
+    "regulation": "Legal Metrology (Packaged Commodities) Rules, 2011",
+    "regulation_section": "Rule 6(1)(c)",
+    "product_category": "ALL",
+    "field_name": "unit_of_measurement",
+    "rule_type": "VALUE_CHECK",
+    "condition": {
+      "operator": "one_of",
+      "values": ["g", "kg", "mg", "ml", "l", "ltr", "gm", "gms", "count", "n", "u", "units", "tablets", "capsules", "piece", "pieces"]
+    },
+    "required": true,
+    "severity": "HIGH",
+    "error_message": "Net quantity must be declared using standard metric units (g, kg, ml, L, count, N).",
+    "explanation": "Rule 6(1)(c) and the First Schedule require standard legal units of mass, volume, or number.",
+    "version": "2026.1.0",
+    "source_reference": "Rule 6(1)(c) & First Schedule - Legal Metrology Rules, 2011",
+    "is_active": true
+  },
+  {
+    "rule_id": "LM-PCR-2011-R06-S1-D-MFG",
+    "regulation": "Legal Metrology (Packaged Commodities) Rules, 2011",
+    "regulation_section": "Rule 6(1)(d)",
+    "product_category": "ALL",
+    "field_name": "manufacturing_date",
+    "rule_type": "MANDATORY_FIELD",
+    "condition": {
+      "operator": "present"
+    },
+    "required": true,
+    "severity": "HIGH",
+    "error_message": "Month and year of manufacture, packing, or import is required.",
+    "explanation": "Rule 6(1)(d) mandates declaration of the month and year in which the commodity is manufactured or pre-packed or imported.",
+    "version": "2026.1.0",
+    "source_reference": "Rule 6(1)(d) - Legal Metrology (Packaged Commodities) Rules, 2011",
+    "is_active": true
+  },
+  {
+    "rule_id": "LM-PCR-2011-R06-S1-D-DATECHECK",
+    "regulation": "Legal Metrology (Packaged Commodities) Rules, 2011",
+    "regulation_section": "Rule 6(1)(d)",
+    "product_category": "ALL",
+    "field_name": "manufacturing_date",
+    "rule_type": "DATE_CHECK",
+    "condition": {
+      "operator": "is_past_or_today"
+    },
+    "required": false,
+    "severity": "MEDIUM",
+    "error_message": "Manufacturing/Packing date cannot be in the future beyond standard packing allowance.",
+    "explanation": "Rule 6(1)(d) requires accurate historical or current month/year of manufacture.",
+    "version": "2026.1.0",
+    "source_reference": "Rule 6(1)(d) - Legal Metrology (Packaged Commodities) Rules, 2011",
+    "is_active": true
+  },
+  {
+    "rule_id": "LM-PCR-2011-R06-S1-E-MRP",
+    "regulation": "Legal Metrology (Packaged Commodities) Rules, 2011",
+    "regulation_section": "Rule 6(1)(e)",
+    "product_category": "ALL",
+    "field_name": "mrp",
+    "rule_type": "MANDATORY_FIELD",
+    "condition": {
+      "operator": "present"
+    },
+    "required": true,
+    "severity": "HIGH",
+    "error_message": "Maximum Retail Price (MRP) declaration is mandatory on retail packages.",
+    "explanation": "Rule 6(1)(e) requires retail sale price to be indicated clearly on the package.",
+    "version": "2026.1.0",
+    "source_reference": "Rule 6(1)(e) - Legal Metrology (Packaged Commodities) Rules, 2011",
+    "is_active": true
+  },
+  {
+    "rule_id": "LM-PCR-2011-R06-S1-E-TAX",
+    "regulation": "Legal Metrology (Packaged Commodities) Rules, 2011",
+    "regulation_section": "Rule 6(1)(e)",
+    "product_category": "ALL",
+    "field_name": "mrp_inclusive_tax",
+    "rule_type": "TEXT_CHECK",
+    "condition": {
+      "operator": "contains_any",
+      "values": ["inclusive of all taxes", "incl. of all taxes", "incl of taxes", "incl. of taxes", "inclusive of taxes", "incl taxes", "all taxes included"]
+    },
+    "required": true,
+    "severity": "HIGH",
+    "error_message": "MRP must explicitly indicate that price is 'inclusive of all taxes'.",
+    "explanation": "Rule 6(1)(e) requires the price declaration to state 'Maximum or Max. Retail Price Rs. ... inclusive of all taxes' or 'MRP Rs. ... incl. of all taxes'.",
+    "version": "2026.1.0",
+    "source_reference": "Rule 6(1)(e) - Legal Metrology (Packaged Commodities) Rules, 2011 (G.S.R. 629(E))",
+    "is_active": true
+  },
+  {
+    "rule_id": "LM-PCR-2011-R06-S2-CARE",
+    "regulation": "Legal Metrology (Packaged Commodities) Rules, 2011",
+    "regulation_section": "Rule 6(2)",
+    "product_category": "ALL",
+    "field_name": "consumer_care",
+    "rule_type": "MANDATORY_FIELD",
+    "condition": {
+      "operator": "present"
+    },
+    "required": true,
+    "severity": "HIGH",
+    "error_message": "Consumer Care contact details (helpline telephone, email, or postal address) are mandatory.",
+    "explanation": "Rule 6(2) requires name, address, telephone number, or email address of the consumer care contact cell.",
+    "version": "2026.1.0",
+    "source_reference": "Rule 6(2) - Legal Metrology (Packaged Commodities) Rules, 2011",
+    "is_active": true
+  },
+  {
+    "rule_id": "LM-PCR-2011-R06-S1-BATCH",
+    "regulation": "Legal Metrology (Packaged Commodities) Rules, 2011",
+    "regulation_section": "Rule 6(1)(g)",
+    "product_category": "ALL",
+    "field_name": "batch_number",
+    "rule_type": "MANDATORY_FIELD",
+    "condition": {
+      "operator": "present"
+    },
+    "required": false,
+    "severity": "MEDIUM",
+    "error_message": "Batch or Lot number provides traceability and should be clearly marked.",
+    "explanation": "Rule 6(1)(g) prescribes identification markings such as lot, code, or batch number.",
+    "version": "2026.1.0",
+    "source_reference": "Rule 6(1)(g) - Legal Metrology (Packaged Commodities) Rules, 2011",
+    "is_active": true
+  },
+  {
+    "rule_id": "LM-PCR-2011-R10-USP",
+    "regulation": "Legal Metrology (Packaged Commodities) Rules, 2011",
+    "regulation_section": "Rule 6(1)(k)",
+    "product_category": "ALL",
+    "field_name": "unit_sale_price",
+    "rule_type": "FORMAT_CHECK",
+    "condition": {
+      "operator": "regex",
+      "pattern": "(?:per|\\/)\\s*(?:g|kg|ml|l|piece|n|unit|count)"
+    },
+    "required": false,
+    "severity": "MEDIUM",
+    "error_message": "Unit sale price (USP) should be formatted per standard metric quantity (e.g., Rs. X per g/kg/ml/L).",
+    "explanation": "Rule 6(1)(k) requires unit sale price in Rupees per g/kg/ml/litre/number on retail packages.",
+    "version": "2026.1.0",
+    "source_reference": "Rule 6(1)(k) - Legal Metrology (Packaged Commodities) Rules, 2011 (2021 Amendment)",
+    "is_active": true
+  },
+  {
+    "rule_id": "FSSAI-LDR-2020-R05-S1-ING",
+    "regulation": "Food Safety and Standards (Labelling and Display) Regulations, 2020",
+    "regulation_section": "Regulation 5(1)",
+    "product_category": "Food & Beverages",
+    "field_name": "ingredients",
+    "rule_type": "MANDATORY_FIELD",
+    "condition": {
+      "operator": "present"
+    },
+    "required": true,
+    "severity": "HIGH",
+    "error_message": "List of ingredients is mandatory for all pre-packaged food products.",
+    "explanation": "FSSAI Regulation 5(1) requires complete list of ingredients in descending order of incoming weight or volume.",
+    "version": "2026.1.0",
+    "source_reference": "FSSAI (Labelling and Display) Regulations, 2020, Section 5(1)",
+    "is_active": true
+  },
+  {
+    "rule_id": "FSSAI-LDR-2020-R05-S3-EXP",
+    "regulation": "Food Safety and Standards (Labelling and Display) Regulations, 2020",
+    "regulation_section": "Regulation 5(3)",
+    "product_category": "Food & Beverages",
+    "field_name": "expiry_date",
+    "rule_type": "DATE_CHECK",
+    "condition": {
+      "operator": "date_after_or_equal",
+      "compare_with": "manufacturing_date"
+    },
+    "required": true,
+    "severity": "HIGH",
+    "error_message": "Expiry date / Best Before date must be subsequent to or equal to the manufacturing date.",
+    "explanation": "FSSAI Regulation 5(3) mandates Expiry Date / Best Before Date declaration for perishable packaged foods.",
+    "version": "2026.1.0",
+    "source_reference": "FSSAI (Labelling and Display) Regulations, 2020, Section 5(3)",
+    "is_active": true
+  },
+  {
+    "rule_id": "FSSAI-LDR-2020-R05-S7-LIC",
+    "regulation": "Food Safety and Standards (Labelling and Display) Regulations, 2020",
+    "regulation_section": "Regulation 5(7)",
+    "product_category": "Food & Beverages",
+    "field_name": "fssai_license",
+    "rule_type": "FORMAT_CHECK",
+    "condition": {
+      "operator": "regex",
+      "pattern": "^\\d{14}$"
+    },
+    "required": false,
+    "severity": "HIGH",
+    "error_message": "FSSAI License number must be a valid 14-digit numeric identifier.",
+    "explanation": "FSSAI Regulation 5(7) mandates the 14-digit FSSAI License number alongside the FSSAI logo on all food packages.",
+    "version": "2026.1.0",
+    "source_reference": "FSSAI (Labelling and Display) Regulations, 2020, Section 5(7)",
+    "is_active": true
+  },
+  {
+    "rule_id": "FSSAI-LDR-2020-R05-S8-ALLERGEN",
+    "regulation": "Food Safety and Standards (Labelling and Display) Regulations, 2020",
+    "regulation_section": "Regulation 5(8)",
+    "product_category": "Food & Beverages",
+    "field_name": "allergen_declaration",
+    "rule_type": "TEXT_CHECK",
+    "condition": {
+      "operator": "contains_any",
+      "values": ["contains", "may contain", "allergen", "allergens", "processed in a facility", "gluten", "milk", "soy", "nuts", "wheat", "peanut"]
+    },
+    "required": false,
+    "severity": "MEDIUM",
+    "error_message": "Allergen warning or declaration should be clearly stated when potential allergens exist.",
+    "explanation": "FSSAI Regulation 5(8) requires allergen declarations for specified allergens (cereals containing gluten, crustacea, milk, nuts, etc.).",
+    "version": "2026.1.0",
+    "source_reference": "FSSAI (Labelling and Display) Regulations, 2020, Section 5(8)",
+    "is_active": true
+  }
+]

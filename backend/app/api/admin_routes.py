@@ -2,7 +2,7 @@
 admin_routes.py - System Administration, User Management & Compliance Rule Matrix Gateway
 """
 
-from typing import List, Optional, Dict, Any
+from typing import List, Optional, Dict, Any, Union
 from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException, status  # type: ignore
 from pydantic import BaseModel, EmailStr  # type: ignore
@@ -27,12 +27,28 @@ class UpdateUserRolePayload(BaseModel):
 
 class ComplianceRulePayload(BaseModel):
     rule_id: str
-    rule_category: str
-    statutory_reference: str
-    target_parameter: str
-    compliance_condition: str
-    violation_condition: str
-    is_active: bool = True
+    regulation: Optional[str] = None
+    regulation_section: Optional[str] = None
+    product_category: Optional[str] = "ALL"
+    field_name: Optional[str] = None
+    rule_type: Optional[str] = "MANDATORY_FIELD"
+    condition: Optional[Union[Dict[str, Any], str]] = None
+    required: Optional[bool] = True
+    severity: Optional[str] = "HIGH"
+    error_message: Optional[str] = None
+    explanation: Optional[str] = None
+    effective_from: Optional[str] = None
+    effective_to: Optional[str] = None
+    version: Optional[str] = "1.0.0"
+    source_reference: Optional[str] = None
+    is_active: Optional[bool] = True
+
+    # Legacy fields
+    rule_category: Optional[str] = None
+    statutory_reference: Optional[str] = None
+    target_parameter: Optional[str] = None
+    compliance_condition: Optional[str] = None
+    violation_condition: Optional[str] = None
 
 @router.get("/users")
 def list_all_users(db: Session = Depends(get_db), current_admin: User = Depends(require_admin)):
@@ -113,54 +129,93 @@ def update_user_role(user_id: str, payload: UpdateUserRolePayload, db: Session =
     return {"success": True, "user_id": user_id, "old_role": old_role, "new_role": payload.role}
 
 @router.get("/rules")
-def list_compliance_rules(db: Session = Depends(get_db), current_admin: User = Depends(require_admin)):
+def list_compliance_rules(
+    category: Optional[str] = None,
+    regulation: Optional[str] = None,
+    db: Session = Depends(get_db),
+    current_admin: User = Depends(require_admin)
+):
     """
-    Admin Only: List all 34 Statutory Legal Metrology Rules and Schedules.
+    Admin Only: List all Statutory Legal Metrology Rules and dynamic compliance rules.
     """
-    rules = db.query(ComplianceRuleDB).all()
-    return [
-        {
-            "rule_id": r.rule_id,
-            "rule_category": r.rule_category,
-            "statutory_reference": r.statutory_reference,
-            "target_parameter": r.target_parameter,
-            "compliance_condition": r.compliance_condition,
-            "violation_condition": r.violation_condition,
-            "is_active": r.is_active
-        }
-        for r in rules
-    ]
+    from app.rules.repository import RuleRepository
+    rules = RuleRepository.list_rules(category=category, regulation=regulation, db=db)
+    return [r.to_dict() for r in rules]
 
 @router.post("/rules")
-def upsert_compliance_rule(payload: ComplianceRulePayload, db: Session = Depends(get_db), current_admin: User = Depends(require_admin)):
+def upsert_compliance_rule(
+    payload: ComplianceRulePayload,
+    db: Session = Depends(get_db),
+    current_admin: User = Depends(require_admin)
+):
     """
-    Admin Only: Add or update a Legal Metrology Compliance Rule.
+    Admin Only: Add or update a dynamic Statutory Compliance Rule with strict schema validation.
     """
-    existing = db.query(ComplianceRuleDB).filter(ComplianceRuleDB.rule_id == payload.rule_id).first()
-    if existing:
-        existing.rule_category = payload.rule_category
-        existing.statutory_reference = payload.statutory_reference
-        existing.target_parameter = payload.target_parameter
-        existing.compliance_condition = payload.compliance_condition
-        existing.violation_condition = payload.violation_condition
-        existing.is_active = payload.is_active
-        action_name = "UPDATE_RULE"
-    else:
-        new_rule = ComplianceRuleDB(
-            rule_id=payload.rule_id,
-            rule_category=payload.rule_category,
-            statutory_reference=payload.statutory_reference,
-            target_parameter=payload.target_parameter,
-            compliance_condition=payload.compliance_condition,
-            violation_condition=payload.violation_condition,
-            is_active=payload.is_active
-        )
-        db.add(new_rule)
-        action_name = "CREATE_RULE"
+    from app.rules.repository import RuleRepository
+    from app.rules.normalization import DataNormalizer
 
-    db.commit()
-    log_audit_action(db, current_admin, action_name, resource_id=payload.rule_id, details=f"Admin modified compliance rule '{payload.rule_id}'.")
-    return {"success": True, "rule_id": payload.rule_id, "action": action_name}
+    rule_dict = payload.model_dump()
+    # Normalize dates if strings
+    if rule_dict.get("effective_from"):
+        rule_dict["effective_from"] = DataNormalizer.parse_date_to_object(rule_dict["effective_from"])
+    if rule_dict.get("effective_to"):
+        rule_dict["effective_to"] = DataNormalizer.parse_date_to_object(rule_dict["effective_to"])
+
+    existing = RuleRepository.get_rule_by_id(payload.rule_id, db=db)
+    if existing:
+        updated = RuleRepository.update_rule(payload.rule_id, rule_dict, db=db)
+        log_audit_action(db, current_admin, "UPDATE_RULE", resource_id=payload.rule_id, details=f"Admin updated compliance rule '{payload.rule_id}'.")
+        return {"success": True, "rule": updated.to_dict(), "action": "UPDATE_RULE"}
+    else:
+        try:
+            created = RuleRepository.create_rule(rule_dict, db=db)
+            log_audit_action(db, current_admin, "CREATE_RULE", resource_id=payload.rule_id, details=f"Admin created compliance rule '{payload.rule_id}'.")
+            return {"success": True, "rule": created.to_dict(), "action": "CREATE_RULE"}
+        except ValueError as ve:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(ve))
+
+@router.put("/rules/{rule_id}")
+def update_compliance_rule(
+    rule_id: str,
+    payload: ComplianceRulePayload,
+    db: Session = Depends(get_db),
+    current_admin: User = Depends(require_admin)
+):
+    """
+    Admin Only: Update specific compliance rule by rule_id.
+    """
+    from app.rules.repository import RuleRepository
+    from app.rules.normalization import DataNormalizer
+
+    rule_dict = payload.model_dump()
+    if rule_dict.get("effective_from"):
+        rule_dict["effective_from"] = DataNormalizer.parse_date_to_object(rule_dict["effective_from"])
+    if rule_dict.get("effective_to"):
+        rule_dict["effective_to"] = DataNormalizer.parse_date_to_object(rule_dict["effective_to"])
+
+    updated = RuleRepository.update_rule(rule_id, rule_dict, db=db)
+    if not updated:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Rule '{rule_id}' not found.")
+
+    log_audit_action(db, current_admin, "UPDATE_RULE", resource_id=rule_id, details=f"Admin updated compliance rule '{rule_id}'.")
+    return {"success": True, "rule": updated.to_dict()}
+
+@router.delete("/rules/{rule_id}")
+def delete_compliance_rule(
+    rule_id: str,
+    db: Session = Depends(get_db),
+    current_admin: User = Depends(require_admin)
+):
+    """
+    Admin Only: Delete a compliance rule from the database.
+    """
+    from app.rules.repository import RuleRepository
+    deleted = RuleRepository.delete_rule(rule_id, db=db)
+    if not deleted:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Rule '{rule_id}' not found.")
+
+    log_audit_action(db, current_admin, "DELETE_RULE", resource_id=rule_id, details=f"Admin deleted compliance rule '{rule_id}'.")
+    return {"success": True, "message": f"Rule '{rule_id}' deleted successfully."}
 
 @router.get("/audit-logs")
 def get_global_audit_logs(db: Session = Depends(get_db), current_admin: User = Depends(require_admin)):

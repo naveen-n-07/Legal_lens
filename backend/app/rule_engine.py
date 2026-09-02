@@ -673,9 +673,9 @@ class RuleEngine:
 
         quantity_mpe = {
             "first_schedule_mpe": RuleEngine.get_first_schedule_mpe(qty_num if qty_unit in ["g", "ml"] else qty_num * 1000.0) if net_qty else None,
-            "equipment_make_model": "Certified Precision Scale",
-            "equipment_cert_number": "VER-SCALE-REAL",
-            "equipment_cert_expiry": "2027-12-31",
+            "equipment_make_model": "NOT DETECTED",
+            "equipment_cert_number": "NOT DETECTED",
+            "equipment_cert_expiry": "NOT DETECTED",
             "provenance": "MANUALLY_ENTERED"
         }
 

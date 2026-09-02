@@ -128,8 +128,8 @@ export default function AuditHistory() {
                     </td>
                     <td className="p-4 text-right space-x-2">
                       <button
-                        onClick={() => navigate('/officer/review', { state: { inspection: item } })}
-                        className="px-4 py-2 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white rounded-lg font-black text-xs transition shadow-sm"
+                        onClick={() => navigate('/officer/review', { state: { inspection: item, inspectionId: item.id } })}
+                        className="px-4 py-2 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white rounded-lg font-black text-xs transition shadow-sm cursor-pointer"
                       >
                         Audit View
                       </button>

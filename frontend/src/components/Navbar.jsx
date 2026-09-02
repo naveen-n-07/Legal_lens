@@ -77,7 +77,7 @@ export default function Navbar({ user, onLogout }) {
                 INDIA.GOV.IN INSP
               </span>
             </div>
-            <p className="text-xs text-slate-600 font-bold mt-1">
+            <p className="text-sm text-slate-600 font-bold mt-1">
               Packaged Commodities Rules (PCR), 2011 Compliance System
             </p>
           </div>
@@ -88,7 +88,7 @@ export default function Navbar({ user, onLogout }) {
           <select 
             value={searchCategory}
             onChange={(e) => setSearchCategory(e.target.value)}
-            className="bg-white text-slate-800 text-xs font-extrabold px-3.5 py-2.5 rounded-lg border border-slate-200 focus:outline-none cursor-pointer"
+            className="bg-white text-slate-800 text-sm font-extrabold px-3.5 py-2.5 rounded-lg border border-slate-200 focus:outline-none cursor-pointer"
           >
             <option value="all">All Categories</option>
             <option value="rules">Statutory Rules (1-34)</option>
@@ -106,7 +106,7 @@ export default function Navbar({ user, onLogout }) {
 
           <button
             type="submit"
-            className="px-5 py-2.5 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-black text-xs rounded-lg transition shadow-md flex items-center space-x-1.5 flex-shrink-0"
+            className="px-5 py-2.5 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-black text-sm rounded-lg transition shadow-md flex items-center space-x-1.5 flex-shrink-0"
           >
             <Search className="w-4 h-4" />
             <span>SEARCH</span>

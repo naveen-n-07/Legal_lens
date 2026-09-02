@@ -4,7 +4,7 @@ schemas.py - Pydantic Request/Response Payload Validation Schemas
 
 from typing import List, Optional, Any, Dict
 from datetime import datetime
-from pydantic import BaseModel, EmailStr  # type: ignore
+from pydantic import BaseModel, EmailStr, ConfigDict  # type: ignore
 
 class Token(BaseModel):
     access_token: str
@@ -26,8 +26,7 @@ class UserResponse(BaseModel):
     zone_office: str
     role: str
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 class InspectionCreatePayload(BaseModel):
     product_name: str
@@ -87,8 +86,7 @@ class InspectionResponse(BaseModel):
     officer_comments: Optional[str] = None
     created_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 class OfficerVerifyRequest(BaseModel):
     inspection_id: str

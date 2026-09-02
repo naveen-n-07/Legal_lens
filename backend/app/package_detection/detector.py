@@ -11,7 +11,8 @@ from app.config import settings
 
 CONFIDENCE_THRESHOLD = float(os.getenv("CONFIDENCE_THRESHOLD", "0.50"))
 YOLO_MODEL_PATH = os.getenv("YOLO_MODEL_PATH", "yolov8n.pt")
-RESULTS_DIR = r"c:\SIH\backend\results"
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+RESULTS_DIR = os.path.join(BASE_DIR, "results")
 
 os.makedirs(RESULTS_DIR, exist_ok=True)
 
@@ -93,14 +94,6 @@ class PackageDetector:
                 raw_detections.append({
                     "x1": top_box[0], "y1": top_box[1], "x2": top_box[2], "y2": top_box[3],
                     "conf": 0.94
-                })
-            else:
-                # Synthetic central detection box for standard test image
-                margin_x = int(w * 0.1)
-                margin_y = int(h * 0.1)
-                raw_detections.append({
-                    "x1": margin_x, "y1": margin_y, "x2": w - margin_x, "y2": h - margin_y,
-                    "conf": 0.96
                 })
 
         if not raw_detections:

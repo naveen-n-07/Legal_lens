@@ -271,18 +271,26 @@ export default function InspectorDashboard({ user }) {
                       <span className="font-black text-[#1E293B] block">{item.product_name}</span>
                       <span className="text-xs text-[#64748B] font-semibold block">{item.category}</span>
                     </td>
-                    <td className="p-3.5 text-xs font-bold text-[#64748B] whitespace-nowrap">{item.date_time}</td>
+                    <td className="p-3.5 text-xs font-bold text-[#64748B] whitespace-nowrap">
+                      {item.date_time || (item.created_at ? new Date(item.created_at).toLocaleDateString() : 'Recent')}
+                    </td>
                     <td className="p-3.5 text-xs font-semibold text-[#1E293B]">{item.location}</td>
                     <td className="p-3.5">
-                      <StatusBadge status={item.status} />
+                      <StatusBadge status={item.status || item.overall_status} />
                     </td>
-                    <td className="p-3.5 text-right">
+                    <td className="p-3.5 text-right space-x-2">
                       <button
                         onClick={() => setSelectedEvidence(item)}
-                        className="px-3.5 py-1.5 bg-[#F1F5F9] hover:bg-slate-200 text-[#1E293B] font-black text-xs rounded-lg transition border border-[#E2E8F0] inline-flex items-center space-x-1"
+                        className="px-3.5 py-1.5 bg-[#F1F5F9] hover:bg-slate-200 text-[#1E293B] font-black text-xs rounded-lg transition border border-[#E2E8F0] inline-flex items-center space-x-1 cursor-pointer"
                       >
                         <Eye className="w-3.5 h-3.5 text-red-600" />
                         <span>OCR View</span>
+                      </button>
+                      <button
+                        onClick={() => navigate('/officer/review', { state: { inspection: item, inspectionId: item.id } })}
+                        className="px-3.5 py-1.5 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-black text-xs rounded-lg transition shadow-sm inline-flex items-center space-x-1 cursor-pointer"
+                      >
+                        <span>Review</span>
                       </button>
                     </td>
                   </tr>
@@ -415,10 +423,11 @@ export default function InspectorDashboard({ user }) {
 
             <button
               onClick={() => {
+                const target = selectedEvidence;
                 setSelectedEvidence(null);
-                navigate('/officer/review');
+                navigate('/officer/review', { state: { inspection: target, inspectionId: target?.id } });
               }}
-              className="w-full py-3 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-black text-xs rounded-xl transition shadow-md"
+              className="w-full py-3 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-black text-xs rounded-xl transition shadow-md cursor-pointer"
             >
               OPEN FULL 5-SECTION AUDIT WORKSPACE →
             </button>

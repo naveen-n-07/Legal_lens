@@ -4,8 +4,13 @@ train.py - Ultralytics YOLO Package Detection Model Training Script
 
 import os
 
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+WORKSPACE_ROOT = os.path.dirname(BASE_DIR)
+DEFAULT_YAML_PATH = os.path.join(WORKSPACE_ROOT, "dataset", "data.yaml")
+DEFAULT_PROJECT_PATH = os.path.join(BASE_DIR, "models_trained")
+
 def train_yolo_package_model(
-    data_yaml_path: str = r"c:\SIH\dataset\data.yaml",
+    data_yaml_path: str = DEFAULT_YAML_PATH,
     epochs: int = 50,
     img_size: int = 640,
     batch_size: int = 16
@@ -23,7 +28,7 @@ def train_yolo_package_model(
             imgsz=img_size,
             batch=batch_size,
             name="package_detector",
-            project=r"c:\SIH\backend\models_trained"
+            project=DEFAULT_PROJECT_PATH
         )
         print("YOLO Training complete. Trained weights saved to:", results.save_dir)
         return results
