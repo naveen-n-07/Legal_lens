@@ -4,7 +4,7 @@ preprocessing.py - Non-Destructive OpenCV Preprocessing Pipeline for Indian Prod
 
 import cv2  # type: ignore
 import numpy as np  # type: ignore
-from typing import Tuple, Dict, Any, List
+from typing import Tuple, Dict, Any, List, Optional
 
 class OpenCVPreprocessor:
 

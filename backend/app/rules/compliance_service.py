@@ -4,7 +4,7 @@ Coordinates category detection, dynamic rule fetching, RuleEngine evaluation, an
 """
 
 from datetime import datetime, date, timezone
-from typing import Dict, Any, List, Optional, Union
+from typing import Dict, Any, List, Optional, Union, Tuple
 from sqlalchemy.orm import Session  # type: ignore
 
 from app.rules.repository import RuleRepository
@@ -17,7 +17,7 @@ class ComplianceService:
     def identify_product_category(
         declarations: Dict[str, Any],
         user_selected_category: Optional[str] = None
-    ) -> Tuple_Cat:
+    ) -> Tuple[str, bool]:
         """
         Determines the product category. User selection takes top priority.
         If not selected or 'ALL', infers category from detected declarations.

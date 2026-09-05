@@ -5,7 +5,7 @@ Loads and queries versioned statutory rules dynamically from database storage wi
 
 import json
 from datetime import datetime, date, timezone
-from typing import List, Optional, Dict, Any, Union
+from typing import List, Optional, Dict, Any, Union, Tuple
 from sqlalchemy.orm import Session  # type: ignore
 from sqlalchemy import or_, and_  # type: ignore
 
@@ -27,7 +27,7 @@ GENERIC_CATEGORIES = {"ALL", "All Commodities", "Pre-Packaged Commodities", "Gen
 class RuleRepository:
 
     @staticmethod
-    def validate_rule_schema(data: Dict[str, Any]) -> Tuple_Validation:
+    def validate_rule_schema(data: Dict[str, Any]) -> Tuple[bool, str]:
         """
         Validates rule attributes to ensure invalid rule definitions cannot enter the database.
         """
