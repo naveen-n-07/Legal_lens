@@ -52,7 +52,7 @@ export default function Sidebar({ user, collapsed, setCollapsed }) {
     <aside className={`bg-[#F1F5F9] border-r border-[#E2E8F0] shadow-sm transition-all duration-300 flex flex-col ${collapsed ? 'w-20' : 'w-72'}`}>
       
       {/* Navigation Links */}
-      <div className="p-4 flex-1 space-y-2">
+      <div className="p-4 flex-1 space-y-2 overflow-y-auto">
         {navItems.map((item) => {
           const Icon = item.icon;
           return (
@@ -83,24 +83,24 @@ export default function Sidebar({ user, collapsed, setCollapsed }) {
             </NavLink>
           );
         })}
-      </div>
 
-      {/* Official Role Indicator Card */}
-      {!collapsed && (
-        <div className="p-4 m-3 bg-white rounded-xl border border-[#E2E8F0] text-xs space-y-1.5 shadow-sm">
-          <div className="flex items-center space-x-2 font-black text-[#DC2626] text-xs">
-            <Gavel className="w-4 h-4 text-[#DC2626]" />
-            <span className="uppercase">{role?.replace('_', ' ')} PRIVILEGES</span>
+        {/* Official Role Indicator Card */}
+        {!collapsed && (
+          <div className="mt-6 p-4 bg-white rounded-xl border border-[#E2E8F0] text-xs space-y-1.5 shadow-sm">
+            <div className="flex items-center space-x-2 font-black text-[#DC2626] text-xs">
+              <Gavel className="w-4 h-4 text-[#DC2626]" />
+              <span className="uppercase">{role?.replace('_', ' ')} PRIVILEGES</span>
+            </div>
+            <p className="text-[#64748B] text-xs font-semibold leading-relaxed">
+              {role === 'admin' 
+                ? 'Full system access & RBAC user administration active.' 
+                : role === 'reviewing_officer' 
+                  ? 'Senior adjudication & PDF certificate sign-off privileges active.' 
+                  : 'Field scanner & inspection evidence submission active.'}
+            </p>
           </div>
-          <p className="text-[#64748B] text-xs font-semibold leading-relaxed">
-            {role === 'admin' 
-              ? 'Full system access & RBAC user administration active.' 
-              : role === 'reviewing_officer' 
-                ? 'Senior adjudication & PDF certificate sign-off privileges active.' 
-                : 'Field scanner & inspection evidence submission active.'}
-          </p>
-        </div>
-      )}
+        )}
+      </div>
 
       {/* Sidebar Collapse Toggle */}
       <button

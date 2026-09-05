@@ -1,12 +1,48 @@
 import React, { useState } from 'react';
-import { ShieldCheck, Lock, ExternalLink, Cookie } from 'lucide-react';
+import { ShieldCheck, Lock, ExternalLink, Cookie, ChevronDown, ChevronUp } from 'lucide-react';
 
 export default function Footer() {
   const [showCookieBanner, setShowCookieBanner] = useState(true);
+  const [collapsed, setCollapsed] = useState(true);
+
+  if (collapsed) {
+    return (
+      <footer className="bg-slate-900 text-white text-xs border-t-2 border-red-600 px-6 py-2 flex items-center justify-between shadow-inner">
+        <div className="flex items-center space-x-2 text-[11px] text-slate-400 truncate">
+          <span className="font-semibold text-slate-300">
+            SIH 2026 Problem Statement 26034
+          </span>
+          <span>•</span>
+          <span className="hidden md:inline">Department of Consumer Affairs, Ministry of Consumer Affairs, Food & Public Distribution</span>
+        </div>
+        <button 
+          onClick={() => setCollapsed(false)}
+          className="flex items-center space-x-1 text-[11px] text-red-400 hover:text-red-300 font-bold underline cursor-pointer flex-shrink-0"
+        >
+          <span>Expand Portal Footer</span>
+          <ChevronUp className="w-3.5 h-3.5" />
+        </button>
+      </footer>
+    );
+  }
 
   return (
-    <footer className="bg-slate-900 text-white text-xs mt-auto border-t-4 border-red-600">
+    <footer className="bg-slate-900 text-white text-xs border-t-4 border-red-600 relative">
       
+      {/* Footer Collapse Control Bar */}
+      <div className="bg-slate-950 border-b border-slate-800 px-6 py-1.5 flex items-center justify-between">
+        <span className="text-[10px] uppercase font-mono tracking-wider text-slate-400">
+          Statutory Government Directory & Information Guidelines
+        </span>
+        <button 
+          onClick={() => setCollapsed(true)}
+          className="flex items-center space-x-1 text-[10px] bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold px-2.5 py-0.5 rounded border border-slate-700 transition cursor-pointer"
+        >
+          <span>Minimize Footer</span>
+          <ChevronDown className="w-3 h-3" />
+        </button>
+      </div>
+
       {/* 1. Cookie Consent & Data Privacy Banner (India.gov.in Style) */}
       {showCookieBanner && (
         <div className="bg-slate-950 border-b border-slate-800 p-4">
