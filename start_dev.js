@@ -1,9 +1,28 @@
 const { spawn, execSync } = require('child_process');
 const path = require('path');
+const fs = require('fs');
 
 const isWin = process.platform === 'win32';
 const npmCmd = isWin ? 'npm.cmd' : 'npm';
-const pythonCmd = isWin ? 'python' : 'python3';
+
+function getPythonCmd() {
+  const venvWin = path.join(__dirname, 'venv', 'Scripts', 'python.exe');
+  const venvBackendWin = path.join(__dirname, 'backend', 'venv', 'Scripts', 'python.exe');
+  const venvUnix = path.join(__dirname, 'venv', 'bin', 'python');
+  const venvBackendUnix = path.join(__dirname, 'backend', 'venv', 'bin', 'python');
+
+  if (isWin) {
+    if (fs.existsSync(venvWin)) return venvWin;
+    if (fs.existsSync(venvBackendWin)) return venvBackendWin;
+    return 'python';
+  } else {
+    if (fs.existsSync(venvUnix)) return venvUnix;
+    if (fs.existsSync(venvBackendUnix)) return venvBackendUnix;
+    return 'python3';
+  }
+}
+
+const pythonCmd = getPythonCmd();
 
 // Automatically clean up stale zombie processes on ports 8000 and 3000 before starting
 function cleanPorts() {
@@ -31,10 +50,11 @@ function cleanPorts() {
 cleanPorts();
 
 console.log('==================================================================');
-console.log('🚀 METRIX-LM UNIFIED SINGLE-TERMINAL RUNNER');
+console.log('🚀 METRIX-LM UNIFIED SINGLE-COMMAND DEV RUNNER');
 console.log('==================================================================');
-console.log('[BACKEND] Launching FastAPI REST API on http://localhost:8000 ...');
-console.log('[FRONTEND] Launching React Web Application on http://localhost:3000 ...');
+console.log(`[PYTHON EXEC] Using: ${pythonCmd}`);
+console.log('[BACKEND]  FastAPI REST API -> http://localhost:8000');
+console.log('[FRONTEND] React Web Portal -> http://localhost:3000');
 console.log('------------------------------------------------------------------');
 
 // 1. Spawn FastAPI Backend Server with auto-reload
