@@ -31,23 +31,34 @@ class RuleEngine:
                 return val
             return {"value": val, "confidence": 90.0, "bbox": None, "detected": bool(val)}
 
-        # Alias lookup mapping
+        # Alias lookup mapping (bridges Stage 5 OCR extractor keys with formal statutory rules)
         aliases = {
-            "product_name": ["generic_name", "commodity_name", "title"],
-            "generic_name": ["product_name", "commodity_name"],
+            "product_name": ["generic_name", "commodity_name", "common_generic_name", "title"],
+            "generic_name": ["product_name", "commodity_name", "common_generic_name"],
+            "common_generic_name": ["product_name", "generic_name", "commodity_name", "title"],
             "mrp": ["price", "maximum_retail_price", "retail_price"],
-            "mrp_inclusive_tax": ["tax_inclusive", "inclusive_tax"],
+            "mrp_inclusive_tax": ["tax_inclusive", "inclusive_tax", "tax_clause", "mrp_label_format"],
+            "mrp_label_format": ["mrp_inclusive_tax", "tax_inclusive", "inclusive_tax", "tax_clause", "mrp"],
+            "mrp_rounding": ["mrp", "price"],
             "net_quantity": ["quantity", "net_weight", "net_content", "net_qty"],
-            "unit_of_measurement": ["unit", "uom"],
-            "manufacturing_date": ["mfg_date", "mfd", "pkd", "packed_on_date", "date_of_mfg"],
-            "expiry_date": ["exp_date", "use_by", "best_before", "expiration_date"],
+            "net_quantity_unit": ["unit_of_measurement", "unit", "uom"],
+            "unit_of_measurement": ["net_quantity_unit", "unit", "uom"],
+            "manufacturing_date": ["manufacture_pack_import_date", "mfg_date", "mfd", "pkd", "packed_on_date", "date_of_mfg"],
+            "manufacture_pack_import_date": ["manufacturing_date", "mfg_date", "mfd", "pkd", "packed_on_date", "date_of_mfg"],
+            "expiry_date": ["best_before_use_by", "exp_date", "use_by", "best_before", "expiration_date"],
+            "best_before_use_by": ["expiry_date", "exp_date", "use_by", "best_before", "expiration_date"],
             "batch_number": ["batch_no", "lot_number", "lot_no", "b_no"],
-            "manufacturer": ["packer", "marketer", "importer", "manufacturer_details"],
-            "address": ["manufacturer_address", "packer_address", "factory_address"],
-            "consumer_care": ["customer_care", "helpline", "consumer_care_details"],
+            "manufacturer": ["manufacturer_or_importer_name_address", "packer", "marketer", "importer", "manufacturer_details"],
+            "manufacturer_or_importer_name_address": ["manufacturer", "packer", "marketer", "importer", "manufacturer_details", "address", "manufacturer_address"],
+            "address": ["manufacturer_address", "packer_address", "factory_address", "manufacturer_or_importer_name_address"],
+            "consumer_care": ["customer_care", "helpline", "consumer_care_details", "care"],
             "fssai_license": ["fssai", "license_number", "lic_no"],
             "allergen_declaration": ["allergen", "allergen_info", "allergens"],
-            "country_of_origin": ["origin_country", "made_in"]
+            "country_of_origin": ["origin_country", "made_in", "ecommerce_coo_filter"],
+            "ecommerce_coo_filter": ["country_of_origin", "origin_country", "made_in"],
+            "unit_sale_price": ["usp", "unit_price"],
+            "voluntary_marks": ["barcode", "gtin", "qr_code"],
+            "quantity_by_number_wording": ["net_quantity_unit", "unit_of_measurement", "quantity"]
         }
 
         alt_keys = aliases.get(f_clean, [])
@@ -86,6 +97,20 @@ class RuleEngine:
 
         field_name = rule.field_name or ""
         rule_type = (rule.rule_type or "MANDATORY_FIELD").upper()
+        # Normalize canonical validation types from rule_engine_rules.json
+        if rule_type == "PRESENCE":
+            rule_type = "MANDATORY_FIELD"
+        elif rule_type == "UNIT":
+            rule_type = "VALUE_CHECK"
+        elif rule_type in ["FORMAT", "DIMENSION"]:
+            rule_type = "FORMAT_CHECK"
+        elif rule_type == "DATE":
+            rule_type = "DATE_CHECK"
+        elif rule_type == "NUMERIC":
+            rule_type = "RANGE_CHECK"
+        elif rule_type in ["CONDITIONAL", "APPLICABILITY_EXCLUSION", "CROSS_FIELD"]:
+            rule_type = "CONDITIONAL_RULE"
+
         condition_dict = rule.get_condition_dict()
         is_required = bool(rule.required)
         severity = rule.severity or "HIGH"
@@ -156,11 +181,14 @@ class RuleEngine:
                     status = "NEEDS_REVIEW"
                     explanation = f"Field '{field_name}' detected but OCR confidence ({field_conf:.1f}%) is below verification threshold ({rev_thresh}%). Requires visual confirmation."
             else:
-                # Field was NOT detected. Apply confidence / uncertainty gate:
-                if not image_quality_passed or ocr_overall_confidence < rev_thresh:
+                # Field was NOT detected.
+                if not is_required:
+                    status = "PASS"
+                    explanation = f"Optional declaration '{field_name}' was not detected; check passed."
+                elif not image_quality_passed or ocr_overall_confidence < rev_thresh:
                     status = "NEEDS_REVIEW"
                     explanation = f"Required field '{field_name}' was not detected, but image quality or OCR scan confidence ({ocr_overall_confidence:.1f}%) is insufficient for definitive legal screening. Manual review required."
-                elif ocr_overall_confidence >= high_thresh and is_required:
+                elif ocr_overall_confidence >= high_thresh:
                     status = "FAIL"
                     err_msg = rule.error_message or f"Mandatory statutory declaration '{field_name}' was not detected."
                     explanation = f"{err_msg} (Field was not detected in high-confidence OCR scan {ocr_overall_confidence:.1f}%)."
@@ -227,7 +255,37 @@ class RuleEngine:
                     explanation = f"Field '{field_name}' not detected; format evaluation cannot be completed."
             else:
                 target_str = str(norm_val or raw_val).strip()
-                if operator == "regex" or pattern:
+                if operator == "contains_all":
+                    vals = condition_dict.get("values", [])
+                    missing = [v for v in vals if str(v).lower() not in target_str.lower()]
+                    if not missing:
+                        status = "PASS"
+                        explanation = f"Extracted value conforms to all required statutory phrases ({vals})."
+                    else:
+                        status = "FAIL" if field_conf >= rev_thresh else "NEEDS_REVIEW"
+                        explanation = rule.error_message or f"Declaration missing required statutory phrasing (missing: {', '.join(missing)})."
+                elif operator == "contains_any":
+                    vals = condition_dict.get("values", [])
+                    matched = [v for v in vals if str(v).lower() in target_str.lower()]
+                    if matched:
+                        status = "PASS"
+                        explanation = f"Extracted value contains required statutory term '{matched[0]}'."
+                    else:
+                        status = "FAIL" if field_conf >= rev_thresh else "NEEDS_REVIEW"
+                        explanation = rule.error_message or f"Declaration missing required statutory format keyword (expected one of: {', '.join(vals)})."
+                elif operator == "one_of":
+                    vals = [str(v).lower() for v in condition_dict.get("values", [])]
+                    # Rule 13 quantity by number check only applies to items sold by number (not weight/volume)
+                    if field_name == "quantity_by_number_wording" and target_str.lower() in ["g", "kg", "mg", "ml", "l", "ltr", "gm", "m", "cm", "mm"]:
+                        status = "PASS"
+                        explanation = f"Commodity declared by weight/measure ({target_str}); Rule 13 (quantity by number) check skipped."
+                    elif target_str.lower() in vals:
+                        status = "PASS"
+                        explanation = f"Extracted value '{target_str}' is an authorized term in {vals}."
+                    else:
+                        status = "FAIL" if field_conf >= rev_thresh else "NEEDS_REVIEW"
+                        explanation = rule.error_message or f"Extracted value '{target_str}' not in allowed terms: {', '.join(vals)}."
+                elif operator == "regex" or pattern:
                     try:
                         match = re.search(pattern, target_str, re.IGNORECASE)
                         if match:

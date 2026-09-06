@@ -19,10 +19,20 @@ VALID_RULE_TYPES = {
     "RANGE_CHECK",
     "DATE_CHECK",
     "TEXT_CHECK",
-    "CONDITIONAL_RULE"
+    "CONDITIONAL_RULE",
+    "PRESENCE",
+    "UNIT",
+    "FORMAT",
+    "DATE",
+    "NUMERIC",
+    "DIMENSION",
+    "CONDITIONAL",
+    "APPLICABILITY_EXCLUSION",
+    "CROSS_FIELD"
 }
 
-GENERIC_CATEGORIES = {"ALL", "All Commodities", "Pre-Packaged Commodities", "General Commodities", "*"}
+GENERIC_CATEGORIES = {"ALL", "All Commodities", "Pre-Packaged Commodities", "General Commodities", "*", "pre_packaged_general"}
+
 
 class RuleRepository:
 

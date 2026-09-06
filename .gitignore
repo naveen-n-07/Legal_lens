@@ -27,3 +27,7 @@ env/
 # OS Files
 .DS_Store
 Thumbs.db
+
+# Test & scan results
+backend/results/
+
