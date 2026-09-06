@@ -1,0 +1,1468 @@
+{
+  "schema_version": "1.0",
+  "generated_for": "SIH 26034 Legal Metrology compliance engine",
+  "rule_count": 35,
+  "rules": [
+    {
+      "rule_id": "LM-CR-001",
+      "field": "manufacturer_or_importer_name_address",
+      "description": "Package must declare name & address of manufacturer, or manufacturer+packer, or importer.",
+      "validation_type": "PRESENCE",
+      "parameters": {},
+      "severity": "HIGH",
+      "applicability": [
+        "pre_packaged_general"
+      ],
+      "effective_from": null,
+      "effective_to": null,
+      "verification_status": "VERIFIED_FROM_SOURCE",
+      "notes": "Exempt for food articles (use FSSAI rules instead) and, transitionally 15-Jul-2022 to 15-Jul-2023, satisfiable via QR code for electronic products.",
+      "provision": {
+        "provision_id": "LM-PCR-R6-1-A",
+        "rule_number": "6",
+        "sub_rule": "1",
+        "clause": "a",
+        "title": "Name & address of manufacturer/packer/importer",
+        "legal_text": "Name and address of the manufacturer, or where the manufacturer is not the packer, the name and address of the manufacturer and packer, or name and address of the importer. Explanation III: for food articles, this clause does not apply - instead the Food Safety and Standards Act, 2006 and rules thereunder apply. A proviso (2022, electronics only, 1-year transitional window from 15-Jul-2022) allowed a QR-code alternative to printing this on-package.",
+        "chapter": "II - Retail sale packages",
+        "status": "ACTIVE"
+      },
+      "introduced_by": {
+        "amendment_id": "AMD-2011-202",
+        "gsr_number": "G.S.R. 202(E)",
+        "notification_date": "2011-03-07"
+      },
+      "last_amended_by": {
+        "amendment_id": "AMD-2022-577",
+        "gsr_number": "G.S.R. 577(E)",
+        "notification_date": "2022-07-14"
+      },
+      "source": {
+        "source_id": "SRC-026",
+        "filename": "8(xii)_0_1732708235.pdf",
+        "gsr_number": "G.S.R. 629(E)"
+      }
+    },
+    {
+      "rule_id": "LM-CR-001B",
+      "field": "manufacturer_or_importer_name_address",
+      "description": "For food articles, this declaration is governed by the Food Safety and Standards Act, 2006 instead of PCR rule 6(1)(a).",
+      "validation_type": "CONDITIONAL",
+      "parameters": {
+        "condition": "category == pre_packaged_food",
+        "action": "defer_to_fssai"
+      },
+      "severity": "MEDIUM",
+      "applicability": [
+        "pre_packaged_food"
+      ],
+      "effective_from": null,
+      "effective_to": null,
+      "verification_status": "VERIFIED_FROM_SOURCE",
+      "notes": "",
+      "provision": {
+        "provision_id": "LM-PCR-R6-1-A",
+        "rule_number": "6",
+        "sub_rule": "1",
+        "clause": "a",
+        "title": "Name & address of manufacturer/packer/importer",
+        "legal_text": "Name and address of the manufacturer, or where the manufacturer is not the packer, the name and address of the manufacturer and packer, or name and address of the importer. Explanation III: for food articles, this clause does not apply - instead the Food Safety and Standards Act, 2006 and rules thereunder apply. A proviso (2022, electronics only, 1-year transitional window from 15-Jul-2022) allowed a QR-code alternative to printing this on-package.",
+        "chapter": "II - Retail sale packages",
+        "status": "ACTIVE"
+      },
+      "introduced_by": {
+        "amendment_id": "AMD-2011-202",
+        "gsr_number": "G.S.R. 202(E)",
+        "notification_date": "2011-03-07"
+      },
+      "last_amended_by": {
+        "amendment_id": "AMD-2022-577",
+        "gsr_number": "G.S.R. 577(E)",
+        "notification_date": "2022-07-14"
+      },
+      "source": {
+        "source_id": "SRC-026",
+        "filename": "8(xii)_0_1732708235.pdf",
+        "gsr_number": "G.S.R. 629(E)"
+      }
+    },
+    {
+      "rule_id": "LM-CR-002",
+      "field": "country_of_origin",
+      "description": "Imported products must declare country of origin/manufacture/assembly on the package.",
+      "validation_type": "PRESENCE",
+      "parameters": {},
+      "severity": "HIGH",
+      "applicability": [
+        "imported_products"
+      ],
+      "effective_from": "2018-01-01",
+      "effective_to": null,
+      "verification_status": "VERIFIED_FROM_SOURCE",
+      "notes": "",
+      "provision": {
+        "provision_id": "LM-PCR-R6-1-AA",
+        "rule_number": "6",
+        "sub_rule": "1",
+        "clause": "aa",
+        "title": "Country of origin / manufacture / assembly",
+        "legal_text": "The name of the country of origin, manufacture, or assembly (in the case of imported products) shall be mentioned on the package.",
+        "chapter": "II - Retail sale packages",
+        "status": "ACTIVE"
+      },
+      "introduced_by": {
+        "amendment_id": "AMD-2017-629",
+        "gsr_number": "G.S.R. 629(E)",
+        "notification_date": "2017-06-23"
+      },
+      "last_amended_by": null,
+      "source": {
+        "source_id": "SRC-026",
+        "filename": "8(xii)_0_1732708235.pdf",
+        "gsr_number": "G.S.R. 629(E)"
+      }
+    },
+    {
+      "rule_id": "LM-CR-003",
+      "field": "common_generic_name",
+      "description": "Package must declare the common/generic name of the commodity.",
+      "validation_type": "PRESENCE",
+      "parameters": {},
+      "severity": "HIGH",
+      "applicability": [
+        "pre_packaged_general"
+      ],
+      "effective_from": null,
+      "effective_to": null,
+      "verification_status": "VERIFIED_FROM_SOURCE",
+      "notes": "",
+      "provision": {
+        "provision_id": "LM-PCR-R6-1-B",
+        "rule_number": "6",
+        "sub_rule": "1",
+        "clause": "b",
+        "title": "Common or generic name of the commodity",
+        "legal_text": "The common or generic name of the commodity contained in the package. A proviso (2022, electronics only, transitional) allowed a QR-code alternative to printing this on-package.",
+        "chapter": "II - Retail sale packages",
+        "status": "ACTIVE"
+      },
+      "introduced_by": {
+        "amendment_id": "AMD-2011-202",
+        "gsr_number": "G.S.R. 202(E)",
+        "notification_date": "2011-03-07"
+      },
+      "last_amended_by": {
+        "amendment_id": "AMD-2022-577",
+        "gsr_number": "G.S.R. 577(E)",
+        "notification_date": "2022-07-14"
+      },
+      "source": {
+        "source_id": "SRC-026",
+        "filename": "8(xii)_0_1732708235.pdf",
+        "gsr_number": "G.S.R. 629(E)"
+      }
+    },
+    {
+      "rule_id": "LM-CR-004",
+      "field": "net_quantity",
+      "description": "Package must declare net quantity in standard units (weight/measure/number).",
+      "validation_type": "PRESENCE",
+      "parameters": {},
+      "severity": "HIGH",
+      "applicability": [
+        "pre_packaged_general"
+      ],
+      "effective_from": null,
+      "effective_to": null,
+      "verification_status": "DRAFT",
+      "notes": "Exact rule-8/9 small-package exemption thresholds NOT verified this session - do not auto-fail packages under suspected exemption size until LM-PCR-R8/R9 stubs are resolved.",
+      "provision": {
+        "provision_id": "LM-PCR-R6-1-C",
+        "rule_number": "6",
+        "sub_rule": "1",
+        "clause": "c",
+        "title": "Net quantity",
+        "legal_text": "The net quantity, in terms of standard units of weight, measure, or number, of the commodity contained in the package.",
+        "chapter": "II - Retail sale packages",
+        "status": "ACTIVE"
+      },
+      "introduced_by": {
+        "amendment_id": "AMD-2011-202",
+        "gsr_number": "G.S.R. 202(E)",
+        "notification_date": "2011-03-07"
+      },
+      "last_amended_by": null,
+      "source": {
+        "source_id": "SRC-001",
+        "filename": "8 (1)_1732708313.pdf",
+        "gsr_number": "G.S.R. 202(E)"
+      }
+    },
+    {
+      "rule_id": "LM-CR-004B",
+      "field": "net_quantity_unit",
+      "description": "Net quantity unit must be a recognized standard unit (g/kg/ml/l/cm/m/number).",
+      "validation_type": "UNIT",
+      "parameters": {
+        "allowed_units": [
+          "g",
+          "kg",
+          "ml",
+          "l",
+          "cm",
+          "m",
+          "number"
+        ]
+      },
+      "severity": "MEDIUM",
+      "applicability": [
+        "pre_packaged_general"
+      ],
+      "effective_from": null,
+      "effective_to": null,
+      "verification_status": "DRAFT",
+      "notes": "",
+      "provision": {
+        "provision_id": "LM-PCR-R6-1-C",
+        "rule_number": "6",
+        "sub_rule": "1",
+        "clause": "c",
+        "title": "Net quantity",
+        "legal_text": "The net quantity, in terms of standard units of weight, measure, or number, of the commodity contained in the package.",
+        "chapter": "II - Retail sale packages",
+        "status": "ACTIVE"
+      },
+      "introduced_by": {
+        "amendment_id": "AMD-2011-202",
+        "gsr_number": "G.S.R. 202(E)",
+        "notification_date": "2011-03-07"
+      },
+      "last_amended_by": null,
+      "source": {
+        "source_id": "SRC-001",
+        "filename": "8 (1)_1732708313.pdf",
+        "gsr_number": "G.S.R. 202(E)"
+      }
+    },
+    {
+      "rule_id": "LM-CR-005",
+      "field": "manufacture_pack_import_date",
+      "description": "Package must declare month and year of manufacture/pack/import.",
+      "validation_type": "DATE",
+      "parameters": {
+        "format": "MM/YYYY"
+      },
+      "severity": "HIGH",
+      "applicability": [
+        "pre_packaged_general"
+      ],
+      "effective_from": null,
+      "effective_to": null,
+      "verification_status": "DRAFT",
+      "notes": "Wording tightened by AMD-2021-779; exact current text needs verification (see LM-PCR-R6-1-D provision note). Known exemptions (per project docs, unverified this session): PSU-filled 14.2kg/5kg domestic LPG cylinders; bidi/agarbatti packages.",
+      "provision": {
+        "provision_id": "LM-PCR-R6-1-D",
+        "rule_number": "6",
+        "sub_rule": "1",
+        "clause": "d",
+        "title": "Month and year of manufacture/pack/import",
+        "legal_text": "The month and year in which the commodity is manufactured, or pre-packed, or imported, shall be mentioned on the package (2021 amendment removed the words 'or pre-packed or imported' from this clause's qualifying text - net effect: verify exact current wording against principal rules before treating as VERIFIED).",
+        "chapter": "II - Retail sale packages",
+        "status": "ACTIVE"
+      },
+      "introduced_by": {
+        "amendment_id": "AMD-2011-202",
+        "gsr_number": "G.S.R. 202(E)",
+        "notification_date": "2011-03-07"
+      },
+      "last_amended_by": {
+        "amendment_id": "AMD-2021-779",
+        "gsr_number": "G.S.R. 779(E)",
+        "notification_date": "2021-11-02"
+      },
+      "source": {
+        "source_id": "SRC-025",
+        "filename": "230946_1733384533.pdf",
+        "gsr_number": "G.S.R. 779(E)"
+      }
+    },
+    {
+      "rule_id": "LM-CR-005B",
+      "field": "manufacture_pack_import_date",
+      "description": "LPG cylinders (PSU-filled, 14.2kg or 5kg domestic) and bidi/agarbatti packages are exempt from the manufacture-date declaration.",
+      "validation_type": "CONDITIONAL",
+      "parameters": {
+        "exempt_if": "category in [lpg_cylinder_bidi_agarbatti]"
+      },
+      "severity": "LOW",
+      "applicability": [
+        "lpg_cylinder_bidi_agarbatti"
+      ],
+      "effective_from": null,
+      "effective_to": null,
+      "verification_status": "NEEDS_SOURCE_VERIFICATION",
+      "notes": "Referenced in Stage-1 project notes from an OCR read of SRC-001 p.6; re-verify exact wording before activating.",
+      "provision": {
+        "provision_id": "LM-PCR-R6-1-D",
+        "rule_number": "6",
+        "sub_rule": "1",
+        "clause": "d",
+        "title": "Month and year of manufacture/pack/import",
+        "legal_text": "The month and year in which the commodity is manufactured, or pre-packed, or imported, shall be mentioned on the package (2021 amendment removed the words 'or pre-packed or imported' from this clause's qualifying text - net effect: verify exact current wording against principal rules before treating as VERIFIED).",
+        "chapter": "II - Retail sale packages",
+        "status": "ACTIVE"
+      },
+      "introduced_by": {
+        "amendment_id": "AMD-2011-202",
+        "gsr_number": "G.S.R. 202(E)",
+        "notification_date": "2011-03-07"
+      },
+      "last_amended_by": {
+        "amendment_id": "AMD-2021-779",
+        "gsr_number": "G.S.R. 779(E)",
+        "notification_date": "2021-11-02"
+      },
+      "source": {
+        "source_id": "SRC-025",
+        "filename": "230946_1733384533.pdf",
+        "gsr_number": "G.S.R. 779(E)"
+      }
+    },
+    {
+      "rule_id": "LM-CR-006",
+      "field": "best_before_use_by",
+      "description": "Perishable/time-limited commodities must declare 'best before' or 'use by' date/month/year.",
+      "validation_type": "DATE",
+      "parameters": {
+        "format": "DD/MM/YYYY or MM/YYYY"
+      },
+      "severity": "MEDIUM",
+      "applicability": [
+        "pre_packaged_food"
+      ],
+      "effective_from": "2018-01-01",
+      "effective_to": null,
+      "verification_status": "VERIFIED_FROM_SOURCE",
+      "notes": "Does not apply if another law already covers it (e.g. FSSAI shelf-life rules for food).",
+      "provision": {
+        "provision_id": "LM-PCR-R6-1-DA",
+        "rule_number": "6",
+        "sub_rule": "1",
+        "clause": "da",
+        "title": "Best-before / use-by date",
+        "legal_text": "If a package contains a commodity which may become unfit for human consumption after a period of time, the 'best before or use by the date, month and year' shall also be mentioned on the label (does not apply if another law already provides for this).",
+        "chapter": "II - Retail sale packages",
+        "status": "ACTIVE"
+      },
+      "introduced_by": {
+        "amendment_id": "AMD-2017-629",
+        "gsr_number": "G.S.R. 629(E)",
+        "notification_date": "2017-06-23"
+      },
+      "last_amended_by": null,
+      "source": {
+        "source_id": "SRC-026",
+        "filename": "8(xii)_0_1732708235.pdf",
+        "gsr_number": "G.S.R. 629(E)"
+      }
+    },
+    {
+      "rule_id": "LM-CR-007",
+      "field": "mrp",
+      "description": "Package must declare MRP.",
+      "validation_type": "PRESENCE",
+      "parameters": {},
+      "severity": "HIGH",
+      "applicability": [
+        "pre_packaged_general"
+      ],
+      "effective_from": null,
+      "effective_to": null,
+      "verification_status": "VERIFIED_FROM_SOURCE",
+      "notes": "",
+      "provision": {
+        "provision_id": "LM-PCR-R6-1-E",
+        "rule_number": "6",
+        "sub_rule": "1",
+        "clause": "e",
+        "title": "Retail Sale Price (MRP)",
+        "legal_text": "The retail sale price of the package shall clearly indicate that it is the maximum retail price inclusive of all taxes, in Indian currency, and the price in rupees and paise shall be rounded off to the nearest rupee or 50 paise. Exceptions: alcoholic beverages/spirituous liquor follow applicable State Excise law where that law itself provides for a retail-price declaration; and any essential commodity whose price is fixed/notified by a competent authority under the Essential Commodities Act, 1955 follows that notified price instead.",
+        "chapter": "II - Retail sale packages",
+        "status": "ACTIVE"
+      },
+      "introduced_by": {
+        "amendment_id": "AMD-2011-202",
+        "gsr_number": "G.S.R. 202(E)",
+        "notification_date": "2011-03-07"
+      },
+      "last_amended_by": {
+        "amendment_id": "AMD-2021-779",
+        "gsr_number": "G.S.R. 779(E)",
+        "notification_date": "2021-11-02"
+      },
+      "source": {
+        "source_id": "SRC-014",
+        "filename": "2023.7.10 Medical Devices revision of prices_1732709214.pdf",
+        "gsr_number": null
+      }
+    },
+    {
+      "rule_id": "LM-CR-007B",
+      "field": "mrp_label_format",
+      "description": "MRP text must clearly state it is the Maximum Retail Price, inclusive of all taxes, in Indian currency (e.g. 'MRP Rs. xx.xx (incl. of all taxes)').",
+      "validation_type": "FORMAT",
+      "parameters": {
+        "required_phrases_any_of": [
+          "maximum retail price",
+          "MRP"
+        ],
+        "required_phrase_all": [
+          "inclusive of all taxes"
+        ],
+        "currency": "INR"
+      },
+      "severity": "HIGH",
+      "applicability": [
+        "pre_packaged_general"
+      ],
+      "effective_from": null,
+      "effective_to": null,
+      "verification_status": "VERIFIED_FROM_SOURCE",
+      "notes": "",
+      "provision": {
+        "provision_id": "LM-PCR-R6-1-E",
+        "rule_number": "6",
+        "sub_rule": "1",
+        "clause": "e",
+        "title": "Retail Sale Price (MRP)",
+        "legal_text": "The retail sale price of the package shall clearly indicate that it is the maximum retail price inclusive of all taxes, in Indian currency, and the price in rupees and paise shall be rounded off to the nearest rupee or 50 paise. Exceptions: alcoholic beverages/spirituous liquor follow applicable State Excise law where that law itself provides for a retail-price declaration; and any essential commodity whose price is fixed/notified by a competent authority under the Essential Commodities Act, 1955 follows that notified price instead.",
+        "chapter": "II - Retail sale packages",
+        "status": "ACTIVE"
+      },
+      "introduced_by": {
+        "amendment_id": "AMD-2011-202",
+        "gsr_number": "G.S.R. 202(E)",
+        "notification_date": "2011-03-07"
+      },
+      "last_amended_by": {
+        "amendment_id": "AMD-2021-779",
+        "gsr_number": "G.S.R. 779(E)",
+        "notification_date": "2021-11-02"
+      },
+      "source": {
+        "source_id": "SRC-014",
+        "filename": "2023.7.10 Medical Devices revision of prices_1732709214.pdf",
+        "gsr_number": null
+      }
+    },
+    {
+      "rule_id": "LM-CR-007C",
+      "field": "mrp_rounding",
+      "description": "MRP in rupees/paise must be rounded to the nearest rupee or 50 paise.",
+      "validation_type": "NUMERIC",
+      "parameters": {
+        "rounding_increment": 0.5,
+        "currency": "INR"
+      },
+      "severity": "MEDIUM",
+      "applicability": [
+        "pre_packaged_general"
+      ],
+      "effective_from": null,
+      "effective_to": null,
+      "verification_status": "VERIFIED_FROM_SOURCE",
+      "notes": "",
+      "provision": {
+        "provision_id": "LM-PCR-R6-1-E",
+        "rule_number": "6",
+        "sub_rule": "1",
+        "clause": "e",
+        "title": "Retail Sale Price (MRP)",
+        "legal_text": "The retail sale price of the package shall clearly indicate that it is the maximum retail price inclusive of all taxes, in Indian currency, and the price in rupees and paise shall be rounded off to the nearest rupee or 50 paise. Exceptions: alcoholic beverages/spirituous liquor follow applicable State Excise law where that law itself provides for a retail-price declaration; and any essential commodity whose price is fixed/notified by a competent authority under the Essential Commodities Act, 1955 follows that notified price instead.",
+        "chapter": "II - Retail sale packages",
+        "status": "ACTIVE"
+      },
+      "introduced_by": {
+        "amendment_id": "AMD-2011-202",
+        "gsr_number": "G.S.R. 202(E)",
+        "notification_date": "2011-03-07"
+      },
+      "last_amended_by": {
+        "amendment_id": "AMD-2021-779",
+        "gsr_number": "G.S.R. 779(E)",
+        "notification_date": "2021-11-02"
+      },
+      "source": {
+        "source_id": "SRC-014",
+        "filename": "2023.7.10 Medical Devices revision of prices_1732709214.pdf",
+        "gsr_number": null
+      }
+    },
+    {
+      "rule_id": "LM-CR-007D",
+      "field": "mrp",
+      "description": "Alcoholic beverages / spirituous liquor: MRP follows State Excise law (within the manufacturing state), where that law itself provides for a retail-price declaration; otherwise PCR rule 6(1)(e) applies.",
+      "validation_type": "CONDITIONAL",
+      "parameters": {
+        "condition": "category == alcoholic_beverages",
+        "action": "defer_to_state_excise_law_if_applicable"
+      },
+      "severity": "MEDIUM",
+      "applicability": [
+        "alcoholic_beverages"
+      ],
+      "effective_from": null,
+      "effective_to": null,
+      "verification_status": "VERIFIED_FROM_SOURCE",
+      "notes": "",
+      "provision": {
+        "provision_id": "LM-PCR-R6-1-E",
+        "rule_number": "6",
+        "sub_rule": "1",
+        "clause": "e",
+        "title": "Retail Sale Price (MRP)",
+        "legal_text": "The retail sale price of the package shall clearly indicate that it is the maximum retail price inclusive of all taxes, in Indian currency, and the price in rupees and paise shall be rounded off to the nearest rupee or 50 paise. Exceptions: alcoholic beverages/spirituous liquor follow applicable State Excise law where that law itself provides for a retail-price declaration; and any essential commodity whose price is fixed/notified by a competent authority under the Essential Commodities Act, 1955 follows that notified price instead.",
+        "chapter": "II - Retail sale packages",
+        "status": "ACTIVE"
+      },
+      "introduced_by": {
+        "amendment_id": "AMD-2011-202",
+        "gsr_number": "G.S.R. 202(E)",
+        "notification_date": "2011-03-07"
+      },
+      "last_amended_by": {
+        "amendment_id": "AMD-2021-779",
+        "gsr_number": "G.S.R. 779(E)",
+        "notification_date": "2021-11-02"
+      },
+      "source": {
+        "source_id": "SRC-014",
+        "filename": "2023.7.10 Medical Devices revision of prices_1732709214.pdf",
+        "gsr_number": null
+      }
+    },
+    {
+      "rule_id": "LM-CR-007E",
+      "field": "mrp",
+      "description": "Essential commodities with a price fixed/notified by a competent authority under the Essential Commodities Act, 1955 must display that notified price as MRP.",
+      "validation_type": "CONDITIONAL",
+      "parameters": {
+        "condition": "price_fixed_by_competent_authority == true",
+        "action": "use_notified_price"
+      },
+      "severity": "MEDIUM",
+      "applicability": [
+        "pre_packaged_general",
+        "pharma_price_controlled"
+      ],
+      "effective_from": null,
+      "effective_to": null,
+      "verification_status": "VERIFIED_FROM_SOURCE",
+      "notes": "",
+      "provision": {
+        "provision_id": "LM-PCR-R6-1-E",
+        "rule_number": "6",
+        "sub_rule": "1",
+        "clause": "e",
+        "title": "Retail Sale Price (MRP)",
+        "legal_text": "The retail sale price of the package shall clearly indicate that it is the maximum retail price inclusive of all taxes, in Indian currency, and the price in rupees and paise shall be rounded off to the nearest rupee or 50 paise. Exceptions: alcoholic beverages/spirituous liquor follow applicable State Excise law where that law itself provides for a retail-price declaration; and any essential commodity whose price is fixed/notified by a competent authority under the Essential Commodities Act, 1955 follows that notified price instead.",
+        "chapter": "II - Retail sale packages",
+        "status": "ACTIVE"
+      },
+      "introduced_by": {
+        "amendment_id": "AMD-2011-202",
+        "gsr_number": "G.S.R. 202(E)",
+        "notification_date": "2011-03-07"
+      },
+      "last_amended_by": {
+        "amendment_id": "AMD-2021-779",
+        "gsr_number": "G.S.R. 779(E)",
+        "notification_date": "2021-11-02"
+      },
+      "source": {
+        "source_id": "SRC-014",
+        "filename": "2023.7.10 Medical Devices revision of prices_1732709214.pdf",
+        "gsr_number": null
+      }
+    },
+    {
+      "rule_id": "LM-CR-008",
+      "field": "voluntary_marks",
+      "description": "Barcode/GTIN/QR code and authorised Government scheme logos (e.g. Swachh Bharat Mission) MAY optionally be present in addition to mandatory declarations - their presence/absence is not itself a compliance signal.",
+      "validation_type": "PRESENCE",
+      "parameters": {
+        "mandatory": false
+      },
+      "severity": "LOW",
+      "applicability": [
+        "pre_packaged_general"
+      ],
+      "effective_from": "2018-01-01",
+      "effective_to": null,
+      "verification_status": "VERIFIED_FROM_SOURCE",
+      "notes": "",
+      "provision": {
+        "provision_id": "LM-PCR-R6-4A",
+        "rule_number": "6",
+        "sub_rule": "4A",
+        "clause": null,
+        "title": "Voluntary additional declarations permitted",
+        "legal_text": "Nothing in this rule precludes a manufacturer/packer/importer from ALSO declaring, in addition to the mandatory declarations: (a) Barcode/GTIN/QR Code; (b) an 'e-code' for net-quantity assurance (after obtaining it as specified by the Central Government); (c) logos of Government schemes such as Swachh Bharat Mission, where authorised.",
+        "chapter": "II - Retail sale packages",
+        "status": "ACTIVE"
+      },
+      "introduced_by": {
+        "amendment_id": "AMD-2017-629",
+        "gsr_number": "G.S.R. 629(E)",
+        "notification_date": "2017-06-23"
+      },
+      "last_amended_by": null,
+      "source": {
+        "source_id": "SRC-026",
+        "filename": "8(xii)_0_1732708235.pdf",
+        "gsr_number": "G.S.R. 629(E)"
+      }
+    },
+    {
+      "rule_id": "LM-CR-009",
+      "field": "ecommerce_mandatory_declarations_displayed",
+      "description": "E-commerce listing must display all rule 6(1) mandatory declarations except manufacture month/year.",
+      "validation_type": "PRESENCE",
+      "parameters": {
+        "exclude_field": "manufacture_pack_import_date"
+      },
+      "severity": "HIGH",
+      "applicability": [
+        "e_commerce_listing"
+      ],
+      "effective_from": "2018-01-01",
+      "effective_to": null,
+      "verification_status": "VERIFIED_FROM_SOURCE",
+      "notes": "",
+      "provision": {
+        "provision_id": "LM-PCR-R6-10",
+        "rule_number": "6",
+        "sub_rule": "10",
+        "clause": null,
+        "title": "E-commerce entities must display mandatory declarations",
+        "legal_text": "An e-commerce entity shall ensure the mandatory declarations under sub-rule (1) - except the month/year of manufacture - are displayed on the digital/electronic network used for the e-commerce transaction. In a marketplace model, responsibility for correctness of the declarations lies with the manufacturer/seller/dealer/importer (not the platform) if the platform is a passive intermediary under IT Act, 2000 due-diligence standards; this safe harbour is lost if the platform conspired/abetted the unlawful act, or failed to act on actual notice. This does not exempt anyone from making the required declarations on physical packages delivered to consumers.",
+        "chapter": "II - Retail sale packages",
+        "status": "ACTIVE"
+      },
+      "introduced_by": {
+        "amendment_id": "AMD-2017-629",
+        "gsr_number": "G.S.R. 629(E)",
+        "notification_date": "2017-06-23"
+      },
+      "last_amended_by": null,
+      "source": {
+        "source_id": "SRC-026",
+        "filename": "8(xii)_0_1732708235.pdf",
+        "gsr_number": "G.S.R. 629(E)"
+      }
+    },
+    {
+      "rule_id": "LM-CR-009B",
+      "field": "ecommerce_intermediary_liability",
+      "description": "In a marketplace model, declaration-correctness liability sits with manufacturer/seller/dealer/importer, not the platform, UNLESS the platform actively participated in the violation or failed to act on actual notice - informational rule for officer review workflow, not an auto PASS/FAIL check on a package.",
+      "validation_type": "CONDITIONAL",
+      "parameters": {},
+      "severity": "LOW",
+      "applicability": [
+        "e_commerce_listing"
+      ],
+      "effective_from": "2018-01-01",
+      "effective_to": null,
+      "verification_status": "VERIFIED_FROM_SOURCE",
+      "notes": "",
+      "provision": {
+        "provision_id": "LM-PCR-R6-10",
+        "rule_number": "6",
+        "sub_rule": "10",
+        "clause": null,
+        "title": "E-commerce entities must display mandatory declarations",
+        "legal_text": "An e-commerce entity shall ensure the mandatory declarations under sub-rule (1) - except the month/year of manufacture - are displayed on the digital/electronic network used for the e-commerce transaction. In a marketplace model, responsibility for correctness of the declarations lies with the manufacturer/seller/dealer/importer (not the platform) if the platform is a passive intermediary under IT Act, 2000 due-diligence standards; this safe harbour is lost if the platform conspired/abetted the unlawful act, or failed to act on actual notice. This does not exempt anyone from making the required declarations on physical packages delivered to consumers.",
+        "chapter": "II - Retail sale packages",
+        "status": "ACTIVE"
+      },
+      "introduced_by": {
+        "amendment_id": "AMD-2017-629",
+        "gsr_number": "G.S.R. 629(E)",
+        "notification_date": "2017-06-23"
+      },
+      "last_amended_by": null,
+      "source": {
+        "source_id": "SRC-026",
+        "filename": "8(xii)_0_1732708235.pdf",
+        "gsr_number": "G.S.R. 629(E)"
+      }
+    },
+    {
+      "rule_id": "LM-CR-010",
+      "field": "ecommerce_coo_filter",
+      "description": "E-commerce listings of imported products must provide a searchable & sortable country-of-origin filter.",
+      "validation_type": "PRESENCE",
+      "parameters": {},
+      "severity": "HIGH",
+      "applicability": [
+        "e_commerce_listing",
+        "imported_products"
+      ],
+      "effective_from": "2027-07-01",
+      "effective_to": null,
+      "verification_status": "VERIFIED_FROM_SOURCE",
+      "notes": "Superseding chain: AMD-2026-128 (eff. 1-Jul-2026) was itself replaced by AMD-2026-312 before its effective date arrived, re-timing this to 1-Jul-2027. Do not activate before that date.",
+      "provision": {
+        "provision_id": "LM-PCR-R6-10A",
+        "rule_number": "6",
+        "sub_rule": "10A",
+        "clause": null,
+        "title": "E-commerce country-of-origin searchable/sortable filter (imported products)",
+        "legal_text": "Every e-commerce entity offering for sale any imported product shall ensure the product listing of such imported product contains a searchable and sortable filter specifying the country of origin.",
+        "chapter": "II - Retail sale packages",
+        "status": "ACTIVE"
+      },
+      "introduced_by": {
+        "amendment_id": "AMD-2026-128",
+        "gsr_number": "G.S.R. 128(E)",
+        "notification_date": "2026-02-13"
+      },
+      "last_amended_by": {
+        "amendment_id": "AMD-2026-312",
+        "gsr_number": "G.S.R. 312(E)",
+        "notification_date": "2026-04-27"
+      },
+      "source": {
+        "source_id": "SRC-023",
+        "filename": "2026.4.27 PCR 2nd COO from 1.7.2027_1777348681.pdf",
+        "gsr_number": "G.S.R. 312(E)"
+      }
+    },
+    {
+      "rule_id": "LM-CR-011",
+      "field": "unit_sale_price",
+      "description": "Unit sale price must be declared, rounded to 2 decimal places, using the correct basis (per gram/kg, per cm/m, per ml/l, or per number) depending on net quantity magnitude and unit type.",
+      "validation_type": "NUMERIC",
+      "parameters": {
+        "decimal_places": 2,
+        "basis_rules": [
+          {
+            "if_unit": "g",
+            "if_qty_lt": 1000,
+            "declare_as": "per gram"
+          },
+          {
+            "if_unit": "g",
+            "if_qty_gte": 1000,
+            "declare_as": "per kilogram"
+          },
+          {
+            "if_unit": "cm",
+            "if_qty_lt": 100,
+            "declare_as": "per centimetre"
+          },
+          {
+            "if_unit": "cm",
+            "if_qty_gte": 100,
+            "declare_as": "per metre"
+          },
+          {
+            "if_unit": "ml",
+            "if_qty_lt": 1000,
+            "declare_as": "per millilitre"
+          },
+          {
+            "if_unit": "ml",
+            "if_qty_gte": 1000,
+            "declare_as": "per litre"
+          },
+          {
+            "if_unit": "number",
+            "declare_as": "per number"
+          }
+        ]
+      },
+      "severity": "MEDIUM",
+      "applicability": [
+        "pre_packaged_general"
+      ],
+      "effective_from": null,
+      "effective_to": null,
+      "verification_status": "VERIFIED_FROM_SOURCE",
+      "notes": "Alcoholic beverages/spirituous liquor follow State Excise law instead (see LM-CR-007D pattern).",
+      "provision": {
+        "provision_id": "LM-PCR-R6-11",
+        "rule_number": "6",
+        "sub_rule": "11",
+        "clause": null,
+        "title": "Unit sale price declaration",
+        "legal_text": "The unit sale price in rupees, rounded off to the nearest two decimal places, shall be declared on every pre-packaged commodity as follows: (i) per gram if net quantity < 1 kg, per kilogram if >= 1 kg; (ii) per centimetre if net length < 1 m, per metre if >= 1 m; (iii) per millilitre if net volume < 1 litre, per litre if >= 1 litre; (iv) per number/unit if sold by number or unit. Alcoholic beverages/spirituous liquor follow applicable State Excise law within the manufacturing State.",
+        "chapter": "II - Retail sale packages",
+        "status": "ACTIVE"
+      },
+      "introduced_by": {
+        "amendment_id": "AMD-2021-779",
+        "gsr_number": "G.S.R. 779(E)",
+        "notification_date": "2021-11-02"
+      },
+      "last_amended_by": {
+        "amendment_id": "AMD-2022-226",
+        "gsr_number": "G.S.R. 226(E)",
+        "notification_date": "2022-03-28"
+      },
+      "source": {
+        "source_id": "SRC-003",
+        "filename": "GSR226_1732707673.pdf",
+        "gsr_number": "G.S.R. 226(E)"
+      }
+    },
+    {
+      "rule_id": "LM-CR-012",
+      "field": "declaration_letter_height",
+      "description": "Numerals/letters in declarations must meet the minimum height specified in Table-I for the package's Principal Display Panel area.",
+      "validation_type": "DIMENSION",
+      "parameters": {
+        "table_ref": "PCR_2011_Table_I",
+        "unit": "mm",
+        "keyed_to": "principal_display_panel_area_cm2"
+      },
+      "severity": "MEDIUM",
+      "applicability": [
+        "pre_packaged_general"
+      ],
+      "effective_from": "2018-01-01",
+      "effective_to": null,
+      "verification_status": "NEEDS_SOURCE_VERIFICATION",
+      "notes": "Table-I numeric thresholds by PDP-area band were visible in OCR but not fully transcribed this session - transcribe from SRC-026 pp.10-11 before activating as a hard FAIL check.",
+      "provision": {
+        "provision_id": "LM-PCR-R7-2",
+        "rule_number": "7",
+        "sub_rule": "2",
+        "clause": null,
+        "title": "Minimum height of numerals/letters (Table-I)",
+        "legal_text": "The height of any numeral and letter in a required declaration shall be at least the minimum specified in Table-I, keyed to the area (in cm^2) of the package's Principal Display Panel. A 2025 proviso disapplies this in favour of the Medical Devices Rules, 2017 for medical-device packages.",
+        "chapter": "II - Retail sale packages",
+        "status": "ACTIVE"
+      },
+      "introduced_by": {
+        "amendment_id": "AMD-2017-629",
+        "gsr_number": "G.S.R. 629(E)",
+        "notification_date": "2017-06-23"
+      },
+      "last_amended_by": {
+        "amendment_id": "AMD-2025-778",
+        "gsr_number": "G.S.R. 778(E)",
+        "notification_date": "2025-10-23"
+      },
+      "source": {
+        "source_id": "SRC-026",
+        "filename": "8(xii)_0_1732708235.pdf",
+        "gsr_number": "G.S.R. 629(E)"
+      }
+    },
+    {
+      "rule_id": "LM-CR-012B",
+      "field": "declaration_letter_height",
+      "description": "For medical-device packages, letter-height standard is instead governed by the Medical Devices Rules, 2017.",
+      "validation_type": "CONDITIONAL",
+      "parameters": {
+        "condition": "category == medical_devices",
+        "action": "defer_to_medical_devices_rules"
+      },
+      "severity": "MEDIUM",
+      "applicability": [
+        "medical_devices"
+      ],
+      "effective_from": "2025-10-23",
+      "effective_to": null,
+      "verification_status": "VERIFIED_FROM_SOURCE",
+      "notes": "",
+      "provision": {
+        "provision_id": "LM-PCR-R7-2",
+        "rule_number": "7",
+        "sub_rule": "2",
+        "clause": null,
+        "title": "Minimum height of numerals/letters (Table-I)",
+        "legal_text": "The height of any numeral and letter in a required declaration shall be at least the minimum specified in Table-I, keyed to the area (in cm^2) of the package's Principal Display Panel. A 2025 proviso disapplies this in favour of the Medical Devices Rules, 2017 for medical-device packages.",
+        "chapter": "II - Retail sale packages",
+        "status": "ACTIVE"
+      },
+      "introduced_by": {
+        "amendment_id": "AMD-2017-629",
+        "gsr_number": "G.S.R. 629(E)",
+        "notification_date": "2017-06-23"
+      },
+      "last_amended_by": {
+        "amendment_id": "AMD-2025-778",
+        "gsr_number": "G.S.R. 778(E)",
+        "notification_date": "2025-10-23"
+      },
+      "source": {
+        "source_id": "SRC-026",
+        "filename": "8(xii)_0_1732708235.pdf",
+        "gsr_number": "G.S.R. 629(E)"
+      }
+    },
+    {
+      "rule_id": "LM-CR-013",
+      "field": "declaration_letter_width",
+      "description": "Letter/numeral width must be >= 1/3 of its height (except numeral '1' and letters i/I/l).",
+      "validation_type": "DIMENSION",
+      "parameters": {
+        "min_width_ratio_of_height": 0.3333,
+        "exceptions": [
+          "1",
+          "i",
+          "I",
+          "l"
+        ]
+      },
+      "severity": "LOW",
+      "applicability": [
+        "pre_packaged_general"
+      ],
+      "effective_from": "2018-01-01",
+      "effective_to": null,
+      "verification_status": "VERIFIED_FROM_SOURCE",
+      "notes": "",
+      "provision": {
+        "provision_id": "LM-PCR-R7-3",
+        "rule_number": "7",
+        "sub_rule": "3",
+        "clause": null,
+        "title": "Minimum width of numerals/letters",
+        "legal_text": "The width of the letter or numeral shall not be less than one-third of its height, except for the numeral '1' and letters such as 'i', 'I', 'l'. A 2025 proviso disapplies this in favour of the Medical Devices Rules, 2017 for medical-device packages.",
+        "chapter": "II - Retail sale packages",
+        "status": "ACTIVE"
+      },
+      "introduced_by": {
+        "amendment_id": "AMD-2017-629",
+        "gsr_number": "G.S.R. 629(E)",
+        "notification_date": "2017-06-23"
+      },
+      "last_amended_by": {
+        "amendment_id": "AMD-2025-778",
+        "gsr_number": "G.S.R. 778(E)",
+        "notification_date": "2025-10-23"
+      },
+      "source": {
+        "source_id": "SRC-026",
+        "filename": "8(xii)_0_1732708235.pdf",
+        "gsr_number": "G.S.R. 629(E)"
+      }
+    },
+    {
+      "rule_id": "LM-CR-013B",
+      "field": "declaration_letter_width",
+      "description": "For medical-device packages, letter-width standard is instead governed by the Medical Devices Rules, 2017.",
+      "validation_type": "CONDITIONAL",
+      "parameters": {
+        "condition": "category == medical_devices",
+        "action": "defer_to_medical_devices_rules"
+      },
+      "severity": "MEDIUM",
+      "applicability": [
+        "medical_devices"
+      ],
+      "effective_from": "2025-10-23",
+      "effective_to": null,
+      "verification_status": "VERIFIED_FROM_SOURCE",
+      "notes": "",
+      "provision": {
+        "provision_id": "LM-PCR-R7-3",
+        "rule_number": "7",
+        "sub_rule": "3",
+        "clause": null,
+        "title": "Minimum width of numerals/letters",
+        "legal_text": "The width of the letter or numeral shall not be less than one-third of its height, except for the numeral '1' and letters such as 'i', 'I', 'l'. A 2025 proviso disapplies this in favour of the Medical Devices Rules, 2017 for medical-device packages.",
+        "chapter": "II - Retail sale packages",
+        "status": "ACTIVE"
+      },
+      "introduced_by": {
+        "amendment_id": "AMD-2017-629",
+        "gsr_number": "G.S.R. 629(E)",
+        "notification_date": "2017-06-23"
+      },
+      "last_amended_by": {
+        "amendment_id": "AMD-2025-778",
+        "gsr_number": "G.S.R. 778(E)",
+        "notification_date": "2025-10-23"
+      },
+      "source": {
+        "source_id": "SRC-026",
+        "filename": "8(xii)_0_1732708235.pdf",
+        "gsr_number": "G.S.R. 629(E)"
+      }
+    },
+    {
+      "rule_id": "LM-CR-014",
+      "field": "applicability_gate_bulk",
+      "description": "Packages > 25 kg or > 25 litre are OUT OF SCOPE for Chapter II retail-sale declarations entirely (do not run rule 6/7 checks).",
+      "validation_type": "APPLICABILITY_EXCLUSION",
+      "parameters": {
+        "exclude_if": "net_quantity_kg > 25 or net_quantity_l > 25"
+      },
+      "severity": "HIGH",
+      "applicability": [
+        "bulk_over_25kg"
+      ],
+      "effective_from": null,
+      "effective_to": null,
+      "verification_status": "VERIFIED_FROM_SOURCE",
+      "notes": "",
+      "provision": {
+        "provision_id": "LM-PCR-R3",
+        "rule_number": "3",
+        "sub_rule": null,
+        "clause": null,
+        "title": "Application of Chapter (exclusions)",
+        "legal_text": "The provisions of this Chapter shall not apply to: (a) packages of commodities containing quantity of more than 25 kilogram or 25 litre; (b) cement, fertilizer and agricultural farm produce sold in bags above 50 kilogram; and (c) packaged commodities meant for industrial consumers or institutional consumers.",
+        "chapter": "II - Retail sale packages",
+        "status": "ACTIVE"
+      },
+      "introduced_by": {
+        "amendment_id": "AMD-2017-629",
+        "gsr_number": "G.S.R. 629(E)",
+        "notification_date": "2017-06-23"
+      },
+      "last_amended_by": null,
+      "source": {
+        "source_id": "SRC-026",
+        "filename": "8(xii)_0_1732708235.pdf",
+        "gsr_number": "G.S.R. 629(E)"
+      }
+    },
+    {
+      "rule_id": "LM-CR-015",
+      "field": "applicability_gate_bulk_bags",
+      "description": "Cement, fertilizer, and agricultural farm produce sold in bags ABOVE 50 kg are OUT OF SCOPE. Farm produce packages of 50 kg or below ARE in scope (confirmed by DCA advisory).",
+      "validation_type": "APPLICABILITY_EXCLUSION",
+      "parameters": {
+        "exclude_if": "category in [cement, fertilizer, farm_produce] and bag_weight_kg > 50"
+      },
+      "severity": "HIGH",
+      "applicability": [
+        "farm_produce"
+      ],
+      "effective_from": null,
+      "effective_to": null,
+      "verification_status": "VERIFIED_FROM_SOURCE",
+      "notes": "",
+      "provision": {
+        "provision_id": "LM-PCR-R3",
+        "rule_number": "3",
+        "sub_rule": null,
+        "clause": null,
+        "title": "Application of Chapter (exclusions)",
+        "legal_text": "The provisions of this Chapter shall not apply to: (a) packages of commodities containing quantity of more than 25 kilogram or 25 litre; (b) cement, fertilizer and agricultural farm produce sold in bags above 50 kilogram; and (c) packaged commodities meant for industrial consumers or institutional consumers.",
+        "chapter": "II - Retail sale packages",
+        "status": "ACTIVE"
+      },
+      "introduced_by": {
+        "amendment_id": "AMD-2017-629",
+        "gsr_number": "G.S.R. 629(E)",
+        "notification_date": "2017-06-23"
+      },
+      "last_amended_by": null,
+      "source": {
+        "source_id": "SRC-026",
+        "filename": "8(xii)_0_1732708235.pdf",
+        "gsr_number": "G.S.R. 629(E)"
+      }
+    },
+    {
+      "rule_id": "LM-CR-016",
+      "field": "applicability_gate_institutional",
+      "description": "Packaged commodities meant for industrial consumers or institutional consumers are OUT OF SCOPE for Chapter II.",
+      "validation_type": "APPLICABILITY_EXCLUSION",
+      "parameters": {
+        "exclude_if": "buyer_type in [industrial_consumer, institutional_consumer]"
+      },
+      "severity": "HIGH",
+      "applicability": [
+        "industrial_institutional"
+      ],
+      "effective_from": null,
+      "effective_to": null,
+      "verification_status": "VERIFIED_FROM_SOURCE",
+      "notes": "",
+      "provision": {
+        "provision_id": "LM-PCR-R3",
+        "rule_number": "3",
+        "sub_rule": null,
+        "clause": null,
+        "title": "Application of Chapter (exclusions)",
+        "legal_text": "The provisions of this Chapter shall not apply to: (a) packages of commodities containing quantity of more than 25 kilogram or 25 litre; (b) cement, fertilizer and agricultural farm produce sold in bags above 50 kilogram; and (c) packaged commodities meant for industrial consumers or institutional consumers.",
+        "chapter": "II - Retail sale packages",
+        "status": "ACTIVE"
+      },
+      "introduced_by": {
+        "amendment_id": "AMD-2017-629",
+        "gsr_number": "G.S.R. 629(E)",
+        "notification_date": "2017-06-23"
+      },
+      "last_amended_by": null,
+      "source": {
+        "source_id": "SRC-026",
+        "filename": "8(xii)_0_1732708235.pdf",
+        "gsr_number": "G.S.R. 629(E)"
+      }
+    },
+    {
+      "rule_id": "LM-CR-017",
+      "field": "group_promotional_package_compliance",
+      "description": "Every individual package inside a promotional group/combo must independently satisfy rule 6 declarations - grouping does not create an exemption.",
+      "validation_type": "CROSS_FIELD",
+      "parameters": {
+        "applies_to": "each_member_package"
+      },
+      "severity": "MEDIUM",
+      "applicability": [
+        "combination_group_package"
+      ],
+      "effective_from": "2024-01-01",
+      "effective_to": null,
+      "verification_status": "VERIFIED_FROM_SOURCE",
+      "notes": "",
+      "provision": {
+        "provision_id": "LM-PCR-R4-2",
+        "rule_number": "4",
+        "sub_rule": "2",
+        "clause": null,
+        "title": "Grouped/promotional packages must each comply with Rule 6",
+        "legal_text": "When one or more packages intended for retail sale are grouped together for being sold as a retail package on promotional offer, every package of the group shall comply with the provisions of rule 6.",
+        "chapter": "II - Retail sale packages",
+        "status": "ACTIVE"
+      },
+      "introduced_by": {
+        "amendment_id": "AMD-2021-779",
+        "gsr_number": "G.S.R. 779(E)",
+        "notification_date": "2021-11-02"
+      },
+      "last_amended_by": null,
+      "source": {
+        "source_id": "SRC-025",
+        "filename": "230946_1733384533.pdf",
+        "gsr_number": "G.S.R. 779(E)"
+      }
+    },
+    {
+      "rule_id": "LM-CR-018",
+      "field": "quantity_by_number_wording",
+      "description": "For items sold by number, use one of: number/unit/piece/pair/set (or equivalent word) to represent package quantity.",
+      "validation_type": "FORMAT",
+      "parameters": {
+        "allowed_terms": [
+          "number",
+          "unit",
+          "piece",
+          "pair",
+          "set"
+        ]
+      },
+      "severity": "LOW",
+      "applicability": [
+        "pre_packaged_general"
+      ],
+      "effective_from": "2024-01-01",
+      "effective_to": null,
+      "verification_status": "VERIFIED_FROM_SOURCE",
+      "notes": "",
+      "provision": {
+        "provision_id": "LM-PCR-R13-5-II",
+        "rule_number": "13",
+        "sub_rule": "5",
+        "clause": "ii",
+        "title": "Declaration for items sold by number",
+        "legal_text": "For items sold by number, the number, unit, piece, pair, set, or such other word representing the quantity in the package shall be mentioned.",
+        "chapter": "II - Retail sale packages",
+        "status": "ACTIVE"
+      },
+      "introduced_by": {
+        "amendment_id": "AMD-2021-779",
+        "gsr_number": "G.S.R. 779(E)",
+        "notification_date": "2021-11-02"
+      },
+      "last_amended_by": null,
+      "source": {
+        "source_id": "SRC-025",
+        "filename": "230946_1733384533.pdf",
+        "gsr_number": "G.S.R. 779(E)"
+      }
+    },
+    {
+      "rule_id": "LM-CR-019",
+      "field": "exemption_drug_price_control",
+      "description": "Packages of scheduled/non-scheduled formulations under the Drugs (Price Control) Order, 2013 are exempt from PCR declarations, EXCEPT medical devices declared as drugs (no exemption for those).",
+      "validation_type": "APPLICABILITY_EXCLUSION",
+      "parameters": {
+        "exclude_if": "category == pharma_price_controlled and not is_medical_device_declared_as_drug"
+      },
+      "severity": "MEDIUM",
+      "applicability": [
+        "pharma_price_controlled"
+      ],
+      "effective_from": null,
+      "effective_to": null,
+      "verification_status": "VERIFIED_FROM_SOURCE",
+      "notes": "",
+      "provision": {
+        "provision_id": "LM-PCR-R26-C",
+        "rule_number": "26",
+        "sub_rule": null,
+        "clause": "c",
+        "title": "Exemption clause (c) - Drug Price Control Order formulations",
+        "legal_text": "Exempts packages containing scheduled and non-scheduled formulations covered under the Drugs (Price Control) Order, 2013 (made under the Essential Commodities Act, 1955); PROVIDED that no exemption applies to medical devices declared as drugs.",
+        "chapter": "II - Retail sale packages",
+        "status": "ACTIVE"
+      },
+      "introduced_by": {
+        "amendment_id": "AMD-2011-202",
+        "gsr_number": "G.S.R. 202(E)",
+        "notification_date": "2011-03-07"
+      },
+      "last_amended_by": null,
+      "source": {
+        "source_id": "SRC-014",
+        "filename": "2023.7.10 Medical Devices revision of prices_1732709214.pdf",
+        "gsr_number": null
+      }
+    },
+    {
+      "rule_id": "LM-CR-020",
+      "field": "loose_garment_exemption_conditions",
+      "description": "Loose/open garments & hosiery are exempt from standard packaging declarations ONLY if the product itself bears: manufacturer/brand+COO, consumer-care email+phone, internationally recognizable size (S/M/L/XL/XXL/XXXL) with metric cm/m detail, and MRP incl. all taxes. If sold via e-commerce, the same 4 items must also appear on the online listing.",
+      "validation_type": "CONDITIONAL",
+      "parameters": {
+        "exempt_only_if_all_present": [
+          "manufacturer_brand_coo",
+          "consumer_care_contact",
+          "size_with_metric",
+          "mrp_incl_taxes"
+        ]
+      },
+      "severity": "HIGH",
+      "applicability": [
+        "garments_hosiery"
+      ],
+      "effective_from": "2023-01-01",
+      "effective_to": null,
+      "verification_status": "VERIFIED_FROM_SOURCE",
+      "notes": "",
+      "provision": {
+        "provision_id": "LM-PCR-R26-F",
+        "rule_number": "26",
+        "sub_rule": null,
+        "clause": "f",
+        "title": "Exemption clause (f) - loose garments/hosiery",
+        "legal_text": "Exempts a garment or hosiery commodity sold loose/open at the point of sale (where the consumer can inspect before buying), PROVIDED the product itself bears: (i) name & address of manufacturer/marketer/brand-owner/importer with country of origin/manufacture if imported; (ii) consumer-care email id and phone number; (iii) sizes with internationally recognizable indicators (S/M/L/XL/XXL/XXXL) plus metric cm/m detail; (iv) MRP inclusive of all taxes in Indian currency. Applies only to finished products; must additionally be displayed on the e-commerce listing if sold online; sellers may voluntarily comply before the effective date.",
+        "chapter": "II - Retail sale packages",
+        "status": "ACTIVE"
+      },
+      "introduced_by": {
+        "amendment_id": "AMD-2022-648",
+        "gsr_number": "G.S.R. 648(E)",
+        "notification_date": "2022-08-22"
+      },
+      "last_amended_by": null,
+      "source": {
+        "source_id": "SRC-008",
+        "filename": "2022 3rd amendment in PCR Garments_1732708772.pdf",
+        "gsr_number": "G.S.R. 648(E)"
+      }
+    },
+    {
+      "rule_id": "LM-CR-021",
+      "field": "pan_masala_no_exemption",
+      "description": "Pan masala packages CANNOT rely on the general exemption in rule 26(a) - standard declaration rules apply in full.",
+      "validation_type": "APPLICABILITY_EXCLUSION",
+      "parameters": {
+        "force_include_if": "category == pan_masala"
+      },
+      "severity": "HIGH",
+      "applicability": [
+        "pan_masala"
+      ],
+      "effective_from": "2026-02-01",
+      "effective_to": null,
+      "verification_status": "VERIFIED_FROM_SOURCE",
+      "notes": "",
+      "provision": {
+        "provision_id": "LM-PCR-R26-A",
+        "rule_number": "26",
+        "sub_rule": null,
+        "clause": "a",
+        "title": "Exemption clause (a) - with pan-masala carve-out",
+        "legal_text": "General exemption clause (a) (exact original wording not captured verbatim this session); a further proviso inserted in 2025 clarifies that the exemption under this clause does NOT apply to pan masala.",
+        "chapter": "II - Retail sale packages",
+        "status": "ACTIVE"
+      },
+      "introduced_by": {
+        "amendment_id": "AMD-2011-202",
+        "gsr_number": "G.S.R. 202(E)",
+        "notification_date": "2011-03-07"
+      },
+      "last_amended_by": {
+        "amendment_id": "AMD-2025-881",
+        "gsr_number": "G.S.R. 881(E)",
+        "notification_date": "2025-12-02"
+      },
+      "source": {
+        "source_id": "SRC-021",
+        "filename": "2nd PCR Pan Masala_1764736573.pdf",
+        "gsr_number": "G.S.R. 881(E)"
+      }
+    },
+    {
+      "rule_id": "LM-CR-022",
+      "field": "bonded_warehouse_declaration_timing",
+      "description": "Importers using AEO Tier-2/Tier-3 bonded warehouses may complete mandatory declarations there, PROVIDED all declarations are complete before the retail packages leave the bonded warehouse - a package leaving the warehouse incomplete is a violation regardless of import-stage timing excuses.",
+      "validation_type": "CONDITIONAL",
+      "parameters": {
+        "deadline_event": "leaves_bonded_warehouse",
+        "requires": "all_mandatory_declarations_complete"
+      },
+      "severity": "MEDIUM",
+      "applicability": [
+        "imported_products"
+      ],
+      "effective_from": "2026-05-29",
+      "effective_to": null,
+      "verification_status": "VERIFIED_FROM_SOURCE",
+      "notes": "",
+      "provision": {
+        "provision_id": "LM-PCR-R4-EXP2",
+        "rule_number": "4",
+        "sub_rule": null,
+        "clause": "Explanation-2",
+        "title": "Bonded-warehouse (AEO Tier-2/3) declaration timing",
+        "legal_text": "For removal of doubt, importers may make mandatory declarations at bonded warehouses of Authorised Economic Operator Tier-2/Tier-3 certified operators in India, PROVIDED all mandatory declarations under these rules are complete before the retail packages leave that bonded warehouse.",
+        "chapter": "II - Retail sale packages",
+        "status": "ACTIVE"
+      },
+      "introduced_by": {
+        "amendment_id": "AMD-2026-418",
+        "gsr_number": "G.S.R. 418(E)",
+        "notification_date": "2026-05-29"
+      },
+      "last_amended_by": null,
+      "source": {
+        "source_id": "SRC-024",
+        "filename": "PCR_3rd_29May2026_1780375945.pdf",
+        "gsr_number": "G.S.R. 418(E)"
+      }
+    },
+    {
+      "rule_id": "LM-CR-023",
+      "field": "registration_responsible_director_named",
+      "description": "Manufacturer/packer/importer registration record must name the Director responsible for violations under the Act/rules.",
+      "validation_type": "PRESENCE",
+      "parameters": {},
+      "severity": "MEDIUM",
+      "applicability": [
+        "pre_packaged_general"
+      ],
+      "effective_from": "2026-05-29",
+      "effective_to": null,
+      "verification_status": "VERIFIED_FROM_SOURCE",
+      "notes": "This is a registration-record check (officer-dashboard / registry data), not a per-package OCR check.",
+      "provision": {
+        "provision_id": "LM-PCR-R27-2-D",
+        "rule_number": "27",
+        "sub_rule": "2",
+        "clause": "d",
+        "title": "Registration must name the responsible Director",
+        "legal_text": "Registration particulars for a company/firm must include the name of the Director of the company responsible for violations under the Act and rules made thereunder.",
+        "chapter": "IV - Registration & Miscellaneous",
+        "status": "ACTIVE"
+      },
+      "introduced_by": {
+        "amendment_id": "AMD-2026-418",
+        "gsr_number": "G.S.R. 418(E)",
+        "notification_date": "2026-05-29"
+      },
+      "last_amended_by": null,
+      "source": {
+        "source_id": "SRC-024",
+        "filename": "PCR_3rd_29May2026_1780375945.pdf",
+        "gsr_number": "G.S.R. 418(E)"
+      }
+    },
+    {
+      "rule_id": "LM-CR-024",
+      "field": "registration_annual_update",
+      "description": "Registered company/firm details must be updated annually via the online portal if any particular has changed.",
+      "validation_type": "PRESENCE",
+      "parameters": {
+        "cadence": "annual"
+      },
+      "severity": "LOW",
+      "applicability": [
+        "pre_packaged_general"
+      ],
+      "effective_from": "2026-05-29",
+      "effective_to": null,
+      "verification_status": "VERIFIED_FROM_SOURCE",
+      "notes": "Registry/administrative check, not a per-package OCR check.",
+      "provision": {
+        "provision_id": "LM-PCR-R27-3-PROV",
+        "rule_number": "27",
+        "sub_rule": "3",
+        "clause": null,
+        "title": "Annual update of registration details",
+        "legal_text": "A company/firm shall update its registration details annually, including any change in particulars; an option shall be made available on the online portal for this annual update (address, products, and related particulars).",
+        "chapter": "IV - Registration & Miscellaneous",
+        "status": "ACTIVE"
+      },
+      "introduced_by": {
+        "amendment_id": "AMD-2026-418",
+        "gsr_number": "G.S.R. 418(E)",
+        "notification_date": "2026-05-29"
+      },
+      "last_amended_by": null,
+      "source": {
+        "source_id": "SRC-024",
+        "filename": "PCR_3rd_29May2026_1780375945.pdf",
+        "gsr_number": "G.S.R. 418(E)"
+      }
+    },
+    {
+      "rule_id": "LM-CR-025",
+      "field": "medical_device_relaxation_disapplied",
+      "description": "Where the Medical Devices Rules, 2017 apply to a package, the general rule-33 relaxation does NOT apply - do not grant any rule-33-based leniency to medical-device packages.",
+      "validation_type": "APPLICABILITY_EXCLUSION",
+      "parameters": {
+        "exclude_relaxation_if": "category == medical_devices"
+      },
+      "severity": "MEDIUM",
+      "applicability": [
+        "medical_devices"
+      ],
+      "effective_from": "2025-10-23",
+      "effective_to": null,
+      "verification_status": "VERIFIED_FROM_SOURCE",
+      "notes": "",
+      "provision": {
+        "provision_id": "LM-PCR-R33-2",
+        "rule_number": "33",
+        "sub_rule": "2",
+        "clause": null,
+        "title": "Rule-33 relaxation disapplied for medical devices",
+        "legal_text": "In case the Medical Devices Rules, 2017 are applicable to a package, the relaxation otherwise given under rule 33 shall NOT apply.",
+        "chapter": "IV - Registration & Miscellaneous",
+        "status": "ACTIVE"
+      },
+      "introduced_by": {
+        "amendment_id": "AMD-2025-778",
+        "gsr_number": "G.S.R. 778(E)",
+        "notification_date": "2025-10-23"
+      },
+      "last_amended_by": null,
+      "source": {
+        "source_id": "SRC-020",
+        "filename": "267107_1761404371.pdf",
+        "gsr_number": "G.S.R. 778(E)"
+      }
+    }
+  ]
+}

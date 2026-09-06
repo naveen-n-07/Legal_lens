@@ -1,0 +1,97 @@
+[
+  {
+    "category_id": "pre_packaged_general",
+    "name": "Pre-packaged commodity (general)",
+    "description": "Default category: any retail-sale pre-packaged commodity not covered by a more specific category below, and not excluded by rule 3."
+  },
+  {
+    "category_id": "pre_packaged_food",
+    "name": "Pre-packaged food article",
+    "description": "Food articles - declarations under rule 6(1)(a) name/address are carved out in favour of the Food Safety and Standards Act, 2006 (Explanation III to 6(1)(a))."
+  },
+  {
+    "category_id": "cosmetics",
+    "name": "Cosmetics",
+    "description": "Packages containing cosmetic products - Drugs & Cosmetics Rules, 1945 apply alongside PCR (per project notes; not independently re-verified this session)."
+  },
+  {
+    "category_id": "medical_devices",
+    "name": "Medical devices",
+    "description": "Packages containing medical devices - Medical Devices Rules, 2017 govern declarations (rule 2(h) proviso), letter height/width (rule 7(2)/(3) provisos), and rule-33 relaxation is disapplied (rule 33(2))."
+  },
+  {
+    "category_id": "pharma_price_controlled",
+    "name": "Price-controlled pharmaceutical formulations",
+    "description": "Scheduled/non-scheduled formulations under the Drugs (Price Control) Order, 2013 - exempt under rule 26(c), EXCEPT medical devices declared as drugs."
+  },
+  {
+    "category_id": "garments_hosiery",
+    "name": "Garments / hosiery",
+    "description": "Garment or hosiery commodities; rule 26(f) permits loose/open sale exempt from standard packaging declarations subject to 4 on-product disclosures."
+  },
+  {
+    "category_id": "pan_masala",
+    "name": "Pan masala",
+    "description": "Pan masala packages - rule 26(a)'s general exemption explicitly does NOT apply (2025 amendment, effective 1-Feb-2026)."
+  },
+  {
+    "category_id": "edible_oil_fats",
+    "name": "Edible oils & fats",
+    "description": "Subject to the DCA's dedicated Net Quantity Determination SOP (SRC-019)."
+  },
+  {
+    "category_id": "electronic_products",
+    "name": "Electronic products",
+    "description": "Had a transitional (now expired) QR-code alternative for name/address and generic-name declarations (rule 6(1)(a)/(b) provisos, AMD-2022-577)."
+  },
+  {
+    "category_id": "alcoholic_beverages",
+    "name": "Alcoholic beverages / spirituous liquor",
+    "description": "MRP and unit-sale-price declarations follow applicable State Excise law within the manufacturing state, where that law itself provides for such a declaration."
+  },
+  {
+    "category_id": "lpg_cylinder_bidi_agarbatti",
+    "name": "LPG cylinders (PSU-filled), bidi, agarbatti",
+    "description": "Referenced in the principal rules as exempted from the manufacture month/year declaration requirement (needs verification against SRC-001 full text)."
+  },
+  {
+    "category_id": "farm_produce",
+    "name": "Agricultural farm produce",
+    "description": "Farm produce packages up to 50 kg ARE covered by PCR 2011 (confirmed by DCA advisory SRC-012); only bags ABOVE 50 kg are excluded under rule 3(b), alongside cement and fertilizer."
+  },
+  {
+    "category_id": "industrial_institutional",
+    "name": "Industrial / institutional consumer packages",
+    "description": "Packaged commodities meant for industrial or institutional consumers are wholly excluded from Chapter II under rule 3(c)."
+  },
+  {
+    "category_id": "bulk_over_25kg",
+    "name": "Bulk packages > 25 kg / 25 litre",
+    "description": "Excluded from Chapter II under rule 3(a)."
+  },
+  {
+    "category_id": "e_commerce_listing",
+    "name": "E-commerce product listing",
+    "description": "Not a physical package category but a digital-listing surface: rule 6(10) (mandatory declarations must be shown online) and rule 6(10A) (country-of-origin searchable/sortable filter for imported products, effective 1-Jul-2027) attach here."
+  },
+  {
+    "category_id": "imported_products",
+    "name": "Imported products",
+    "description": "Country-of-origin declaration (rule 6(1)(aa)), e-commerce COO filter (rule 6(10A)), and bonded-warehouse declaration timing (rule 4 Explanation-2) all key off import status."
+  },
+  {
+    "category_id": "combination_group_package",
+    "name": "Combination / group packages",
+    "description": "Rule 2(ka)/(kb): packages bundling multiple dissimilar (combination) or similar-but-not-identical (group) commodities/pieces together for retail sale."
+  },
+  {
+    "category_id": "wholesale_package",
+    "name": "Wholesale package",
+    "description": "Governed by Rule 18 rather than the retail-sale rule 6 declarations."
+  },
+  {
+    "category_id": "fuel_vehicle_tank",
+    "name": "Vehicle fuel tank capacity (advisory only)",
+    "description": "Covered by a DCA advisory (SRC-013) about safety-margin tank capacity in service manuals; not itself a PCR rule change - RAG/explanatory reference only."
+  }
+]
