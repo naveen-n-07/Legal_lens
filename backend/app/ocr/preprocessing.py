@@ -501,19 +501,15 @@ class OpenCVPreprocessor:
         return canvas_4k
 
     @staticmethod
-    def generate_ocr_variants(img: np.ndarray) -> List[Dict[str, Any]]:
+    def generate_ocr_variants(img: np.ndarray, fast_mode: bool = True) -> List[Dict[str, Any]]:
         """
         Generates non-destructive image preprocessing variants for multi-pass OCR on Indian packaging.
-        Each variant includes:
-        - name: identifier for the variant
-        - image: np.ndarray processed image
-        - scale_factor: float scale relative to original image
-        - description: what preprocessing was applied
+        Supports fast_mode for instant response times during live package scanning.
         """
         h, w = img.shape[:2]
         variants = []
 
-        # 1. Base Ultra High-Quality Enhanced Color Image
+        # 1. Base Ultra High-Quality Enhanced Color Image (Primary Pass)
         preview_enhanced = OpenCVPreprocessor.enhance_for_preview(img)
         variants.append({
             "name": "enhanced_color",
@@ -531,6 +527,10 @@ class OpenCVPreprocessor:
             "rotation": 0,
             "description": "Adaptive Gamma Illumination + High-Boost Stroke Deblurring for Maximum Clearance"
         })
+
+        # In fast_mode, return top 2 high-precision variants immediately for sub-second scanning
+        if fast_mode:
+            return variants
 
         # 2. Adaptive Super-Resolution Lanczos-4 Upscaling for Small Package Images (e.g. 300-600px)
         max_dim = max(h, w)
@@ -552,8 +552,6 @@ class OpenCVPreprocessor:
             })
 
         # 3. Dynamic Grayscale LAB L-Channel CLAHE (high contrast for statutory text panels)
-        # Using LAB's L-channel directly converted to grayscale for maximum contrast
-        # Ultra-fast edge-preserving denoising
         lab = cv2.cvtColor(img, cv2.COLOR_BGR2LAB)
         l, a, b = cv2.split(lab)
         clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8,8))
@@ -596,7 +594,7 @@ class OpenCVPreprocessor:
             "description": "Gaussian Adaptive Thresholding"
         })
 
-        # 6. Rotated 90 degrees clockwise (for vertical packaging margins / sideways text)
+        # 6. Rotated 90 degrees clockwise
         rot_cw = cv2.rotate(preview_enhanced, cv2.ROTATE_90_CLOCKWISE)
         variants.append({
             "name": "rot_90_cw",
@@ -606,7 +604,7 @@ class OpenCVPreprocessor:
             "description": "90-Degree Clockwise Rotation for Sideways Statutory Flaps"
         })
 
-        # 7. Rotated 270 degrees clockwise / 90 degrees CCW (for counter-oriented margin text)
+        # 7. Rotated 270 degrees clockwise
         rot_ccw = cv2.rotate(preview_enhanced, cv2.ROTATE_90_COUNTERCLOCKWISE)
         variants.append({
             "name": "rot_90_ccw",

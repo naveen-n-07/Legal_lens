@@ -69,7 +69,13 @@ export default function App() {
               {/* Role-Sensitive Dashboard */}
               <Route 
                 path="/dashboard" 
-                element={role === 'inspector' ? <InspectorDashboard user={user} /> : <Dashboard />} 
+                element={
+                  role === 'admin' 
+                    ? <AdminControl /> 
+                    : role === 'reviewing_officer' 
+                      ? <OfficerReview /> 
+                      : <InspectorDashboard user={user} />
+                } 
               />
               
               {/* Field Inspector Core Routes */}
@@ -82,10 +88,17 @@ export default function App() {
               <Route path="/history" element={<AuditHistory />} />
               <Route path="/reports" element={<Reports />} />
 
-              {/* Reviewing Officer Routes */}
-              <Route path="/officer/review" element={<OfficerReview />} />
+              {/* Assistant Controller / Adjudicator Routes */}
+              <Route 
+                path="/officer/review" 
+                element={
+                  (role === 'reviewing_officer' || role === 'admin') 
+                    ? <OfficerReview /> 
+                    : <Navigate to={getDefaultLandingRoute()} replace />
+                } 
+              />
 
-              {/* Admin Only Routes */}
+              {/* Controller / Admin Only Routes */}
               <Route 
                 path="/admin/control" 
                 element={

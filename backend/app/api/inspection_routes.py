@@ -1009,8 +1009,8 @@ def process_single_image_worker(idx: int, img_bytes: bytes, uuid_str: str) -> di
     proc_path = os.path.join(RESULTS_DIR, proc_fname)
 
     cv2.imwrite(orig_path, img_cv)
-    variants = OpenCVPreprocessor.generate_ocr_variants(img_cv)
-    enhanced_img = OpenCVPreprocessor.generate_4k_enhanced_image(img_cv)
+    variants = OpenCVPreprocessor.generate_ocr_variants(img_cv, fast_mode=True)
+    enhanced_img = OpenCVPreprocessor.enhance_for_preview(img_cv)
     cv2.imwrite(proc_path, enhanced_img)
 
     original_url = f"/results/{orig_fname}"

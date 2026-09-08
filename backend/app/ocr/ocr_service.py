@@ -354,8 +354,8 @@ class PaddleOCRService:
         all_variant_detections = []
         max_dim = max(orig_h, orig_w)
 
-        # 1. Full image multi-pass variants
-        for v in variants:
+        # 1. Full image multi-pass variants with Fast-Track Early Exit
+        for idx, v in enumerate(variants):
             v_name = v["name"]
             v_img = v["image"]
             v_scale = v.get("scale_factor", 1.0)
@@ -371,7 +371,12 @@ class PaddleOCRService:
             )
             all_variant_detections.extend(dets)
 
-            # Multi-scale sliding window for large resolutions to capture fine print
+            # Fast-Track Early Exit: If primary pass extracted 2+ valid text detections, return immediately
+            if idx == 0 and len(dets) >= 2:
+                logger.info(f"[OCR][FAST-TRACK] Primary pass '{v_name}' returned {len(dets)} text lines. Early exit active.")
+                break
+
+            # Multi-scale sliding window fallback for large resolutions
             if max_dim > 1500 and v_name in ("enhanced_color", "grayscale_clahe") and v_rot == 0:
                 patch_size = 1000
                 overlap = 150
