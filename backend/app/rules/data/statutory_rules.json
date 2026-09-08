@@ -248,7 +248,7 @@
       "operator": "regex",
       "pattern": "^\\d{14}$"
     },
-    "required": false,
+    "required": true,
     "severity": "HIGH",
     "error_message": "FSSAI License number must be a valid 14-digit numeric identifier.",
     "explanation": "FSSAI Regulation 5(7) mandates the 14-digit FSSAI License number alongside the FSSAI logo on all food packages.",

@@ -249,7 +249,7 @@ export default function Dashboard() {
             <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200 space-y-1">
               <span className="font-black text-slate-900 text-sm block">Rule 7: Table-I Numeral & Letter Height Matrix</span>
               <p className="text-xs text-slate-700 font-medium">
-                Statutory minimum heights evaluated against PDP surface area ($50, 100, 500, 2500\text{ cm}^2$).
+                Statutory minimum heights evaluated against PDP surface area (50, 100, 500, 2500 cm²).
               </p>
             </div>
 

@@ -151,11 +151,11 @@ class DataNormalizer:
             except ValueError:
                 pass
 
-        # Format 4: Month name + Year (e.g., 'JAN 2026', 'October 2025')
-        for fmt in ["%b %Y", "%B %Y", "%b-%Y", "%b/%Y", "%b '%y", "%b %y"]:
+        # Format 4: Month name + Year (e.g., 'JAN 2026', 'October 2025', 'MAR2024', '15 JUL 2023')
+        for fmt in ["%b %Y", "%B %Y", "%b-%Y", "%b/%Y", "%b '%y", "%b %y", "%b%Y", "%b%y", "%d %b %Y", "%d-%b-%Y", "%d/%b/%Y"]:
             try:
                 dt = datetime.strptime(s, fmt)
-                return date(dt.year, dt.month, 1)
+                return dt.date() if "%d" in fmt else date(dt.year, dt.month, 1)
             except ValueError:
                 pass
 

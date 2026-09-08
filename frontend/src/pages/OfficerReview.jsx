@@ -279,7 +279,26 @@ export default function OfficerReview() {
     (b.text || '').toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const displayImage = inspection.previewUrl || (inspection.processed_urls && inspection.processed_urls[0]) || (inspection.original_urls && inspection.original_urls[0]) || '';
+  const resolveDisplayImage = () => {
+    const raw = inspection.annotated_image_b64 ||
+      inspection.annotated_image_url ||
+      inspection.previewUrl ||
+      (inspection.processed_urls && inspection.processed_urls[0]) ||
+      (inspection.original_urls && inspection.original_urls[0]) || '';
+    if (!raw) return '';
+    if (raw.startsWith('data:') || raw.startsWith('blob:') || raw.startsWith('http://') || raw.startsWith('https://')) {
+      return raw;
+    }
+    if (raw.length > 200 && !raw.includes('/') && !raw.includes('.')) {
+      return `data:image/jpeg;base64,${raw}`;
+    }
+    if (raw.startsWith('/')) {
+      return `http://localhost:8000${raw}`;
+    }
+    return `http://localhost:8000/results/${raw}`;
+  };
+
+  const displayImage = resolveDisplayImage();
 
   return (
     <div className="p-8 max-w-7xl mx-auto space-y-8">

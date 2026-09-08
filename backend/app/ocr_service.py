@@ -7,7 +7,7 @@ import numpy as np  # type: ignore
 import re
 from typing import Dict, Any, List
 
-from app.ocr.ocr_service import PaddleOCRService
+from app.ocr.ocr_service import PaddleOCRService, decode_barcode
 from app.ocr.preprocessing import OpenCVPreprocessor
 
 class OpenCVOCRService:

@@ -55,7 +55,7 @@ class LegalMetrologyOCR:
 
     def __init__(
         self,
-        lang: str = "devanagari",
+        lang: str = "en",
         ocr_version: str = "PP-OCRv4",
         use_angle_cls: bool = True,
         det_db_box_thresh: float = 0.5,
@@ -66,7 +66,7 @@ class LegalMetrologyOCR:
         """
         Initializes the PaddleOCR engine with legal metrology statutory specifications.
 
-        :param lang: Language model ('devanagari' supports native Hindi + English simultaneous OCR).
+        :param lang: Language model ('en' default for universal English/Latin statutory packaging texts with angle classification).
         :param ocr_version: 'PP-OCRv4' Server architecture for curved packaging & dot-matrix font resilience.
         :param use_angle_cls: Orientation classification for 90/180/270 degree rotated package text.
         :param det_db_box_thresh: Text detection probability threshold (DBNet).
@@ -95,7 +95,7 @@ class LegalMetrologyOCR:
             logger.info("=" * 70)
             logger.info("Initializing LegalMetrologyOCR Engine (Singleton)...")
             logger.info(f"Target Architecture : {self.ocr_version} Server")
-            logger.info(f"Multilingual Scope  : {self.lang} (Hindi + English)")
+            logger.info(f"Language Scope      : {self.lang} (English Statutory declarations)")
             logger.info(f"Angle Classifier    : {self.use_angle_cls} (Orientation Invariant)")
             logger.info(f"Detection Threshold : {self.det_db_box_thresh} | Drop Score: {self.drop_score}")
             logger.info(f"Compute Hardware    : {'CUDA GPU' if self.use_gpu else 'CPU Vectorized (AVX2/AVX-512)'}")

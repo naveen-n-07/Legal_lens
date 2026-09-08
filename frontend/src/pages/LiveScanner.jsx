@@ -874,7 +874,7 @@ export default function LiveScanner() {
 
       inspectionData.original_url = rawDataUrl;
       inspectionData.processed_url = enhancedDataUrl;
-      inspectionData.previewUrl = enhancedDataUrl || rawDataUrl;
+      inspectionData.previewUrl = inspectionData.annotated_image_b64 || inspectionData.annotated_image_url || enhancedDataUrl || rawDataUrl;
 
       const sideRecord = {
         side: scanningSide,

@@ -137,6 +137,10 @@ app.include_router(inspection_router, prefix=settings.API_V1_STR)
 app.include_router(report_router, prefix=settings.API_V1_STR)
 app.include_router(analytics_router, prefix=settings.API_V1_STR)
 app.include_router(scanner_router, prefix=settings.API_V1_STR)
+
+# Direct /api route aliases for statutory report & inspection endpoints
+app.include_router(inspection_router, prefix="/api")
+app.include_router(report_router, prefix="/api")
 app.include_router(ocr_router)
 app.include_router(detection_router)
 app.include_router(scanner_router)

@@ -97,7 +97,8 @@ class ComplianceService:
         total_rules = len(results)
         passed_count = sum(1 for r in results if r["status"] == "PASS")
         failed_count = sum(1 for r in results if r["status"] == "FAIL")
-        review_count = sum(1 for r in results if r["status"] == "NEEDS_REVIEW")
+        review_count = sum(1 for r in results if r["status"] in ["NEEDS_REVIEW", "REVIEW", "CANNOT_VERIFY"])
+        bypassed_count = sum(1 for r in results if r["status"] in ["NOT_APPLICABLE", "BYPASSED", "N/A"])
 
         # Determine overall screening status safely
         if failed_count > 0:
@@ -119,7 +120,8 @@ class ComplianceService:
                 "total_rules": total_rules,
                 "passed": passed_count,
                 "failed": failed_count,
-                "needs_review": review_count
+                "needs_review": review_count,
+                "bypassed": bypassed_count
             },
             "results": results
         }

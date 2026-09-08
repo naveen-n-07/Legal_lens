@@ -7,6 +7,7 @@ import json
 import os
 from typing import Optional, List, Dict, Any
 from sqlalchemy.orm import Session  # type: ignore
+from sqlalchemy import or_  # type: ignore
 
 from app.models import ComplianceRuleDB
 from app.database import SessionLocal
@@ -200,144 +201,109 @@ def _map_canonical_rule_entry(r_entry: Dict[str, Any]) -> Dict[str, Any]:
     }
 
 
-# Statutory complementary provisions for full package screening (Food Safety & Customer Care)
-COMPLEMENTARY_STATUTORY_RULES: List[Dict[str, Any]] = [
-    {
-        "rule_id": "LM-PCR-2011-R06-S1-E-MRP",
-        "regulation": "Legal Metrology (Packaged Commodities) Rules, 2011",
-        "regulation_section": "Rule 6(1)(e)",
-        "product_category": "ALL",
-        "field_name": "mrp",
-        "rule_type": "MANDATORY_FIELD",
-        "condition": json.dumps({"operator": "present"}),
-        "required": True,
-        "severity": "HIGH",
-        "error_message": "Maximum Retail Price (MRP) declaration is mandatory under Rule 6(1)(e).",
-        "explanation": "Rule 6(1)(e) mandates that the retail sale price (MRP) inclusive of all taxes must be declared.",
-        "version": "2026.1.0",
-        "source_reference": "Rule 6(1)(e) - Legal Metrology (Packaged Commodities) Rules, 2011",
-        "is_active": True,
-        "rule_category": "ALL",
-        "statutory_reference": "Rule 6(1)(e) - Retail Sale Price",
-        "target_parameter": "mrp",
-        "compliance_condition": "Retail Sale Price (MRP) must be declared inclusive of all taxes.",
-        "violation_condition": "Missing MRP declaration."
-    },
-    {
-        "rule_id": "LM-PCR-2011-R06-S1-F-CARE",
-        "regulation": "Legal Metrology (Packaged Commodities) Rules, 2011",
-        "regulation_section": "Rule 6(1)(n)",
-        "product_category": "ALL",
-        "field_name": "consumer_care",
-        "rule_type": "MANDATORY_FIELD",
-        "condition": json.dumps({"operator": "present"}),
-        "required": True,
-        "severity": "HIGH",
-        "error_message": "Consumer care details (name, address, telephone/email) missing under Rule 6(1)(n).",
-        "explanation": "Rule 6(1)(n) mandates the declaration of name, address, telephone number and email address of the person or office to contact in case of consumer complaints.",
-        "version": "2026.1.0",
-        "source_reference": "Rule 6(1)(n) - Legal Metrology (Packaged Commodities) Rules, 2011",
-        "is_active": True,
-        "rule_category": "ALL",
-        "statutory_reference": "Rule 6(1)(n) - Consumer Care Details",
-        "target_parameter": "consumer_care",
-        "compliance_condition": "Consumer care contact details must be provided.",
-        "violation_condition": "Missing consumer care details."
-    },
-    {
-        "rule_id": "FSSAI-LDR-2020-R05-S7-LIC",
-        "regulation": "Food Safety and Standards (Labelling and Display) Regulations, 2020",
-        "regulation_section": "Regulation 5(7)",
-        "product_category": "Food & Beverages",
-        "field_name": "fssai_license",
-        "rule_type": "FORMAT_CHECK",
-        "condition": json.dumps({"operator": "regex", "pattern": r"^\d{14}$"}),
-        "required": True,
-        "severity": "HIGH",
-        "error_message": "FSSAI logo and 14-digit license number is mandatory on pre-packaged food.",
-        "explanation": "Regulation 5(7) of FSSAI requires the FSSAI logo and 14-digit license number to be displayed on the label of food products.",
-        "version": "2026.1.0",
-        "source_reference": "Regulation 5(7) - FSSAI Labelling and Display Regulations, 2020",
-        "is_active": True,
-        "rule_category": "Food & Beverages",
-        "statutory_reference": "FSSAI Regulation 5(7) - License Number",
-        "target_parameter": "fssai_license",
-        "compliance_condition": "14-digit FSSAI license must be present.",
-        "violation_condition": "Invalid or missing FSSAI license."
-    },
-    {
-        "rule_id": "FSSAI-LDR-2020-R05-S2-ING",
-        "regulation": "Food Safety and Standards (Labelling and Display) Regulations, 2020",
-        "regulation_section": "Regulation 5(2)",
-        "product_category": "Food & Beverages",
-        "field_name": "ingredients",
-        "rule_type": "MANDATORY_FIELD",
-        "condition": json.dumps({"operator": "present"}),
-        "required": True,
-        "severity": "HIGH",
-        "error_message": "List of ingredients is mandatory for pre-packaged food commodities.",
-        "explanation": "Regulation 5(2) mandates a complete list of ingredients in descending order of weight or volume.",
-        "version": "2026.1.0",
-        "source_reference": "Regulation 5(2) - FSSAI Labelling and Display Regulations, 2020",
-        "is_active": True,
-        "rule_category": "Food & Beverages",
-        "statutory_reference": "FSSAI Regulation 5(2) - Ingredients List",
-        "target_parameter": "ingredients",
-        "compliance_condition": "List of ingredients must be declared.",
-        "violation_condition": "Missing ingredients list."
-    },
-    {
-        "rule_id": "FSSAI-LDR-2020-R05-S3-ALG",
-        "regulation": "Food Safety and Standards (Labelling and Display) Regulations, 2020",
-        "regulation_section": "Regulation 5(3)",
-        "product_category": "Food & Beverages",
-        "field_name": "allergen_declaration",
-        "rule_type": "MANDATORY_FIELD",
-        "condition": json.dumps({"operator": "present"}),
-        "required": False,
-        "severity": "MEDIUM",
-        "error_message": "Allergen declaration required if product contains allergenic ingredients.",
-        "explanation": "Regulation 5(3) mandates allergen declaration for known major allergens.",
-        "version": "2026.1.0",
-        "source_reference": "Regulation 5(3) - FSSAI Labelling and Display Regulations, 2020",
-        "is_active": True,
-        "rule_category": "Food & Beverages",
-        "statutory_reference": "FSSAI Regulation 5(3) - Allergen Declaration",
-        "target_parameter": "allergen_declaration",
-        "compliance_condition": "Allergen statement should be declared where applicable.",
-        "violation_condition": "Missing allergen declaration."
-    }
-]
+# Canonical statutory complementary rules: duplicates removed to maintain clean non-overlapping rule evaluation
+DUPLICATE_RULE_IDS = {
+    "LM-PCR-2011-R06-S1-F-CARE",
+    "FSSAI-LDR-2020-R05-S2-ING",
+    "FSSAI-LDR-2020-R05-S3-ALG",
+    # Redundant legacy LM-CR- rules superseded by LM-PCR-2011-R06 and FSSAI- series
+    "LM-CR-001",
+    "LM-CR-001B",
+    "LM-CR-003",
+    "LM-CR-004",
+    "LM-CR-004B",
+    "LM-CR-005",
+    "LM-CR-006",
+    "LM-CR-007",
+    "LM-CR-007B",
+    "LM-CR-007C",
+    "LM-CR-007D",
+    "LM-CR-007E",
+    "LM-CR-011",
+}
+COMPLEMENTARY_STATUTORY_RULES: List[Dict[str, Any]] = []
 
 
 def seed_rules_from_dataset(db: Optional[Session] = None, force_reload: bool = False) -> int:
     """
-    Imports statutory rules from 'rule engine dataset' into the database.
-    Performs clean upserts to avoid primary key collisions or sqlite3.IntegrityError.
+    Imports statutory rules from 'rule engine dataset' and 'data/statutory_rules.json' into the database.
+    Eliminates duplicates and ensures exactly the canonical 34 statutory rules exist.
     """
-    dataset_file = get_dataset_path()
-    if not os.path.exists(dataset_file):
-        return 0
-
     local_db = db or SessionLocal()
     close_on_finish = db is None
     seeded_count = 0
-
     try:
-        with open(dataset_file, "r", encoding="utf-8") as f:
-            raw_data = json.load(f)
+        # Purge any known duplicate rule IDs, obsolete placeholders, or pseudo-rules
+        local_db.query(ComplianceRuleDB).filter(
+            or_(
+                ComplianceRuleDB.rule_id.in_(DUPLICATE_RULE_IDS),
+                ComplianceRuleDB.rule_id.like("rule_%"),
+                ComplianceRuleDB.rule_id.like("DECL-%"),
+                ComplianceRuleDB.rule_id.like("VIS-%"),
+                ComplianceRuleDB.rule_id.like("OCR-DET-%")
+            )
+        ).delete(synchronize_session=False)
+        local_db.commit()
 
-        rules_list: List[Dict[str, Any]] = []
-        if isinstance(raw_data, list):
-            rules_list = raw_data
-        elif isinstance(raw_data, dict):
-            rules_list = raw_data.get("rules", [])
+        # 1. Load primary statutory rules (LM-PCR & FSSAI mandatory declarations)
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        statutory_json = os.path.join(current_dir, "data", "statutory_rules.json")
+        statutory_entries: List[Dict[str, Any]] = []
+        if os.path.exists(statutory_json):
+            with open(statutory_json, "r", encoding="utf-8") as f:
+                stat_data = json.load(f)
+                if isinstance(stat_data, list):
+                    for r in stat_data:
+                        rid = r.get("rule_id", "")
+                        if rid and rid not in DUPLICATE_RULE_IDS:
+                            statutory_entries.append({
+                                "rule_id": rid,
+                                "regulation": r.get("regulation", "Legal Metrology (Packaged Commodities) Rules, 2011"),
+                                "regulation_section": r.get("regulation_section", ""),
+                                "product_category": r.get("product_category", "ALL"),
+                                "field_name": r.get("field_name", ""),
+                                "rule_type": r.get("rule_type", "MANDATORY_FIELD"),
+                                "condition": json.dumps(r.get("condition", {})),
+                                "required": r.get("required", True),
+                                "severity": r.get("severity", "HIGH"),
+                                "error_message": r.get("error_message", ""),
+                                "explanation": r.get("explanation", ""),
+                                "version": r.get("version", "2026.1.0"),
+                                "source_reference": r.get("source_reference", ""),
+                                "is_active": r.get("is_active", True),
+                                "rule_category": r.get("product_category", "ALL"),
+                                "statutory_reference": r.get("regulation_section", "Legal Metrology"),
+                                "target_parameter": r.get("field_name", rid),
+                                "compliance_condition": r.get("explanation", ""),
+                                "violation_condition": r.get("error_message", "")
+                            })
 
-        # 1. Transform canonical rules from rule engine dataset
-        canonical_entries = [_map_canonical_rule_entry(r) for r in rules_list if r.get("rule_id")]
+        # 2. Load complementary rules from rule engine dataset
+        dataset_file = get_dataset_path()
+        canonical_entries: List[Dict[str, Any]] = []
+        if os.path.exists(dataset_file):
+            with open(dataset_file, "r", encoding="utf-8") as f:
+                raw_data = json.load(f)
 
-        # 2. Append complementary statutory rules (FSSAI & Rule 6 aliases)
-        all_entries = canonical_entries + COMPLEMENTARY_STATUTORY_RULES
+            rules_list: List[Dict[str, Any]] = []
+            if isinstance(raw_data, list):
+                rules_list = raw_data
+            elif isinstance(raw_data, dict):
+                rules_list = raw_data.get("rules", [])
+
+            canonical_entries = [
+                _map_canonical_rule_entry(r) for r in rules_list 
+                if r.get("rule_id") and r.get("rule_id") not in DUPLICATE_RULE_IDS
+            ]
+
+        # 3. Combine without duplicates
+        seen_rids = set()
+        all_entries: List[Dict[str, Any]] = []
+        for e in (statutory_entries + canonical_entries):
+            rid = e.get("rule_id")
+            if rid and rid not in seen_rids and rid not in DUPLICATE_RULE_IDS:
+                seen_rids.add(rid)
+                all_entries.append(e)
 
         for mapped in all_entries:
             rule_id = mapped["rule_id"]
@@ -399,4 +365,5 @@ def seed_rules_from_dataset(db: Optional[Session] = None, force_reload: bool = F
     finally:
         if close_on_finish:
             local_db.close()
+
 
