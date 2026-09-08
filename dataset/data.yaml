@@ -1,8 +1,13 @@
-# YOLOv8 Dataset Configuration for Packaged Commodity Detection (Stage 1)
-path: c:/SIH/dataset
-train: images/train
-val: images/val
-test: images/test
+train: train/images
+val: valid/images
+test: test/images
 
-names:
-  0: package
+nc: 6
+names: ['barcode', 'logo', 'nutrition_table', 'paragraphs', 'sticker', 'text']
+
+roboflow:
+  workspace: abhishek-kumar-821mu
+  project: packaging-detection-ahp8g
+  version: 1
+  license: MIT
+  url: https://universe.roboflow.com/abhishek-kumar-821mu/packaging-detection-ahp8g/dataset/1

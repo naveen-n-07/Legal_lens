@@ -14,6 +14,7 @@ import threading
 import json
 import cv2
 import numpy as np
+from app.ocr.preprocessor import optimize_statutory_crop
 
 # Ensure UTF-8 output encoding on Windows consoles for Devanagari script
 if hasattr(sys.stdout, 'reconfigure'):
@@ -58,8 +59,9 @@ class LegalMetrologyOCR:
         lang: str = "en",
         ocr_version: str = "PP-OCRv4",
         use_angle_cls: bool = True,
-        det_db_box_thresh: float = 0.5,
-        drop_score: float = 0.5,
+        det_db_thresh: float = 0.3,
+        det_db_box_thresh: float = 0.6,
+        drop_score: float = 0.65,
         use_gpu: bool = False,
         show_log: bool = False
     ) -> None:
@@ -85,6 +87,7 @@ class LegalMetrologyOCR:
             self.lang = lang
             self.ocr_version = ocr_version
             self.use_angle_cls = use_angle_cls
+            self.det_db_thresh = det_db_thresh
             self.det_db_box_thresh = det_db_box_thresh
             self.drop_score = drop_score
             self.use_gpu = use_gpu
@@ -97,7 +100,7 @@ class LegalMetrologyOCR:
             logger.info(f"Target Architecture : {self.ocr_version} Server")
             logger.info(f"Language Scope      : {self.lang} (English Statutory declarations)")
             logger.info(f"Angle Classifier    : {self.use_angle_cls} (Orientation Invariant)")
-            logger.info(f"Detection Threshold : {self.det_db_box_thresh} | Drop Score: {self.drop_score}")
+            logger.info(f"Detection Threshold : DB={self.det_db_thresh} | DB_Box={self.det_db_box_thresh} | Drop={self.drop_score}")
             logger.info(f"Compute Hardware    : {'CUDA GPU' if self.use_gpu else 'CPU Vectorized (AVX2/AVX-512)'}")
             logger.info("=" * 70)
 
@@ -111,6 +114,7 @@ class LegalMetrologyOCR:
                     use_angle_cls=self.use_angle_cls,
                     lang=self.lang,
                     ocr_version=self.ocr_version,
+                    det_db_thresh=self.det_db_thresh,
                     det_db_box_thresh=self.det_db_box_thresh,
                     drop_score=self.drop_score,
                     use_gpu=self.use_gpu,
@@ -252,6 +256,66 @@ class LegalMetrologyOCR:
         """
         detections = self.extract(image)
         return "\n".join(d["text"] for d in detections)
+
+    def extract_from_yolo_crops(self, original_image: np.ndarray, yolo_crops: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        """
+        Processes fine-tuned YOLO bounding box crops using the optimized PaddleOCR engine.
+        Maps the local crop coordinates back to the global original image coordinates and 
+        returns the requested structured tokens.
+        
+        yolo_crops format expected:
+        [{'bbox': [x1, y1, x2, y2], 'label': 'nutrition_table', ...}, ...]
+        """
+        if not yolo_crops or original_image is None or original_image.size == 0:
+            return []
+
+        structured_tokens = []
+        orig_h, orig_w = original_image.shape[:2]
+
+        for crop_data in yolo_crops:
+            bbox = crop_data.get("bbox")
+            label = crop_data.get("label", "statutory_block")
+            
+            if not bbox or len(bbox) != 4:
+                continue
+
+            x1, y1, x2, y2 = bbox
+            # Ensure boundaries are strictly within the image dimensions
+            cx1 = max(0, min(x1, orig_w))
+            cy1 = max(0, min(y1, orig_h))
+            cx2 = max(0, min(x2, orig_w))
+            cy2 = max(0, min(y2, orig_h))
+
+            if cx2 <= cx1 or cy2 <= cy1:
+                continue
+
+            # Slice the original image
+            crop_img = original_image[cy1:cy2, cx1:cx2]
+            
+            # Layer 2 Preprocessing Pipeline
+            optimized_crop = optimize_statutory_crop(crop_img)
+            
+            # Extract OCR from the heavily enhanced crop
+            crop_detections = self.extract(optimized_crop)
+
+            for det in crop_detections:
+                local_box = det["bounding_box"]  # [[x1, y1], [x2, y2], [x3, y3], [x4, y4]]
+                
+                # Remap back to global coordinate space
+                global_box = []
+                for pt in local_box:
+                    global_x = pt[0] + cx1
+                    global_y = pt[1] + cy1
+                    global_box.append([global_x, global_y])
+
+                structured_tokens.append({
+                    "text": det["text"],
+                    "confidence": det["confidence"],
+                    "polygon": global_box,
+                    "source_region": label
+                })
+
+        return structured_tokens
 
     # -------------------------------------------------------------------------
     # Fallback Emulation Engine (for headless testing without GPU/Paddle dependencies)

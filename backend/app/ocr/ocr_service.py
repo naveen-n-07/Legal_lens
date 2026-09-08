@@ -520,6 +520,33 @@ class PaddleOCRService:
         logger.info("[EXTRACTION] Extracting declarations...")
         declarations = DeclarationExtractor.parse_declarations(full_text, merged_detections)
 
+        # 6.5 Layer 3 OCR Post-Processing (Glyph Disambiguation & Strict Regex)
+        try:
+            from app.ocr.postprocessor import OCRPostProcessor
+            pp_fssai = OCRPostProcessor.extract_fssai(full_text)
+            if pp_fssai:
+                if not declarations.get("fssai_license"):
+                    declarations["fssai_license"] = {}
+                declarations["fssai_license"]["value"] = pp_fssai
+                
+            pp_mrp = OCRPostProcessor.extract_mrp(full_text)
+            if pp_mrp is not None:
+                if not declarations.get("mrp"):
+                    declarations["mrp"] = {}
+                declarations["mrp"]["value"] = pp_mrp
+                
+            pp_dates = OCRPostProcessor.extract_dates(full_text)
+            if pp_dates.get("mfg"):
+                if not declarations.get("manufacturing_date"):
+                    declarations["manufacturing_date"] = {}
+                declarations["manufacturing_date"]["value"] = pp_dates["mfg"]
+            if pp_dates.get("exp"):
+                if not declarations.get("expiry_date"):
+                    declarations["expiry_date"] = {}
+                declarations["expiry_date"]["value"] = pp_dates["exp"]
+        except Exception as pe:
+            logger.warning(f"[POSTPROCESSOR] Error applying Layer 3 sanitization: {pe}")
+
         # 6B. Forcefully inject detected barcode into declarations for Rule Engine voluntary_marks validation
         if barcode_res.get("detected") and barcode_res.get("value"):
             declarations["barcode"] = {
