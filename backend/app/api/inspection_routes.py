@@ -979,9 +979,7 @@ async def process_batch_inspections(
 def process_single_image_worker(idx: int, img_bytes: bytes, uuid_str: str) -> dict:
     from datetime import datetime, timezone
     from app.ocr.preprocessing import OpenCVPreprocessor
-    from app.ocr.ocr_engine import decode_barcode
-    from app.ocr.yolo_detector import YoloRegionDetector
-    from app.ocr.ocr_service import PaddleOCRService
+    from app.ocr.ocr_service import PaddleOCRService, decode_barcode
     from app.ocr.declaration_extractor import DeclarationExtractor
     import cv2
     import os
