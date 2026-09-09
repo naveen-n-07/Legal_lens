@@ -108,7 +108,10 @@ export async function runInspectionAnalysis(fileOrFiles, metadata = {}) {
     pdpBlueprint: data.pdpBlueprint || data.pdp_blueprint || data.pdp_info || {},
     pdp_info: data.pdp_info || data.pdp_blueprint || {},
     original_url: data.original_url || (Array.isArray(data.original_urls) ? data.original_urls[0] : null),
-    processed_url: data.processed_url || (Array.isArray(data.processed_urls) ? data.processed_urls[0] : null)
+    processed_url: data.processed_url || (Array.isArray(data.processed_urls) ? data.processed_urls[0] : null),
+    original_urls: data.original_urls || (data.original_url ? [data.original_url] : []),
+    processed_urls: data.processed_urls || (data.processed_url ? [data.processed_url] : []),
+    annotated_images_b64: data.annotated_images_b64 || (data.annotated_b64 ? [data.annotated_b64] : [])
   };
 
   // Cache in localStorage for cross-component and audit workspace access

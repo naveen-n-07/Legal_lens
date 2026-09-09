@@ -29,6 +29,7 @@ import {
   Info
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import ImageOverlay from './ImageOverlay';
 
 export default function StatutoryInspectionReport({ inspection, scannedSides = [] }) {
   const navigate = useNavigate();
@@ -375,21 +376,26 @@ export default function StatutoryInspectionReport({ inspection, scannedSides = [
 
           {/* Hero Visual Evidence Container */}
           <div className="relative rounded-2xl overflow-hidden bg-slate-950 border border-slate-800 flex items-center justify-center min-h-[300px] p-2">
-            <div className={`grid gap-4 w-full ${imagesToShow.length > 1 ? 'grid-cols-2' : 'grid-cols-1'}`}>
-              {imagesToShow.map((imgSrc, idx) => (
-                <div key={idx} className="relative flex justify-center bg-black/40 rounded-xl overflow-hidden">
-                  <img
-                    src={imgSrc}
-                    alt={`Packaging Visual Evidence Panel ${idx + 1}`}
-                    className="w-full h-auto max-h-[500px] object-contain"
-                  />
-                  {imagesToShow.length > 1 && (
-                    <div className="absolute top-2 left-2 px-2 py-1 bg-slate-900/80 border border-slate-700 text-slate-300 text-[10px] font-mono rounded-lg shadow-sm">
-                      PANEL {idx + 1}
-                    </div>
-                  )}
-                </div>
-              ))}
+            <div className={`grid gap-4 w-full ${rawImagesList.length > 1 ? 'grid-cols-2' : 'grid-cols-1'}`}>
+              {rawImagesList.map((imgSrc, idx) => {
+                // Collect annotations for this image panel (currently mapping all applicable rules to first panel usually, or filtering by image_id)
+                // In future, inspection.applicable_rules could have image_id
+                return (
+                  <div key={idx} className="relative flex justify-center bg-black/40 rounded-xl overflow-hidden">
+                    <ImageOverlay 
+                      imgSrc={imgSrc} 
+                      alt={`Packaging Visual Evidence Panel ${idx + 1}`} 
+                      showAnnotations={!showRawImage}
+                      annotations={inspection.applicable_rules} 
+                    />
+                    {rawImagesList.length > 1 && (
+                      <div className="absolute top-2 left-2 px-2 py-1 bg-slate-900/80 border border-slate-700 text-slate-300 text-[10px] font-mono rounded-lg shadow-sm">
+                        PANEL {idx + 1}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
             
             {/* Top Right Floating Badge */}

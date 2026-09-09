@@ -100,7 +100,7 @@ class MetrixOCRPipeline:
                 if not pipeline_results["fssai_license"]:
                     pp_fssai = OCRPostProcessor.extract_fssai(text)
                     if pp_fssai:
-                        pipeline_results["fssai_license"] = pp_fssai
+                        pipeline_results["fssai_license"] = {"value": pp_fssai, "bbox": token.get("bbox")}
                         logger.info(f"[PIPELINE][LAYER 3] Validated FSSAI License: {pp_fssai}")
 
             # MRP Extraction
@@ -108,34 +108,34 @@ class MetrixOCRPipeline:
                 if not pipeline_results["mrp"]:
                     pp_mrp = OCRPostProcessor.extract_mrp(text)
                     if pp_mrp is not None:
-                        pipeline_results["mrp"] = pp_mrp
+                        pipeline_results["mrp"] = {"value": pp_mrp, "bbox": token.get("bbox")}
                         logger.info(f"[PIPELINE][LAYER 3] Validated MRP: {pp_mrp}")
 
             # Dates Extraction
             if region in ["dates_block", "statutory_block"]:
                 pp_dates = OCRPostProcessor.extract_dates(text)
                 if pp_dates.get("mfg") and not pipeline_results["manufacturing_date"]:
-                    pipeline_results["manufacturing_date"] = pp_dates["mfg"]
+                    pipeline_results["manufacturing_date"] = {"value": pp_dates["mfg"], "bbox": token.get("bbox")}
                     logger.info(f"[PIPELINE][LAYER 3] Validated MFG Date: {pp_dates['mfg']}")
                 if pp_dates.get("exp") and not pipeline_results["expiry_date"]:
-                    pipeline_results["expiry_date"] = pp_dates["exp"]
+                    pipeline_results["expiry_date"] = {"value": pp_dates["exp"], "bbox": token.get("bbox")}
                     logger.info(f"[PIPELINE][LAYER 3] Validated EXP Date: {pp_dates['exp']}")
                     
             # Global Fallback Check (In case YOLO localized everything into one 'package' or generic block)
             if region in ["package"] or True: # Run globally to be safe
                 if not pipeline_results["fssai_license"]:
                     pp_fssai = OCRPostProcessor.extract_fssai(text)
-                    if pp_fssai: pipeline_results["fssai_license"] = pp_fssai
+                    if pp_fssai: pipeline_results["fssai_license"] = {"value": pp_fssai, "bbox": token.get("bbox")}
 
                 if not pipeline_results["mrp"]:
                     pp_mrp = OCRPostProcessor.extract_mrp(text)
-                    if pp_mrp is not None: pipeline_results["mrp"] = pp_mrp
+                    if pp_mrp is not None: pipeline_results["mrp"] = {"value": pp_mrp, "bbox": token.get("bbox")}
 
                 pp_dates = OCRPostProcessor.extract_dates(text)
                 if pp_dates.get("mfg") and not pipeline_results["manufacturing_date"]:
-                    pipeline_results["manufacturing_date"] = pp_dates["mfg"]
+                    pipeline_results["manufacturing_date"] = {"value": pp_dates["mfg"], "bbox": token.get("bbox")}
                 if pp_dates.get("exp") and not pipeline_results["expiry_date"]:
-                    pipeline_results["expiry_date"] = pp_dates["exp"]
+                    pipeline_results["expiry_date"] = {"value": pp_dates["exp"], "bbox": token.get("bbox")}
 
         logger.info("[PIPELINE] End-to-End Extraction Complete.")
         return {"success": True, "data": pipeline_results}

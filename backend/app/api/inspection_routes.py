@@ -199,11 +199,15 @@ async def process_packaging_image(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user_optional)
 ):
-    all_files = []
-    if file:
-        all_files.append(file)
+    all_files_dict = {}
+    if file and file.filename:
+        all_files_dict[file.filename] = file
     if files:
-        all_files.extend(files)
+        for f in files:
+            if f.filename:
+                all_files_dict[f.filename] = f
+                
+    all_files = list(all_files_dict.values())
         
     if not all_files:
         raise HTTPException(
@@ -244,7 +248,8 @@ async def process_packaging_image(
 
 
     loop = asyncio.get_running_loop()
-    with ProcessPoolExecutor() as pool:
+    from concurrent.futures import ThreadPoolExecutor
+    with ThreadPoolExecutor() as pool:
         futures = []
         for idx, ib in enumerate(images_bytes_list):
             futures.append(loop.run_in_executor(pool, process_single_image_worker, idx, ib, uuid_str))
@@ -979,7 +984,8 @@ async def process_batch_inspections(
 def process_single_image_worker(idx: int, img_bytes: bytes, uuid_str: str) -> dict:
     from datetime import datetime, timezone
     from app.ocr.preprocessing import OpenCVPreprocessor
-    from app.ocr.ocr_service import PaddleOCRService, decode_barcode
+    from app.ocr.ocr_service import decode_barcode
+    from app.ocr.pipeline import MetrixOCRPipeline
     from app.ocr.declaration_extractor import DeclarationExtractor
     import cv2
     import os
@@ -1017,21 +1023,51 @@ def process_single_image_worker(idx: int, img_bytes: bytes, uuid_str: str) -> di
     pre_ms = (datetime.now(timezone.utc) - t0_pre).total_seconds() * 1000.0
 
     statutory_crops = []
-    try:
-        yolo_detector = YoloRegionDetector.get_instance()
-        statutory_crops = yolo_detector.get_statutory_crops(img_cv)
-    except Exception:
-        pass
-
+    
     t0_ocr = datetime.now(timezone.utc)
-    ocr_res = PaddleOCRService.extract_multi_pass_ocr(img_cv, variants, statutory_crops=statutory_crops)
-    raw_text = ocr_res.get("full_text", "")
-    merged_ocr_results = ocr_res.get("detections", [])
-    overall_conf = float(ocr_res.get("overall_confidence", 85.0))
+    
+    pipeline = MetrixOCRPipeline()
+    pipeline_results = pipeline.process(img_cv)
+    
+    # Map pipeline outputs to standard structure
+    raw_detections = pipeline_results.get("raw_detections", [])
+    statutory_crops = pipeline_results.get("statutory_rois", [])
+    
+    merged_ocr_results = []
+    raw_text_lines = []
+    conf_scores = []
+    
+    for tk in raw_detections:
+        merged_ocr_results.append({
+            "text": tk.get("text", ""),
+            "confidence": tk.get("confidence", 0.0),
+            "bbox": tk.get("bbox") or tk.get("polygon")
+        })
+        raw_text_lines.append(tk.get("text", ""))
+        conf_scores.append(tk.get("confidence", 0.0))
+        
+    raw_text = "\n".join(raw_text_lines)
+    overall_conf = float(sum(conf_scores) / max(len(conf_scores), 1))
+    
     ocr_ms = (datetime.now(timezone.utc) - t0_ocr).total_seconds() * 1000.0
 
     t0_decl = datetime.now(timezone.utc)
     extracted_decls = DeclarationExtractor.parse_declarations(raw_text, merged_ocr_results)
+    
+    # Mix in pipeline explicit strict extraction overrides
+    for k in ["mrp", "fssai_license", "manufacturing_date", "expiry_date"]:
+        if pipeline_results.get(k):
+            val_obj = pipeline_results[k]
+            if isinstance(val_obj, dict):
+                extracted_decls[k] = {
+                    "value": str(val_obj.get("value")),
+                    "confidence": 95.0,
+                    "detected": True,
+                    "source": "MetrixOCRPipeline",
+                    "bbox": val_obj.get("bbox")
+                }
+            else:
+                extracted_decls[k] = {"value": str(val_obj), "confidence": 95.0, "detected": True, "source": "MetrixOCRPipeline"}
     
     b_val = barcode_info.get("value") or barcode_info.get("data")
     if barcode_info.get("detected") and b_val:

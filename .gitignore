@@ -31,3 +31,9 @@ Thumbs.db
 # Test & scan results
 backend/results/
 
+# Machine Learning Weights and Datasets
+*.pt
+weights/
+runs/
+dataset/
+backend/scratch/

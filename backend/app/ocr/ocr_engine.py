@@ -298,6 +298,27 @@ class LegalMetrologyOCR:
             # Extract OCR from the heavily enhanced crop
             crop_detections = self.extract(optimized_crop)
 
+            # --- FALLBACK PASS: Unpadded & Raw ---
+            if not crop_detections:
+                logger.info(f"[OCR] Zero tokens found in processed crop for {label}. Triggering unpadded fallback pass.")
+                # Compute dynamic padding based on crop dimensions
+                box_width = x2 - x1
+                box_height = y2 - y1
+                pad_x = max(25, int(box_width * 0.10))
+                pad_y = max(25, int(box_height * 0.10))
+                
+                # Apply bounds checking against original image dimensions
+                px1 = max(0, x1 - pad_x)
+                py1 = max(0, y1 - pad_y)
+                px2 = min(orig_w, x2 + pad_x)
+                py2 = min(orig_h, y2 + pad_y)
+                
+                raw_padded_crop = original_image[py1:py2, px1:px2]
+                crop_detections = self.extract(raw_padded_crop)
+                
+                # Override cx1, cy1 so that remapping below uses the padded coordinates
+                cx1, cy1 = px1, py1
+
             for det in crop_detections:
                 local_box = det["bounding_box"]  # [[x1, y1], [x2, y2], [x3, y3], [x4, y4]]
                 

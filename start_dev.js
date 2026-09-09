@@ -11,13 +11,23 @@ function getPythonCmd() {
   const venvUnix = path.join(__dirname, 'venv', 'bin', 'python');
   const venvBackendUnix = path.join(__dirname, 'backend', 'venv', 'bin', 'python');
 
+  // Verify uvicorn is installed in the venv before using it
+  const hasUvicorn = (pyPath) => {
+    try {
+      execSync(`"${pyPath}" -m uvicorn --version`, { stdio: 'ignore' });
+      return true;
+    } catch (e) {
+      return false;
+    }
+  };
+
   if (isWin) {
-    if (fs.existsSync(venvWin)) return venvWin;
-    if (fs.existsSync(venvBackendWin)) return venvBackendWin;
+    if (fs.existsSync(venvBackendWin) && hasUvicorn(venvBackendWin)) return venvBackendWin;
+    if (fs.existsSync(venvWin) && hasUvicorn(venvWin)) return venvWin;
     return 'python';
   } else {
-    if (fs.existsSync(venvUnix)) return venvUnix;
-    if (fs.existsSync(venvBackendUnix)) return venvBackendUnix;
+    if (fs.existsSync(venvBackendUnix) && hasUvicorn(venvBackendUnix)) return venvBackendUnix;
+    if (fs.existsSync(venvUnix) && hasUvicorn(venvUnix)) return venvUnix;
     return 'python3';
   }
 }
@@ -58,7 +68,7 @@ console.log('[FRONTEND] React Web Portal -> http://localhost:3000');
 console.log('------------------------------------------------------------------');
 
 // 1. Spawn FastAPI Backend Server with auto-reload
-const backend = spawn(pythonCmd, ['-m', 'uvicorn', 'app.main:app', '--port', '8000', '--reload'], {
+const backend = spawn(`"${pythonCmd}"`, ['-m', 'uvicorn', 'app.main:app', '--port', '8000', '--reload'], {
   cwd: path.join(__dirname, 'backend'),
   stdio: 'inherit',
   shell: true

@@ -105,8 +105,10 @@ async def scan_endpoint(
     upload_list: List[UploadFile] = []
     if files:
         upload_list.extend(files)
-    if file and file not in upload_list:
-        upload_list.append(file)
+    if file:
+        existing_names = [f.filename for f in upload_list if f.filename]
+        if file.filename not in existing_names:
+            upload_list.append(file)
 
     if not upload_list:
         raise HTTPException(
@@ -126,7 +128,6 @@ async def scan_endpoint(
     all_declarations_list = []
     primary_cv_img = None
     cv_images = []
-    cv_images = []
 
     for i, file_obj in enumerate(upload_list):
         ext = get_file_extension(file_obj.filename or "upload.jpg")
@@ -139,7 +140,6 @@ async def scan_endpoint(
         
         # 1. Quality & Image Loading
         img, info = OpenCVPreprocessor.validate_and_load_image(contents)
-        cv_images.append(img)
         cv_images.append(img)
         if primary_cv_img is None:
             primary_cv_img = img
@@ -160,33 +160,52 @@ async def scan_endpoint(
         original_urls.append(f"/results/{orig_filename}")
         processed_urls.append(f"/results/{proc_filename}")
 
-        # 3. Multi-Pass OCR Execution
-        ocr_out = PaddleOCRService.process_image(contents, filename=file_obj.filename or f"image_{i}.jpg")
+        # 3. Multi-Pass OCR Execution using MetrixOCRPipeline
+        from app.ocr.pipeline import MetrixOCRPipeline
+        from app.ocr.declaration_extractor import DeclarationExtractor
         
-        if not ocr_out.get("success"):
-            logger.error(f"[SCAN] OCR failed for file {file_obj.filename}: {ocr_out.get('error')}")
+        pipeline = MetrixOCRPipeline()
+        try:
+            pipeline_results = pipeline.process(img)
+            ocr_success = pipeline_results.get("success", True)
+        except Exception as e:
+            logger.error(f"[SCAN] Pipeline extraction failed: {e}")
+            ocr_success = False
+        
+        if not ocr_success:
+            logger.error(f"[SCAN] OCR failed for file {file_obj.filename}")
             # If critical engine error, raise structured exception
             raise HTTPException(
                 status_code=500,
-                detail=ocr_out.get("error", {}).get("message", "OCR processing engine unavailable.")
+                detail="OCR processing engine unavailable or pipeline failed."
             )
 
-        file_ocr_results = ocr_out.get("results", [])
-        for res in file_ocr_results:
-            normalized_val = normalize_text(res["text"])
+        raw_detections = pipeline_results.get("raw_detections", [])
+        raw_text_lines = []
+        for tk in raw_detections:
+            normalized_val = normalize_text(tk.get("text", ""))
             res_entry = {
-                "text": res["text"],
+                "text": tk.get("text", ""),
                 "normalized_text": normalized_val,
-                "confidence": res["confidence"],
-                "bbox": res["bbox"],
+                "confidence": tk.get("confidence", 0.0),
+                "bbox": tk.get("bbox") or tk.get("polygon"),
                 "image_id": orig_filename,
-                "variant": res.get("variant", "enhanced")
+                "variant": "enhanced"
             }
             merged_ocr_results.append(res_entry)
             merged_text_list.append(normalized_val)
-            conf_scores.append(res["confidence"])
+            conf_scores.append(tk.get("confidence", 0.0))
+            raw_text_lines.append(tk.get("text", ""))
+            
+        # Run declaration extraction
+        raw_text_block = "\n".join(raw_text_lines)
+        file_decls = DeclarationExtractor.parse_declarations(raw_text_block, merged_ocr_results)
+        
+        # Mix in strict pipeline matches
+        for k in ["mrp", "fssai_license", "manufacturing_date", "expiry_date"]:
+            if pipeline_results.get(k):
+                file_decls[k] = {"value": str(pipeline_results[k]), "confidence": 95.0, "detected": True, "source": "MetrixOCRPipeline"}
 
-        file_decls = ocr_out.get("declarations", {})
         all_declarations_list.append(file_decls)
 
     # Calculate overall metrics
