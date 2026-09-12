@@ -1,0 +1,15 @@
+{
+  "appId": "in.gov.legalmetrology.app",
+  "appName": "Legal Metrology",
+  "webDir": "dist",
+  "bundledWebRuntime": false,
+  "server": {
+    "androidScheme": "https",
+    "cleartext": true
+  },
+  "plugins": {
+    "Camera": {
+      "permissions": ["camera", "photos"]
+    }
+  }
+}
