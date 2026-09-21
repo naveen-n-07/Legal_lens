@@ -342,3 +342,86 @@ class EvidenceVisualizer:
         """
         annotated_img = cls.draw_evidence_boxes(image, rule_evaluations, max_dim=max_dim)
         return cls.to_base64(annotated_img, format_type="jpeg", quality=86)
+
+    @classmethod
+    def draw_compliance_evidence_boxes(cls, image_path_or_frame: Any, results: Any) -> np.ndarray:
+        return draw_compliance_evidence_boxes(image_path_or_frame, results)
+
+
+def draw_compliance_evidence_boxes(image_path_or_frame: Any, results: Any) -> Optional[np.ndarray]:
+    """
+    Draws bounding boxes around detected text regions/declarations 
+    based on YOLO inference results or structured evaluation dicts.
+    Green (0, 255, 0) for high-confidence/valid detections, 
+    Red (0, 0, 255) for violations, Orange (0, 165, 255) for borderline/review.
+    """
+    if isinstance(image_path_or_frame, str):
+        img = cv2.imread(image_path_or_frame)
+    else:
+        img = image_path_or_frame.copy() if hasattr(image_path_or_frame, 'copy') else image_path_or_frame
+
+    if img is None:
+        return None
+
+    # Case A: Ultralytics YOLO Results object (results[0].boxes)
+    if hasattr(results, "__getitem__") and len(results) > 0 and hasattr(results[0], "boxes") and results[0].boxes is not None:
+        try:
+            boxes = results[0].boxes.xyxy.cpu().numpy()  # [x1, y1, x2, y2]
+            classes = results[0].boxes.cls.cpu().numpy()
+            confidences = results[0].boxes.conf.cpu().numpy()
+            names = getattr(results[0], "names", {}) or {}
+
+            for box, cls, conf in zip(boxes, classes, confidences):
+                x1, y1, x2, y2 = map(int, box)
+                class_name = names.get(int(cls), f"region_{int(cls)}")
+                
+                # Define color code: Green (0, 255, 0) for conf > 0.5, Orange (0, 165, 255) for borderline
+                color = (0, 255, 0) if conf > 0.5 else (0, 165, 255)
+                
+                # Draw bounding rectangle
+                cv2.rectangle(img, (x1, y1), (x2, y2), color, 2)
+                
+                # Put label text above the box
+                label = f"{class_name}: {conf:.2f}"
+                cv2.putText(img, label, (x1, max(y1 - 10, 10)), 
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
+        except Exception as err:
+            logger.warning(f"Error drawing YOLO boxes: {err}")
+
+    # Case B: Structured detection dictionaries / evaluation list
+    elif isinstance(results, list):
+        for item in results:
+            raw_box = item.get("bbox") or item.get("bounding_box") or item.get("evidence_box")
+            if not raw_box:
+                continue
+            
+            poly = EvidenceVisualizer.normalize_box_coordinates(raw_box)
+            if poly is None:
+                continue
+
+            xs = poly[:, 0, 0]
+            ys = poly[:, 0, 1]
+            x1, y1, x2, y2 = int(np.min(xs)), int(np.min(ys)), int(np.max(xs)), int(np.max(ys))
+
+            conf = float(item.get("confidence", 0.9))
+            if conf > 1.0:
+                conf = conf / 100.0
+
+            label = str(item.get("label") or item.get("field_name") or item.get("rule_name") or "declaration")
+            clean_label = label.replace("_", " ").title()
+            st = str(item.get("status", "")).upper()
+            
+            if st in ["FAIL", "NON_COMPLIANT", "NON-COMPLIANT"]:
+                color = (0, 0, 255)  # Ruby Red (BGR)
+            elif conf > 0.5 or st in ["PASS", "COMPLIANT"]:
+                color = (0, 255, 0)  # Green (BGR)
+            else:
+                color = (0, 165, 255) # Orange (BGR)
+
+            cv2.rectangle(img, (x1, y1), (x2, y2), color, 2)
+            lbl_str = f"{clean_label}: {conf:.2f}" if conf <= 1.0 else f"{clean_label}"
+            cv2.putText(img, lbl_str, (x1, max(y1 - 10, 10)),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
+
+    return img
+

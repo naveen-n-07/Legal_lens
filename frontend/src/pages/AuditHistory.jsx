@@ -4,7 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import StatusBadge from '../components/StatusBadge';
 import api from '../services/api';
 
-export default function AuditHistory() {
+export default function AuditHistory({ user }) {
+  const role = user?.role || 'inspector';
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL');
@@ -53,6 +54,16 @@ export default function AuditHistory() {
     const matchesStatus = statusFilter === 'ALL' || item.overall_status?.includes(statusFilter);
     return matchesSearch && matchesStatus;
   });
+
+  const handleViewInspection = (item) => {
+    // Admins and officers → adjudication view; inspectors → PDF download
+    if (role === 'reviewing_officer' || role === 'admin') {
+      navigate('/officer/review', { state: { inspection: item, inspectionId: item.id } });
+    } else {
+      // Inspector: open the PDF directly
+      window.open(`/api/v1/reports/${item.id}/pdf`, '_blank');
+    }
+  };
 
   const handleDownloadPDF = (id) => {
     window.open(`/api/v1/reports/${id}/pdf`, '_blank');
@@ -128,10 +139,10 @@ export default function AuditHistory() {
                     </td>
                     <td className="p-4 text-right space-x-2">
                       <button
-                        onClick={() => navigate('/officer/review', { state: { inspection: item, inspectionId: item.id } })}
+                        onClick={() => handleViewInspection(item)}
                         className="px-4 py-2 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white rounded-lg font-black text-xs transition shadow-sm cursor-pointer"
                       >
-                        Audit View
+                        {role === 'inspector' ? 'View PDF' : 'Audit View'}
                       </button>
                       <button
                         onClick={() => handleDownloadPDF(item.id)}

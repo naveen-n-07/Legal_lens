@@ -12,6 +12,19 @@ from typing import Dict, Any, List, Optional, Tuple
 
 logger = logging.getLogger("metrix_yolo")
 
+# ---------------------------------------------------------------------------
+# Explicit absolute model path — resolved once at import time.
+# Depth from this file: yolo_detector.py → package_detection → app → backend
+#                       → Legal_lens → [workspace_root] → weights/best.pt
+# ---------------------------------------------------------------------------
+_THIS_DIR = os.path.dirname(os.path.abspath(__file__))          # …/package_detection
+_BACKEND_DIR = os.path.dirname(os.path.dirname(_THIS_DIR))      # …/backend
+_WORKSPACE_ROOT = os.path.dirname(_BACKEND_DIR)                 # …/Legal_lens
+_ABSOLUTE_MODEL_PATH = os.path.join(_WORKSPACE_ROOT, "weights", "best.pt")
+
+logger.info(f"[YOLO][Init] Resolved absolute model path: {_ABSOLUTE_MODEL_PATH} "
+            f"(exists={os.path.exists(_ABSOLUTE_MODEL_PATH)})")
+
 # Known statutory packaging regions to detect
 STATUTORY_CLASSES = [
     "mrp_block",
@@ -48,15 +61,27 @@ class YoloRegionDetector:
     def _resolve_weights_path(self) -> str:
         """
         Locates the best available YOLO model weights.
-        Checks runs/detect/train/weights/best.pt across project directories.
+        Priority:
+          1. Explicitly passed weights_path argument
+          2. Module-level _ABSOLUTE_MODEL_PATH (BASE_DIR-anchored, most reliable)
+          3. Legacy training output & generic fallback candidates
         """
         if self.weights_path and os.path.exists(self.weights_path):
+            logger.info(f"[YOLO] Using caller-supplied weights: {self.weights_path}")
             return self.weights_path
+
+        # Primary: module-level absolute path (never affected by cwd changes)
+        if os.path.exists(_ABSOLUTE_MODEL_PATH):
+            logger.info(f"[YOLO] Using anchored model path: {_ABSOLUTE_MODEL_PATH}")
+            return _ABSOLUTE_MODEL_PATH
 
         base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
         workspace_root = os.path.dirname(base_dir)
 
         candidate_paths = [
+            os.path.join(workspace_root, "weights", "best.pt"),
+            os.path.join(base_dir, "weights", "best.pt"),
+            os.path.join(workspace_root, "Legal_lens", "weights", "best.pt"),
             os.path.join(base_dir, "runs", "detect", "train", "weights", "best.pt"),
             os.path.join(workspace_root, "runs", "detect", "train", "weights", "best.pt"),
             os.path.join(os.getcwd(), "runs", "detect", "train", "weights", "best.pt"),
@@ -96,7 +121,7 @@ class YoloRegionDetector:
     def get_statutory_crops(
         self,
         image: np.ndarray,
-        conf_threshold: float = 0.65,
+        conf_threshold: float = 0.25,
         min_crop_size: int = 30
     ) -> List[Dict[str, Any]]:
         """
@@ -159,7 +184,7 @@ class YoloRegionDetector:
 
         return crops
 
-    def get_crop_arrays(self, image: np.ndarray, conf_threshold: float = 0.65) -> List[np.ndarray]:
+    def get_crop_arrays(self, image: np.ndarray, conf_threshold: float = 0.25) -> List[np.ndarray]:
         """
         Convenience method that returns just the list of cropped numpy image arrays.
         """

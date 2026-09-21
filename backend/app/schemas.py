@@ -100,5 +100,6 @@ class AnalyticsResponse(BaseModel):
     pending_review_count: int
     compliance_rate_percent: float
     route_7b_trigger_count: int
+    signed_reports_count: Optional[int] = 0
     category_breakdown: Dict[str, int]
     top_violations: List[Dict[str, Any]]

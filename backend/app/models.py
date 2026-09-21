@@ -12,6 +12,15 @@ from app.database import Base
 def utc_now() -> datetime:
     return datetime.now(timezone.utc)
 
+def to_iso_utc(dt: Any) -> Any:
+    if dt is None:
+        return None
+    if isinstance(dt, datetime):
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=timezone.utc)
+        return dt.isoformat()
+    return str(dt)
+
 class User(Base):
     __tablename__ = "users"
 
@@ -239,4 +248,19 @@ class ScanSession(Base):
     raw_ocr_json = Column(Text, nullable=True)
     normalized_declarations_json = Column(Text, nullable=True)
     created_at = Column(DateTime, default=utc_now)
+
+class ImmutableAuditArchive(Base):
+    __tablename__ = "immutable_audit_archive"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    original_inspection_id = Column(String, nullable=False, index=True)
+    archived_at = Column(DateTime, default=utc_now)
+    
+    # Secure JSON serialization of the full InspectionDB row + child OCR/Declaration records
+    payload_json = Column(Text, nullable=False)
+    
+    # Metadata for quick lookup
+    inspector_id = Column(String, nullable=True)
+    overall_status = Column(String, nullable=True)
+    officer_decision = Column(String, nullable=True)
 

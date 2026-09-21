@@ -63,9 +63,9 @@ export async function runInspectionAnalysis(fileOrFiles, metadata = {}) {
       lastError = err2;
       console.warn('Endpoint /scan error, trying direct fallback:', err2.message);
 
-      // 3. Try Direct Absolute Route: http://localhost:8000/api/v1/inspections/process-image
+      // 3. Try Direct Absolute Route (relative to proxy)
       try {
-        response = await axios.post('http://localhost:8000/api/v1/inspections/process-image', formData);
+        response = await axios.post('/api/v1/inspections/process-image', formData);
       } catch (err3) {
         lastError = err3;
       }

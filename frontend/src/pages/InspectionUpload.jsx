@@ -139,8 +139,10 @@ export default function InspectionUpload() {
         location: location
       });
       
-      resData.original_image_url = selectedFiles[0].preview;
-      resData.previewUrl = resData.annotated_image_b64 || resData.annotated_image_url || selectedFiles[0].preview;
+      if (!resData.original_image_url) {
+        resData.original_image_url = selectedFiles[0].preview;
+      }
+      resData.previewUrl = resData.annotated_image_b64 || resData.evidence_image_url || resData.annotated_image_url || selectedFiles[0].preview;
       setInspectionResult(resData);
     } catch (err) {
       console.error('Inspection upload failed:', err);

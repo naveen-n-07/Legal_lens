@@ -21,17 +21,13 @@ import api from '../services/api';
 export default function Dashboard() {
   const navigate = useNavigate();
   const [stats, setStats] = useState({
-    total_inspections: 148,
-    compliant_count: 112,
-    violation_count: 36,
-    pending_review_count: 14,
-    compliance_rate_percent: 75.6,
-    route_7b_trigger_count: 36,
-    top_violations: [
-      { rule_id: "RULE_7", title: "Rule 7 Numeral & Letter Height Deficit", count: 22 },
-      { rule_id: "RULE_6_1_E", title: "Rule 6(1)(e) Missing MRP Tax Clause", count: 9 },
-      { rule_id: "RULE_6_1_D", title: "Rule 6(1)(d) Invalid Month/Year Format", count: 5 }
-    ]
+    total_inspections: 0,
+    compliant_count: 0,
+    violation_count: 0,
+    pending_review_count: 0,
+    compliance_rate_percent: 0,
+    route_7b_trigger_count: 0,
+    top_violations: []
   });
 
   useEffect(() => {
@@ -177,25 +173,25 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-5">
         <div className="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm space-y-1.5">
           <span className="text-xs font-black text-slate-500 uppercase tracking-wider">Total Scanned Packages</span>
-          <div className="text-3xl font-black text-slate-900">{stats.total_inspections}</div>
+          <div className="text-3xl font-black text-slate-900">{stats?.total_inspections || 0}</div>
           <span className="text-xs text-emerald-700 font-extrabold">100% Audited Stream</span>
         </div>
 
         <div className="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm space-y-1.5">
           <span className="text-xs font-black text-slate-500 uppercase tracking-wider">7A: Compliant Packages</span>
-          <div className="text-3xl font-black text-emerald-600">{stats.compliant_count}</div>
-          <span className="text-xs text-slate-700 font-bold">{stats.compliance_rate_percent}% Compliance Rate</span>
+          <div className="text-3xl font-black text-emerald-600">{stats?.compliant_count || 0}</div>
+          <span className="text-xs text-slate-700 font-bold">{stats?.compliance_rate_percent || 0}% Compliance Rate</span>
         </div>
 
         <div className="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm space-y-1.5">
           <span className="text-xs font-black text-slate-500 uppercase tracking-wider">7B: Flagged Violations</span>
-          <div className="text-3xl font-black text-red-600">{stats.violation_count}</div>
+          <div className="text-3xl font-black text-red-600">{stats?.violation_count || 0}</div>
           <span className="text-xs text-red-600 font-bold">Route 7B Action Required</span>
         </div>
 
         <div className="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm space-y-1.5">
           <span className="text-xs font-black text-slate-500 uppercase tracking-wider">Pending Senior Sign-off</span>
-          <div className="text-3xl font-black text-amber-600">{stats.pending_review_count}</div>
+          <div className="text-3xl font-black text-amber-600">{stats?.pending_review_count || 0}</div>
           <span className="text-xs text-amber-700 font-extrabold">Awaiting Adjudication</span>
         </div>
       </div>
@@ -213,7 +209,7 @@ export default function Dashboard() {
           </div>
 
           <div className="space-y-3">
-            {stats.top_violations.map((v, idx) => (
+            {(stats?.top_violations || []).map((v, idx) => (
               <div key={idx} className="p-4 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between">
                 <div>
                   <span className="text-xs font-mono font-black text-red-700 px-2.5 py-1 bg-red-100 rounded border border-red-300 mr-2.5">

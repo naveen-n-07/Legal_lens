@@ -3,12 +3,16 @@ admin_routes.py - System Administration, User Management & Compliance Rule Matri
 """
 
 from typing import List, Optional, Dict, Any, Union
-from datetime import datetime
+from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException, status  # type: ignore
 from pydantic import BaseModel, EmailStr  # type: ignore
 from sqlalchemy.orm import Session  # type: ignore
 from app.database import get_db
-from app.models import User, ComplianceRuleDB, AuditLog
+from app.models import (
+    User, ComplianceRuleDB, AuditLog, InspectionRecord,
+    OCRResultDB, DeclarationDB, ScanSession, ImmutableAuditArchive,
+    to_iso_utc
+)
 from app.auth import get_password_hash, require_admin, log_audit_action, VALID_ROLES
 
 router = APIRouter(prefix="/admin", tags=["Admin: System & Rule Administration"])
@@ -64,7 +68,7 @@ def list_all_users(db: Session = Depends(get_db), current_admin: User = Depends(
             "designation": u.designation,
             "zone_office": u.zone_office,
             "role": u.role,
-            "created_at": u.created_at
+            "created_at": to_iso_utc(u.created_at)
         }
         for u in users
     ]
@@ -218,11 +222,15 @@ def delete_compliance_rule(
     return {"success": True, "message": f"Rule '{rule_id}' deleted successfully."}
 
 @router.get("/audit-logs")
-def get_global_audit_logs(db: Session = Depends(get_db), current_admin: User = Depends(require_admin)):
+def get_global_audit_logs(
+    limit: int = 200,
+    db: Session = Depends(get_db),
+    current_admin: User = Depends(require_admin)
+):
     """
     Admin Only: View complete system global audit log stream.
     """
-    logs = db.query(AuditLog).order_by(AuditLog.timestamp.desc()).limit(100).all()
+    logs = db.query(AuditLog).order_by(AuditLog.timestamp.desc()).limit(limit).all()
     return [
         {
             "id": log.id,
@@ -231,7 +239,213 @@ def get_global_audit_logs(db: Session = Depends(get_db), current_admin: User = D
             "action": log.action,
             "resource_id": log.resource_id,
             "details": log.details,
-            "timestamp": log.timestamp
+            "timestamp": to_iso_utc(log.timestamp)
         }
         for log in logs
     ]
+
+@router.post("/clear-system-logs")
+def clear_system_logs_and_inspections(
+    db: Session = Depends(get_db),
+    current_admin: User = Depends(require_admin)
+):
+    """
+    Admin Only: Purges all historic inspection records, audit logs, scan sessions,
+    immutable audit archive, declarations, and OCR results to start completely fresh from 0.
+    Preserves users, roles, and compliance rules.
+    """
+    db.query(InspectionRecord).delete()
+    db.query(AuditLog).delete()
+    db.query(OCRResultDB).delete()
+    db.query(DeclarationDB).delete()
+    db.query(ScanSession).delete()
+    db.query(ImmutableAuditArchive).delete()
+    
+    init_log = AuditLog(
+        user_id=current_admin.id,
+        user_name=current_admin.name,
+        action="SYSTEM_RESET_ZERO_BASE",
+        details="System registry and audit logs cleared. System initialized from 0.",
+        timestamp=datetime.now(timezone.utc)
+    )
+    db.add(init_log)
+    db.commit()
+    
+    return {
+        "success": True,
+        "message": "All past inspections and audit logs successfully purged. System reset to 0."
+    }
+
+
+# ─── Rule Engine Version Management ─────────────────────────────────────────
+
+class RuleVersionPayload(BaseModel):
+    new_version: str          # e.g. "v2.2"
+    gsrn_reference: Optional[str] = None   # Gazette reference
+    changelog: Optional[str] = None
+    affected_rule_ids: Optional[List[str]] = None  # empty = all rules
+
+@router.post("/rules/update-version")
+def update_rule_engine_version(
+    payload: RuleVersionPayload,
+    db: Session = Depends(get_db),
+    current_admin: User = Depends(require_admin)
+):
+    """
+    Admin Only: Bump the rule engine semantic version and optionally
+    update the version tag on selected (or all) rules. Hot-reloads without
+    server restart.
+    """
+    from app.rules.repository import RuleRepository
+
+    target_ids = payload.affected_rule_ids
+    if target_ids:
+        rules = [RuleRepository.get_rule_by_id(rid, db=db) for rid in target_ids]
+        rules = [r for r in rules if r is not None]
+    else:
+        rules = RuleRepository.list_rules(db=db)
+
+    updated_count = 0
+    for rule in rules:
+        RuleRepository.update_rule(rule.rule_id, {"version": payload.new_version}, db=db)
+        updated_count += 1
+
+    changelog_summary = payload.changelog or f"Version bumped to {payload.new_version} by admin {current_admin.name}."
+    log_details = (
+        f"Rule engine version updated to '{payload.new_version}'. "
+        f"GSR/N ref: {payload.gsrn_reference or 'N/A'}. "
+        f"Rules updated: {updated_count}. "
+        f"Changelog: {changelog_summary}"
+    )
+    log_audit_action(
+        db, current_admin, "RULE_VERSION_UPDATE",
+        resource_id=f"RULE_ENGINE_v{payload.new_version}",
+        details=log_details
+    )
+
+    return {
+        "success": True,
+        "new_version": payload.new_version,
+        "rules_updated": updated_count,
+        "gsrn_reference": payload.gsrn_reference,
+        "changelog": changelog_summary,
+        "synced_at": datetime.utcnow().isoformat()
+    }
+
+
+# ─── Work Assignment / Dispatch Engine ───────────────────────────────────────
+
+class WorkAssignPayload(BaseModel):
+    inspection_id: str
+    assign_to_user_id: str
+    assignment_type: str      # "inspector_dispatch" | "officer_review"
+    notes: Optional[str] = None
+
+@router.post("/assign-work")
+def assign_work(
+    payload: WorkAssignPayload,
+    db: Session = Depends(get_db),
+    current_admin: User = Depends(require_admin)
+):
+    """
+    Admin Only: Assign an inspection to a specific inspector or reviewing officer.
+    """
+    from app.models import InspectionRecord
+    target_user = db.query(User).filter(User.id == payload.assign_to_user_id).first()
+    if not target_user:
+        raise HTTPException(status_code=404, detail=f"User '{payload.assign_to_user_id}' not found.")
+
+    record = db.query(InspectionRecord).filter(InspectionRecord.id == payload.inspection_id).first()
+    if not record:
+        raise HTTPException(status_code=404, detail=f"Inspection '{payload.inspection_id}' not found.")
+
+    if payload.assignment_type == "officer_review":
+        record.officer_id = target_user.id
+        record.officer_name = target_user.name
+    elif payload.assignment_type == "inspector_dispatch":
+        record.inspector_id = target_user.id
+        record.inspector_name = target_user.name
+
+    db.commit()
+
+    log_audit_action(
+        db, current_admin, "WORK_ASSIGNED",
+        resource_id=payload.inspection_id,
+        details=f"Inspection '{payload.inspection_id}' assigned to '{target_user.name}' ({payload.assignment_type}). Notes: {payload.notes or 'None'}."
+    )
+    return {
+        "success": True,
+        "inspection_id": payload.inspection_id,
+        "assigned_to": target_user.name,
+        "assignment_type": payload.assignment_type
+    }
+
+
+# ─── System Telemetry Summary ─────────────────────────────────────────────────
+
+@router.get("/inspections-summary")
+def get_inspections_summary(
+    db: Session = Depends(get_db),
+    current_admin: User = Depends(require_admin)
+):
+    """
+    Admin Only: Returns high-level KPI telemetry — total scans, compliance
+    ratio, rule version, pending adjudications, and per-user workload.
+    """
+    from app.models import InspectionRecord
+
+    records = db.query(InspectionRecord).all()
+    total = len(records)
+    pending = sum(1 for r in records if not r.officer_decision and (
+        (r.overall_status or '').upper() in ('PENDING', '7B VIOLATION') or
+        r.route_7b_triggered
+    ))
+    compliant = sum(1 for r in records if '7A' in (r.overall_status or '').upper() or
+                    'COMPLIANT' in (r.overall_status or '').upper())
+    violations = sum(1 for r in records if '7B' in (r.overall_status or '').upper() or
+                     'VIOLATION' in (r.overall_status or '').upper())
+    signed_off = sum(1 for r in records if r.officer_decision)
+
+    compliance_rate = round((compliant / total * 100), 1) if total else 0.0
+
+    # Per-inspector workload
+    inspector_workload: Dict[str, Any] = {}
+    for r in records:
+        uid = r.inspector_id or "unknown"
+        uname = r.inspector_name or uid
+        if uid not in inspector_workload:
+            inspector_workload[uid] = {"name": uname, "total": 0, "pending_officer_review": 0}
+        inspector_workload[uid]["total"] += 1
+        if not r.officer_decision:
+            inspector_workload[uid]["pending_officer_review"] += 1
+
+    # Per-officer workload
+    officer_workload: Dict[str, Any] = {}
+    for r in records:
+        if r.officer_id:
+            uid = r.officer_id
+            uname = r.officer_name or uid
+            if uid not in officer_workload:
+                officer_workload[uid] = {"name": uname, "assigned": 0, "signed_off": 0}
+            officer_workload[uid]["assigned"] += 1
+            if r.officer_decision:
+                officer_workload[uid]["signed_off"] += 1
+
+    # Current rule engine version (from first active rule)
+    from app.rules.repository import RuleRepository
+    active_rules = RuleRepository.list_rules(db=db)
+    engine_version = active_rules[0].version if active_rules else "v2.1"
+
+    return {
+        "total_scans": total,
+        "pending_review": pending,
+        "compliant": compliant,
+        "violations": violations,
+        "signed_off": signed_off,
+        "compliance_rate": compliance_rate,
+        "active_rule_count": len(active_rules),
+        "engine_version": engine_version,
+        "inspector_workload": list(inspector_workload.values()),
+        "officer_workload": list(officer_workload.values()),
+    }
+

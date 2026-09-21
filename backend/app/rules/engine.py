@@ -139,23 +139,29 @@ class RuleEngine:
                 if isinstance(entry, dict):
                     raw_val = entry.get("value")
                     is_det = RuleEngine._is_valid_detected_value(raw_val)
-                    return {
-                        "value": raw_val if is_det else None,
-                        "raw_value": raw_val,
-                        "confidence": float(entry.get("confidence") or (90.0 if is_det else 0.0)),
-                        "bbox": entry.get("bbox") or entry.get("bounding_box"),
-                        "image_index": entry.get("image_index"),
-                        "detected": is_det
-                    }
+                    if is_det:
+                        c_val = float(entry.get("confidence") or 90.0)
+                        if 0.0 < c_val <= 1.0:
+                            c_val = c_val * 100.0
+                        return {
+                            **entry,
+                            "value": raw_val,
+                            "raw_value": raw_val,
+                            "confidence": c_val,
+                            "bbox": entry.get("bbox") or entry.get("bounding_box"),
+                            "image_index": entry.get("image_index"),
+                            "detected": True
+                        }
                 else:
                     is_det = RuleEngine._is_valid_detected_value(entry)
-                    return {
-                        "value": entry if is_det else None,
-                        "raw_value": entry,
-                        "confidence": 90.0 if is_det else 0.0,
-                        "bbox": None,
-                        "detected": is_det
-                    }
+                    if is_det:
+                        return {
+                            "value": entry,
+                            "raw_value": entry,
+                            "confidence": 90.0,
+                            "bbox": None,
+                            "detected": True
+                        }
 
         # Fallback 1: Derive unit_of_measurement from net_quantity if available
         if f_clean in ["unit_of_measurement", "net_quantity_unit", "unit", "uom"]:
@@ -179,12 +185,19 @@ class RuleEngine:
         # Fallback 2: Derive mrp_inclusive_tax from mrp if available
         if f_clean in ["mrp_inclusive_tax", "tax_inclusive", "inclusive_tax", "tax_clause"]:
             mrp_entry = declarations.get("mrp")
-            if isinstance(mrp_entry, dict) and mrp_entry.get("value"):
-                mrp_str = str(mrp_entry.get("value")).lower()
-                if any(kw in mrp_str for kw in ["incl", "tax", "inclusive", "all taxes"]):
+            if isinstance(mrp_entry, dict):
+                has_tax = (
+                    mrp_entry.get("tax_in_mrp_block") is True
+                    or mrp_entry.get("verdict") == "CONFORMING"
+                    or mrp_entry.get("tax_inclusive_stated") is True
+                    or any(kw in str(mrp_entry.get("raw_line") or "").lower() for kw in ["incl", "tax", "inclusive", "all taxes"])
+                    or any(kw in str(mrp_entry.get("value") or "").lower() for kw in ["incl", "tax", "inclusive", "all taxes"])
+                )
+                if has_tax:
                     return {
-                        "value": str(mrp_entry.get("value")),
-                        "raw_value": mrp_entry.get("value"),
+                        **mrp_entry,
+                        "value": "Inclusive of all taxes",
+                        "raw_value": "Inclusive of all taxes",
                         "confidence": float(mrp_entry.get("confidence") or 90.0),
                         "bbox": mrp_entry.get("bbox") or mrp_entry.get("bounding_box"),
                         "detected": True
@@ -570,6 +583,12 @@ class RuleEngine:
 
         d_obj = (norm_dict or {}).get("date_obj")
         if d_obj is None:
+            # FSSAI/PCR allows relative dates (e.g., "Best before 12 months from packaging")
+            import re
+            raw_val_lower = str(observed_value).lower()
+            if re.search(r'\b(month|months|year|years|days)\b', raw_val_lower):
+                return "PASS", f"Detected relative expiry declaration: '{observed_value}'. This satisfies the statutory requirement for best before / expiry date."
+
             if is_mandatory:
                 if ocr_confidence >= 85.0:
                     return "FAIL", error_message or f"Date declaration '{field_name}' missing or could not be parsed into a valid calendar date."
@@ -665,6 +684,95 @@ class RuleEngine:
         return "PASS", f"Text declaration check satisfied for '{field_name}'."
 
     # =========================================================================
+    # MRP-Specific Three-Way Verdict Evaluator (Rule 6(1)(a) / 6(1)(e))
+    # =========================================================================
+
+    @staticmethod
+    def _evaluate_mrp_rule(
+        field_name: str,
+        field_data: Dict[str, Any],
+        is_mandatory: bool,
+        ocr_confidence: float,
+        image_quality_passed: bool = True
+    ) -> Tuple[str, str]:
+        """
+        Three-way verdict evaluator for MRP (Rule 6(1)(a) / Rule 6(1)(e)).
+
+        Reads the pre-computed verdict/tax_in_mrp_block/mrp_format_valid fields
+        written by the updated pipeline and declaration extractor.
+
+        Verdict mapping:
+          - CONFORMING   → PASS    (green — price + tax phrase detected at ≥ 85%)
+          - VIOLATION    → FAIL    (red   — price detected, tax clause missing)
+          - CANNOT_VERIFY → NEEDS_REVIEW  (yellow — below 85% confidence)
+        """
+        raw_val = field_data.get("value")
+        conf = float(field_data.get("confidence") or ocr_confidence or 90.0)
+
+        # 1. If field is mrp_inclusive_tax, resolve evidence from the mrp dict
+        mrp_verdict = field_data.get("verdict")  # pre-computed by pipeline/extractor
+        tax_in_block = field_data.get("tax_in_mrp_block", False)
+        mrp_format_valid = field_data.get("mrp_format_valid", True)
+        violation_reason = field_data.get("mrp_violation_reason") or field_data.get("reason", "")
+
+        # 2. Anti-hallucination gate: confidence below 85%
+        if conf < 85.0 or mrp_verdict == "CANNOT_VERIFY":
+            if not image_quality_passed:
+                return "NEEDS_REVIEW", (
+                    f"Package image quality failed minimum threshold. MRP for '{field_name}' could not be verified."
+                )
+            return "NEEDS_REVIEW", (
+                violation_reason or
+                f"MRP declaration '{field_name}' detected below 85% OCR confidence ({conf:.1f}%). "
+                "Cannot verify per anti-hallucination guardrail (Rule 6(1)(a)). Officer review required."
+            )
+
+        # 3. Missing value entirely
+        if not RuleEngine._is_valid_detected_value(raw_val):
+            if is_mandatory:
+                if conf >= 85.0:
+                    return "FAIL", (
+                        f"Package scanned with {conf:.1f}% clarity, but MRP declaration ('{field_name}') "
+                        "was NOT detected on the package. Statutory VIOLATION — Rule 6(1)(e)."
+                    )
+                return "NEEDS_REVIEW", (
+                    f"MRP declaration '{field_name}' not detected. OCR confidence ({conf:.1f}%) "
+                    "is below verification threshold. Officer review required."
+                )
+            return "NOT_APPLICABLE", "Optional declaration not detected; statutory check bypassed."
+
+        # 4. Use pre-computed verdict (CONFORMING / VIOLATION)
+        if mrp_verdict == "CONFORMING":
+            return "PASS", (
+                f"MRP ₹ {field_data.get('price_formatted', str(raw_val))} detected and verified: "
+                "price value and tax-inclusion clause both present in MRP block. "
+                f"Rule 6(1)(a) / 6(1)(e) satisfied at {conf:.1f}% confidence."
+            )
+
+        # 4.5 Check if the extracted text itself confirms the tax clause
+        if field_name in ["mrp_inclusive_tax", "mrp_label_format"]:
+            val_str = str(raw_val).lower()
+            if tax_in_block or any(kw in val_str for kw in ["incl", "tax", "inclusive", "all taxes"]):
+                return "PASS", "Tax-inclusion clause detected. Rule 6(1)(e) satisfied."
+
+        if mrp_verdict == "VIOLATION":
+            return "FAIL", (
+                violation_reason or
+                f"MRP ₹ {field_data.get('price_formatted', str(raw_val))} detected but mandatory "
+                "'(Incl. of all taxes)' tax clause is absent or format is non-compliant. "
+                "Rule 6(1)(a) / 6(1)(e) VIOLATED."
+            )
+
+        # 5. Fallback: tax_in_mrp_block flag
+        if field_name in ["mrp_inclusive_tax", "mrp_label_format"]:
+            return "FAIL", (
+                f"Tax-inclusion phrase '(Incl. of all taxes)' absent from MRP block neighborhood. "
+                f"Rule 6(1)(e) VIOLATION at {conf:.1f}% confidence."
+            )
+
+        return "PASS", f"MRP field '{field_name}' verified with confidence {conf:.1f}%."
+
+    # =========================================================================
     # Primary Rule Evaluation Method
     # =========================================================================
 
@@ -677,7 +785,7 @@ class RuleEngine:
         review_threshold: Optional[float] = None,
         high_conf_threshold: Optional[float] = None,
         evaluation_date: Optional[date] = None
-    ) -> Dict[str, Any]:
+    ) -> Union[Dict[str, Any], List[Dict[str, Any]]]:
         """
         Evaluates a single compliance rule against extracted OCR declarations with strict
         mandatory vs. optional discrimination and confidence-aware adjudication.
@@ -771,6 +879,8 @@ class RuleEngine:
         )
         try:
             overall_conf = float(overall_conf)
+            if 0.0 < overall_conf <= 1.0:
+                overall_conf = overall_conf * 100.0
         except (ValueError, TypeError):
             overall_conf = 90.0
 
@@ -837,7 +947,21 @@ class RuleEngine:
         # -------------------------------------------------------------
         # 4. Dispatch to Specific Operator Evaluation Helper
         # -------------------------------------------------------------
-        if rule_type == "MANDATORY_FIELD":
+
+        # ── MRP Three-Way Verdict (Rule 6(1)(a) / 6(1)(e)) ──────────────────
+        # MRP and tax-inclusive fields use a dedicated evaluator that reads
+        # the pre-computed verdict from the pipeline/extractor evidence dict.
+        _MRP_FIELDS = {"mrp", "mrp_inclusive_tax", "mrp_label_format", "mrp_declaration"}
+        if field_clean in _MRP_FIELDS:
+            status, explanation = RuleEngine._evaluate_mrp_rule(
+                field_name=field_name,
+                field_data=field_data,
+                is_mandatory=is_mandatory,
+                ocr_confidence=effective_conf,
+                image_quality_passed=image_quality_passed
+            )
+
+        elif rule_type == "MANDATORY_FIELD":
             status, explanation = RuleEngine._evaluate_mandatory(
                 field_name=field_name,
                 observed_value=raw_val,
@@ -939,7 +1063,10 @@ class RuleEngine:
                 status = "PASS"
                 explanation = f"Statutory declaration '{field_name}' verified."
 
-        display_obs = str(raw_val) if is_detected else "Cannot Verify / Not Detected"
+        if not is_detected:
+            display_obs = "Cannot Verify / Not Detected" if is_mandatory else "Not Detected (Optional - Bypassed)"
+        else:
+            display_obs = str(norm_val) if norm_val is not None else str(raw_val)
 
         return {
             "rule_id": rule_id,

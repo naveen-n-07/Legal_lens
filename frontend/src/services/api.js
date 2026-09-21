@@ -10,13 +10,13 @@ const getApiBaseUrl = () => {
 
 const api = axios.create({
   baseURL: getApiBaseUrl(),
-  timeout: 60000,
+  timeout: 120000,  // 2 min — YOLO + OCR inference can be slow on first load
 });
 
 api.interceptors.request.use(
   (config) => {
     config.baseURL = getApiBaseUrl();
-    const token = localStorage.getItem('metrix_token');
+    const token = localStorage.getItem('metrix_token') || localStorage.getItem('token') || sessionStorage.getItem('token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }

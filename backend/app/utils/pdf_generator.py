@@ -310,7 +310,11 @@ class StatutoryPDFGenerator:
         comp_score_str = f"{float(compliance_pct):.1f}%"
 
         insp_conf = data.get("inspection_confidence") or data.get("overall_confidence") or 92.0
-        insp_conf_str = f"{float(insp_conf):.1f}%"
+        insp_conf_float = float(insp_conf)
+        # If the confidence is given as a raw decimal (0.0 - 1.0), scale it to 0-100 for display
+        if 0.0 < insp_conf_float <= 1.0:
+            insp_conf_float *= 100.0
+        insp_conf_str = f"{insp_conf_float:.1f}%"
 
         # MPE calculation extraction
         mpe_info = data.get("quantity_mpe") or {}

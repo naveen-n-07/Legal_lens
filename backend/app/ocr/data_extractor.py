@@ -259,9 +259,9 @@ class StatutoryRegexPatterns:
         re.IGNORECASE
     )
 
-    # Batch / Lot Number
+    # Batch / Lot Number (requires at least 1 digit in batch code)
     BATCH_NO = re.compile(
-        r'(?:BATCH\s*(?:NO\.?|NUMBER)?|LOT\s*(?:NO\.?|NUMBER)?)[\s:.\-–—]*([A-Z0-9\-_/]+)',
+        r'(?:BATCH\s*(?:NO\.?|NUMBER)?|LOT\s*(?:NO\.?|NUMBER)?)[\s:.\-–—]*((?=.*\d)[A-Za-z0-9\-_/]{3,})',
         re.IGNORECASE
     )
 
@@ -1038,8 +1038,9 @@ if __name__ == "__main__":
     assert report.net_quantity.standardized_unit == "kg", f"TEST FAILED: Unit mismatch: {report.net_quantity.standardized_unit}"
     assert report.net_quantity.base_value == 1000.0, f"TEST FAILED: Base value conversion: {report.net_quantity.base_value}"
     assert report.net_quantity.base_unit == "g", f"TEST FAILED: Base unit mismatch: {report.net_quantity.base_unit}"
-    print(f"[PASS] Net Quantity Extracted: {report.net_quantity.formatted} -> SI Base: {report.net_quantity.base_value} {report.net_quantity.base_unit}")
-    print(f"       Bounding Box: {report.net_quantity.evidence.bbox_xyxy} | Conf: {report.net_quantity.evidence.confidence}")
+    nq_bbox = report.net_quantity.evidence.bbox_xyxy if report.net_quantity.evidence else []
+    nq_conf = report.net_quantity.evidence.confidence if report.net_quantity.evidence else 0.0
+    print(f"       Bounding Box: {nq_bbox} | Conf: {nq_conf}")
 
     # 3. Date Verification
     assert report.manufacturing_date.detected, "TEST FAILED: Manufacturing date not detected!"

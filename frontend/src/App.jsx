@@ -12,6 +12,8 @@ import LiveScanner from './pages/LiveScanner';
 import ScanPortal from './pages/ScanPortal';
 import InspectionUpload from './pages/InspectionUpload';
 import OfficerReview from './pages/OfficerReview';
+import OfficerReviewQueue from './pages/OfficerReviewQueue';
+import ReviewingOfficerDashboard from './pages/ReviewingOfficerDashboard';
 import AuditHistory from './pages/AuditHistory';
 import Reports from './pages/Reports';
 import AdminControl from './pages/AdminControl';
@@ -50,7 +52,7 @@ export default function App() {
   // Role-Based Default Landing Route
   const getDefaultLandingRoute = () => {
     if (role === 'admin') return '/admin/control';
-    if (role === 'reviewing_officer') return '/officer/review';
+    if (role === 'reviewing_officer') return '/dashboard';
     return '/dashboard';
   };
 
@@ -73,7 +75,7 @@ export default function App() {
                   role === 'admin' 
                     ? <AdminControl /> 
                     : role === 'reviewing_officer' 
-                      ? <OfficerReview /> 
+                      ? <ReviewingOfficerDashboard user={user} /> 
                       : <InspectorDashboard user={user} />
                 } 
               />
@@ -85,12 +87,21 @@ export default function App() {
               <Route path="/profile" element={<InspectorProfile user={user} />} />
               
               {/* Common Inspection History & Reports */}
-              <Route path="/history" element={<AuditHistory />} />
-              <Route path="/reports" element={<Reports />} />
+              <Route path="/history" element={<AuditHistory user={user} />} />
+              <Route path="/reports" element={<Reports user={user} />} />
 
-              {/* Assistant Controller / Adjudicator Routes */}
+              {/* Dedicated FIFO Officer Review Queue (Route 7B) */}
               <Route 
                 path="/officer/review" 
+                element={
+                  (role === 'reviewing_officer' || role === 'admin') 
+                    ? <OfficerReviewQueue user={user} /> 
+                    : <Navigate to={getDefaultLandingRoute()} replace />
+                } 
+              />
+
+              <Route 
+                path="/officer/adjudicate" 
                 element={
                   (role === 'reviewing_officer' || role === 'admin') 
                     ? <OfficerReview /> 

@@ -26,6 +26,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import StatusBadge from '../components/StatusBadge';
 import api from '../services/api';
+import { formatDateTime } from '../utils/dateUtils';
 
 export default function InspectorDashboard({ user }) {
   const navigate = useNavigate();
@@ -35,50 +36,13 @@ export default function InspectorDashboard({ user }) {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
 
   const [metrics, setMetrics] = useState({
-    total_inspections: 42,
-    compliant_count: 34,
-    issues_flagged: 6,
-    pending_submissions: 2
+    total_inspections: 0,
+    compliant_count: 0,
+    issues_flagged: 0,
+    pending_submissions: 0
   });
 
-  const [recentInspections, setRecentInspections] = useState([
-    {
-      id: 'INS-2026-00042',
-      product_name: 'Organic Whole Wheat Flour 5kg',
-      category: 'Food & Beverages',
-      date_time: '2026-08-30 18:45',
-      location: 'Okhla Wholesale Market, Shed #4',
-      status: '7A: COMPLIANT',
-      ocr_preview: 'Generic Name: Wheat Flour • Net Qty: 5kg • MRP ₹240.00 (Incl. all taxes)'
-    },
-    {
-      id: 'INS-2026-00041',
-      product_name: 'Ayurvedic Herbal Hair Oil 200ml',
-      category: 'Cosmetics & Personal Care',
-      date_time: '2026-08-30 17:10',
-      location: 'Karol Bagh Retail Market, Shop #12',
-      status: '7B: VIOLATION / MANUAL REVIEW',
-      ocr_preview: 'Rule 7 Violation: Measured font height 1.8mm below statutory minimum 2.5mm'
-    },
-    {
-      id: 'INS-2026-00040',
-      product_name: 'Pure Desi Ghee 1L Pouch',
-      category: 'Food & Beverages',
-      date_time: '2026-08-30 15:30',
-      location: 'Connaught Place Supermarket, Floor 1',
-      status: 'PENDING REVIEW',
-      ocr_preview: 'Verification Pending: Net Quantity numeral legibility low (92%)'
-    },
-    {
-      id: 'INS-2026-00039',
-      product_name: 'Disinfectant Floor Cleaner 500ml',
-      category: 'Household Chemicals',
-      date_time: '2026-08-30 14:15',
-      location: 'Mayapuri Industrial Area Depot #08',
-      status: '7A: COMPLIANT',
-      ocr_preview: 'Generic Name: Floor Cleaner • Net Qty: 500ml • MRP ₹115.00 (Incl. all taxes)'
-    }
-  ]);
+  const [recentInspections, setRecentInspections] = useState([]);
 
   const [selectedEvidence, setSelectedEvidence] = useState(null);
 
@@ -92,17 +56,20 @@ export default function InspectorDashboard({ user }) {
     // Fetch dynamic field inspections if API available
     api.get('/inspections')
       .then((res) => {
-        if (res.data && res.data.length > 0) {
+        if (res.data) { // Removed res.data.length > 0 guard clause
           setRecentInspections(res.data.slice(0, 10));
           setMetrics({
             total_inspections: res.data.length,
             compliant_count: res.data.filter(i => i.overall_status?.includes('7A') || i.overall_status?.includes('COMPLIANT')).length,
             issues_flagged: res.data.filter(i => i.overall_status?.includes('7B') || i.overall_status?.includes('VIOLATION')).length,
-            pending_submissions: res.data.filter(i => i.overall_status?.includes('PENDING')).length
+            pending_submissions: res.data.filter(i => i.overall_status?.includes('PENDING')).length // Dynamically infer pending
           });
         }
       })
-      .catch(() => {});
+      .catch((err) => {
+        console.warn("Inspector API offline, using cached mock data.", err);
+      });
+
 
     return () => {
       window.removeEventListener('online', handleOnline);
@@ -272,7 +239,7 @@ export default function InspectorDashboard({ user }) {
                       <span className="text-xs text-[#64748B] font-semibold block">{item.category}</span>
                     </td>
                     <td className="p-3.5 text-xs font-bold text-[#64748B] whitespace-nowrap">
-                      {item.date_time || (item.created_at ? new Date(item.created_at).toLocaleDateString() : 'Recent')}
+                      {formatDateTime(item.created_at || item.date_time)}
                     </td>
                     <td className="p-3.5 text-xs font-semibold text-[#1E293B]">{item.location}</td>
                     <td className="p-3.5">

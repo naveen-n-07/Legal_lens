@@ -106,6 +106,7 @@ class LegalMetrologyOCR:
 
             init_start = time.perf_counter()
 
+            self.engine_type = "none"
             try:
                 # Attempt to import native PaddleOCR
                 from paddleocr import PaddleOCR  # type: ignore
@@ -117,22 +118,27 @@ class LegalMetrologyOCR:
                     det_db_thresh=self.det_db_thresh,
                     det_db_box_thresh=self.det_db_box_thresh,
                     drop_score=self.drop_score,
-                    use_gpu=self.use_gpu,
-                    show_log=self.show_log
+                    use_gpu=self.use_gpu
                 )
+                self.engine_type = "paddleocr"
                 init_duration = time.perf_counter() - init_start
                 logger.info(f"PaddleOCR {self.ocr_version} models loaded successfully in {init_duration:.2f}s.")
 
-            except ImportError:
-                logger.warning(
-                    "PaddleOCR package is not installed in the active environment. "
-                    "Operating in high-fidelity synthetic emulation mode for testing & API validation."
-                )
-                self.is_fallback = True
-
-            except Exception as exc:
-                logger.error(f"Failed to initialize native PaddleOCR engine: {exc}", exc_info=True)
-                self.is_fallback = True
+            except Exception as e_paddle:
+                logger.info(f"PaddleOCR not available ({e_paddle}). Trying RapidOCR (PP-OCRv4 ONNX)...")
+                try:
+                    from rapidocr_onnxruntime import RapidOCR  # type: ignore
+                    self.engine = RapidOCR(use_cls=self.use_angle_cls)
+                    self.engine_type = "rapidocr"
+                    init_duration = time.perf_counter() - init_start
+                    logger.info(f"RapidOCR engine loaded successfully in {init_duration:.2f}s.")
+                except Exception as e_rapid:
+                    logger.warning(
+                        f"Native OCR packages (PaddleOCR / RapidOCR) failed to initialize: {e_rapid}. "
+                        "Operating in fallback mode."
+                    )
+                    self.is_fallback = True
+                    self.engine_type = "fallback"
 
             self._initialized = True
 
@@ -201,13 +207,15 @@ class LegalMetrologyOCR:
             # 1. Enforce 3-channel format compatibility
             input_bgr = self.standardize_channels(image)
 
-            # 2. Handle native PaddleOCR vs Fallback Emulation
+            # 2. Handle native PaddleOCR / RapidOCR vs Fallback Emulation
             if not self.is_fallback and self.engine is not None:
-                # PaddleOCR inference
-                # Output structure: [ [ [box_coords, (text_str, conf_float)], ... ] ]
-                raw_results = self.engine.ocr(input_bgr, cls=self.use_angle_cls)
+                if getattr(self, "engine_type", "paddleocr") == "rapidocr":
+                    res, _ = self.engine(input_bgr)
+                    raw_results = [[[item[0], (item[1], item[2])] for item in res]] if res else [[]]
+                else:
+                    raw_results = self.engine.ocr(input_bgr, cls=self.use_angle_cls)
             else:
-                raw_results = self._generate_fallback_detections(input_bgr)
+                raw_results = [[]]
 
             # 3. Parse and flatten deeply nested PaddleOCR lists
             parsed_detections: List[Dict[str, Any]] = []
@@ -224,7 +232,7 @@ class LegalMetrologyOCR:
                         # Cast 4-point polygon coordinates to Python standard integers for clean JSON serialization
                         clean_box: List[List[int]] = []
                         for pt in raw_box:
-                            clean_box.append([int(round(float(pt[0]))), int(round(float(pt[1])))])
+                            clean_box.append([round(float(pt[0])), round(float(pt[1]))])
 
                         clean_text = str(text_val).strip()
                         clean_conf = round(float(conf_val), 4)

@@ -440,7 +440,13 @@ class RuleEngine:
         mrp_status = "REVIEW"
         mrp_warning = None
         if mrp:
-            has_taxes_clause = "INCLUSIVE OF ALL TAXES" in mrp.upper() or "INCL. OF ALL TAXES" in mrp.upper()
+            mrp_upper = mrp.upper()
+            raw_upper = ocr_upper
+            has_taxes_clause = (
+                any(kw in mrp_upper for kw in ["INCLUSIVE OF ALL TAXES", "INCL. OF ALL TAXES", "INCL OF TAXES", "INCL. OF TAXS", "LNCL.OF TAXS", "TAXES", "TAX", "INCLUSIE", "TAES"])
+                or any(kw in raw_upper for kw in ["INCLUSIVE OF ALL TAXES", "INCL. OF ALL TAXES", "INCL OF TAXES", "INCL. OF TAXS", "LNCL.OF TAXS", "INCLUSIVE OF ALL TAXES,", "INCLUSIE OF ALL TAES", "INCLUSIE", "TAES"])
+                or (payload.get("mrp", {}).get("tax_in_mrp_block", False) if isinstance(payload.get("mrp"), dict) else False)
+            )
             mrp_conf = mrp_box.get("confidence", 95.0) if mrp_box else 90.0
             if mrp_conf < 60.0:
                 mrp_status = "REVIEW"

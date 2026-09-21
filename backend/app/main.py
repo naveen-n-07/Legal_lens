@@ -2,8 +2,25 @@
 main.py - METRIX-LM FastAPI Application Entry Point & Multi-Role Seeder
 """
 
-import json
+# ============================================================================
+# SUPPRESS PADDLE / PADDLEOCR TELEMETRY & SIGNAL HANDLERS
+# Must be set BEFORE any paddle* import to prevent outbound TCP connections
+# to Google servers (172.217.x.x / translate.googleapis.com) that cause
+# "wsarecv: An established connection was aborted" errors on Windows.
+# ============================================================================
 import os
+os.environ.setdefault("PADDLE_DISABLE_SIGNAL_HANDLER", "1")   # No signal hijacking
+os.environ.setdefault("PADDLE_NO_GLOBAL_PROGRESS", "1")        # Suppress download bars
+os.environ.setdefault("PADDLEX_DISABLE_CE_REPORT", "1")        # Disable PaddleX telemetry
+os.environ.setdefault("PADDLEX_CE_DISABLE", "1")               # Alternate flag
+os.environ.setdefault("FLAGS_call_stack_level", "0")           # Suppress C++ stack output
+os.environ.setdefault("GLOG_minloglevel", "3")                 # Silence PaddlePaddle GLOG
+os.environ.setdefault("FLAGS_use_mkldnn", "0")                 # Avoid MKLDNN hang on Windows
+os.environ.setdefault("NO_PROXY", "translate.googleapis.com,*.google.com")
+os.environ.setdefault("no_proxy", "translate.googleapis.com,*.google.com")
+# Block deep_translator / TranslationMiddleware from making outbound calls
+os.environ.setdefault("METRIX_DISABLE_TRANSLATION", "1")
+
 from contextlib import asynccontextmanager
 from fastapi import FastAPI  # type: ignore
 from fastapi.staticfiles import StaticFiles  # type: ignore
@@ -21,6 +38,7 @@ from app.api.analytics_routes import router as analytics_router
 from app.api.ocr_routes import router as ocr_router
 from app.api.detection_routes import router as detection_router
 from app.api.scanner_routes import router as scanner_router
+from app.api.ws_routes import router as ws_router
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 RESULTS_DIR = os.path.join(BASE_DIR, "results")
@@ -100,6 +118,12 @@ async def lifespan(app: FastAPI):
     seed_rules_from_dataset(db=db, force_reload=False)
 
     db.close()
+
+    from app.ocr.pipeline import MetrixOCRPipeline
+    print("[STARTUP] Pre-warming OCR/YOLO pipeline...")
+    MetrixOCRPipeline.get_instance()
+    print("[STARTUP] OCR/YOLO pipeline ready.")
+
     yield
 
 app = FastAPI(
@@ -144,6 +168,21 @@ app.include_router(report_router, prefix="/api")
 app.include_router(ocr_router)
 app.include_router(detection_router)
 app.include_router(scanner_router)
+app.include_router(ws_router)
+
+from app.api.ws_manager import ws_manager
+from fastapi import WebSocket, WebSocketDisconnect
+
+@app.websocket("/ws/notifications")
+async def direct_ws_notifications(websocket: WebSocket):
+    await ws_manager.connect(websocket)
+    try:
+        while True:
+            await websocket.receive_text()
+    except (WebSocketDisconnect, Exception):
+        pass
+    finally:
+        await ws_manager.disconnect(websocket)
 
 @app.get("/")
 def root():

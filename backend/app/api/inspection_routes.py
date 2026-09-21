@@ -2,8 +2,9 @@ import os
 import re
 import uuid
 import json
+import gc
 import asyncio
-from concurrent.futures import ProcessPoolExecutor, ProcessPoolExecutor
+from concurrent.futures import ProcessPoolExecutor
 import logging
 import cv2  # type: ignore
 import numpy as np  # type: ignore
@@ -12,7 +13,7 @@ from typing import Optional, Dict, Any, List, Tuple
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, status, Response  # type: ignore
 from sqlalchemy.orm import Session  # type: ignore
 from app.database import get_db
-from app.models import InspectionRecord, User, AuditLog
+from app.models import InspectionRecord, User, AuditLog, to_iso_utc
 from app.auth import get_current_user, get_current_user_optional, require_inspector_or_officer
 from app.ocr.preprocessing import OpenCVPreprocessor
 from app.ocr.ocr_service import PaddleOCRService, decode_barcode
@@ -25,6 +26,11 @@ from app.utils.pdf_generator import StatutoryPDFGenerator
 
 logger = logging.getLogger("metrix_inspection")
 router = APIRouter(prefix="/inspections", tags=["Inspections"])
+
+# Lazy import to avoid circular dependency at module load time
+def _get_ws_manager():
+    from app.api.ws_manager import ws_manager
+    return ws_manager
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 RESULTS_DIR = os.path.join(BASE_DIR, "results")
@@ -72,10 +78,14 @@ def clean_product_title(raw_input: Optional[str], detected_name: Optional[str]) 
     """
     Sanitizes candidate product names, rejecting camera filenames, auto-generated hashes,
     file extensions, and OCR non-words (e.g., 'Hzdfljdfif', 'IMG_3921.png', 'blob').
-    Prioritizes verified detected commodity names (e.g., 'TURMERIC').
+    Prioritizes verified detected commodity names (e.g., 'SAKTHI', 'TURMERIC').
     """
     det = (detected_name or "").strip()
     inp = (raw_input or "").strip()
+
+    from app.ocr.declaration_extractor import is_blacklisted_generic_name
+    if det and is_blacklisted_generic_name(det):
+        det = ""
 
     if not inp:
         return det if det else "Packaged Commodity Item"
@@ -128,7 +138,7 @@ def list_inspections(
             "officer_decision": r.officer_decision,
             "original_image_url": r.original_image_url,
             "processed_image_url": r.dewarped_image_url,
-            "created_at": r.created_at
+            "created_at": to_iso_utc(r.created_at)
         }
         for r in records
     ]
@@ -186,6 +196,9 @@ def _merge_declarations(master: Dict[str, Any], partial: Dict[str, Any], img_ind
     return master
 
 @router.post("/process-image")
+@router.post("/inspect")
+@router.post("/api/inspect")
+@router.post("/api/v1/inspect")
 async def process_packaging_image(
     file: Optional[UploadFile] = File(None),
     files: Optional[List[UploadFile]] = File(None),
@@ -199,6 +212,9 @@ async def process_packaging_image(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user_optional)
 ):
+    # Clear previous request inference state & memory artifacts
+    gc.collect()
+
     all_files_dict = {}
     if file and file.filename:
         all_files_dict[file.filename] = file
@@ -223,6 +239,7 @@ async def process_packaging_image(
     
     original_urls = []
     processed_urls = []
+    annotated_urls = []
     statutory_crops_master = []
     images_cv_list = []
     pdp_detect_info = {}
@@ -494,6 +511,15 @@ async def process_packaging_image(
             (r.get("evidence") or {}).get("image_index", 0)
         )
 
+        if str(f_name).lower() in ["mrp_inclusive_tax", "tax_inclusive", "inclusive_tax"]:
+            for ocr_item in merged_ocr_concat:
+                ocr_txt = str(ocr_item.get("text", "")).lower()
+                ocr_box = ocr_item.get("bbox") or ocr_item.get("polygon")
+                if ocr_box and any(kw in ocr_txt for kw in ["incl", "tax", "inclusive", "inclusie", "taes"]):
+                    ev_bbox = ocr_box
+                    img_idx = ocr_item.get("image_index", img_idx)
+                    break
+
         if not ev_bbox:
             BBOX_FALLBACKS = {
                 "unit_of_measurement": ["net_quantity", "net_quantity_unit"],
@@ -517,6 +543,51 @@ async def process_packaging_image(
                 ev_bbox = fb_item.get("bbox") or fb_item.get("bounding_box")
                 if ev_bbox:
                     img_idx = fb_item.get("image_index", img_idx)
+                    break
+
+        if not ev_bbox and obs_val and "Cannot Verify" not in str(obs_val) and "Not Detected" not in str(obs_val):
+            obs_str = str(obs_val).strip()
+            obs_clean = re.sub(r'[^\w\d]', '', obs_str).upper()
+            obs_num = re.search(r'\d+(?:\.\d+)?', obs_str)
+            num_str = obs_num.group(0) if obs_num else ""
+            
+            best_ocr_box = None
+            best_ocr_score = 0.0
+            
+            for ocr_item in merged_ocr_concat:
+                ocr_txt = str(ocr_item.get("text", "")).strip()
+                ocr_clean = re.sub(r'[^\w\d]', '', ocr_txt).upper()
+                ocr_box = ocr_item.get("bbox") or ocr_item.get("polygon")
+                if not ocr_clean or not ocr_box:
+                    continue
+                
+                score = 0.0
+                if obs_clean in ocr_clean or ocr_clean in obs_clean:
+                    score = 2.0
+                elif num_str and (num_str in ocr_clean or num_str in ocr_txt):
+                    score = 1.5
+                else:
+                    obs_words = set(re.findall(r'[A-Z0-9]{3,}', obs_clean))
+                    ocr_words = set(re.findall(r'[A-Z0-9]{3,}', ocr_clean))
+                    if obs_words and ocr_words:
+                        common = obs_words.intersection(ocr_words)
+                        if common:
+                            score = len(common) / len(obs_words)
+                
+                if score > best_ocr_score:
+                    best_ocr_score = score
+                    best_ocr_box = ocr_box
+            
+            if best_ocr_box:
+                ev_bbox = best_ocr_box
+
+        # Additional ROI Crop Bounding Box Fallback
+        if not ev_bbox and statutory_crops_master:
+            for sc in statutory_crops_master:
+                sc_label = str(sc.get("label", "")).lower()
+                sc_box = sc.get("bbox")
+                if sc_box and (str(f_name).lower() in sc_label or sc_label in str(f_name).lower()):
+                    ev_bbox = sc_box
                     break
 
         explainable_rules.append({
@@ -564,6 +635,7 @@ async def process_packaging_image(
             annot_img = EvidenceVisualizer.draw_evidence_boxes(img_cv, visual_evidence_items, max_dim=1000)
             cv2.imwrite(annot_path, annot_img)
             annotated_images_b64.append(annotated_b64)
+            annotated_urls.append(f"/results/{annot_fname}")
         except Exception as viz_err:
             logger.warning(f"[Visualizer] Could not generate evidence annotation for image {idx}: {viz_err}")
 
@@ -613,6 +685,35 @@ async def process_packaging_image(
     db.add(audit)
     db.commit()
     db.refresh(record)
+
+    # ── Real-time push to reviewing officers via WebSocket ────────────────────
+    try:
+        _ws = _get_ws_manager()
+        if _ws.active_connections:
+            import asyncio as _asyncio
+            _loop = None
+            try:
+                _loop = _asyncio.get_event_loop()
+            except RuntimeError:
+                pass
+            if _loop and _loop.is_running():
+                _asyncio.ensure_future(_ws.broadcast({
+                    "event": "NEW_INSPECTION",
+                    "data": {
+                        "id": record.id,
+                        "product_name": record.product_name,
+                        "category": record.category,
+                        "location": record.location,
+                        "inspector_name": record.inspector_name,
+                        "overall_status": record.overall_status,
+                        "route_7b_triggered": record.route_7b_triggered,
+                        "officer_decision": record.officer_decision,
+                        "original_image_url": record.original_image_url,
+                        "created_at": record.created_at.isoformat() if record.created_at else None
+                    }
+                }))
+    except Exception as _ws_err:
+        logger.warning(f"[WS] Broadcast failed (non-fatal): {_ws_err}")
 
     review_triggers = []
     if master_overall_conf < 75.0:
@@ -688,18 +789,31 @@ async def process_packaging_image(
             }
             for c in statutory_crops_master
         ],
+        "status": "success",
         "original_urls": original_urls,
         "processed_urls": processed_urls,
+        "annotated_urls": annotated_urls,
         "original_url": original_urls[0] if original_urls else "",
         "original_image_url": original_urls[0] if original_urls else "",
         "processed_url": processed_urls[0] if processed_urls else "",
         "processed_image_url": processed_urls[0] if processed_urls else "",
+        "evidence_image_url": annotated_urls[0] if annotated_urls else (processed_urls[0] if processed_urls else ""),
+        "annotated_image_url": annotated_urls[0] if annotated_urls else (processed_urls[0] if processed_urls else ""),
+        "annotated_url": annotated_urls[0] if annotated_urls else (processed_urls[0] if processed_urls else ""),
         "annotated_image_b64": annotated_images_b64[0] if annotated_images_b64 else None,
         "annotated_images_b64": annotated_images_b64,
+        "detections_count": len(explainable_rules),
         "checks": explainable_rules,
+        "compliance_results": explainable_rules,
+        "applicable_rules": explainable_rules,
+        "explainable_rules": explainable_rules,
+        "results": explainable_rules,
         "violations": violations_list,
         "unverified_declarations": needs_review_list,
         "extracted_data": master_declarations,
+        "declarations": master_declarations,
+        "extracted_declarations": master_declarations,
+        "technical_matrix": master_declarations,
         "raw_text": "\n".join(raw_text_concat),
         "created_at": record.created_at.isoformat()
     }
@@ -765,8 +879,8 @@ def get_inspection_record(inspection_id: str, db: Session = Depends(get_db)):
         "officer_name": record.officer_name,
         "officer_decision": record.officer_decision,
         "officer_comments": record.officer_comments,
-        "verified_at": record.verified_at,
-        "created_at": record.created_at
+        "verified_at": to_iso_utc(record.verified_at),
+        "created_at": to_iso_utc(record.created_at)
     }
 
 @router.get("/{inspection_id}/report/pdf")
@@ -982,6 +1096,8 @@ async def process_batch_inspections(
     }
 
 def process_single_image_worker(idx: int, img_bytes: bytes, uuid_str: str) -> dict:
+    import gc
+    gc.collect()
     from datetime import datetime, timezone
     from app.ocr.preprocessing import OpenCVPreprocessor
     from app.ocr.ocr_service import decode_barcode
@@ -1026,7 +1142,7 @@ def process_single_image_worker(idx: int, img_bytes: bytes, uuid_str: str) -> di
     
     t0_ocr = datetime.now(timezone.utc)
     
-    pipeline = MetrixOCRPipeline()
+    pipeline = MetrixOCRPipeline.get_instance()
     pipeline_results = pipeline.process(img_cv)
     
     # Map pipeline outputs to standard structure
@@ -1055,17 +1171,29 @@ def process_single_image_worker(idx: int, img_bytes: bytes, uuid_str: str) -> di
     extracted_decls = DeclarationExtractor.parse_declarations(raw_text, merged_ocr_results)
     
     # Mix in pipeline explicit strict extraction overrides
-    for k in ["mrp", "fssai_license", "manufacturing_date", "expiry_date"]:
+    for k in ["mrp", "fssai_license", "manufacturing_date", "expiry_date", "batch_number", "net_quantity"]:
         if pipeline_results.get(k):
             val_obj = pipeline_results[k]
             if isinstance(val_obj, dict):
+                nq_val_str = f"{val_obj.get('value')} {val_obj.get('unit', '')}".strip() if (k == "net_quantity" and val_obj.get('unit')) else str(val_obj.get("value"))
                 extracted_decls[k] = {
-                    "value": str(val_obj.get("value")),
-                    "confidence": 95.0,
-                    "detected": True,
+                    **val_obj,
+                    "value": nq_val_str if val_obj.get("value") is not None else None,
+                    "numeric_value": val_obj.get("value"),
+                    "unit": val_obj.get("unit"),
+                    "confidence": float(val_obj.get("confidence", 95.0)),
+                    "detected": bool(val_obj.get("detected", val_obj.get("value") is not None)),
                     "source": "MetrixOCRPipeline",
-                    "bbox": val_obj.get("bbox")
+                    "bbox": val_obj.get("bbox") or val_obj.get("bounding_box")
                 }
+                if k == "net_quantity" and val_obj.get("unit"):
+                    extracted_decls["unit_of_measurement"] = {
+                        "value": str(val_obj.get("unit")),
+                        "confidence": float(val_obj.get("confidence", 95.0)),
+                        "detected": True,
+                        "bbox": val_obj.get("bbox") or val_obj.get("bounding_box")
+                    }
+                    extracted_decls["net_quantity_unit"] = extracted_decls["unit_of_measurement"]
             else:
                 extracted_decls[k] = {"value": str(val_obj), "confidence": 95.0, "detected": True, "source": "MetrixOCRPipeline"}
     

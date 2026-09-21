@@ -229,7 +229,12 @@ class TranslationMiddleware:
         """
         Direct zero-dependency Google Translate HTTP gateway fallback.
         Ensures continuous operability if external library is not installed.
+        Disabled when METRIX_DISABLE_TRANSLATION=1 to prevent outbound TCP errors.
         """
+        # Respect kill-switch env var — returns original text to avoid TCP aborts
+        if os.environ.get("METRIX_DISABLE_TRANSLATION", "0") == "1":
+            return text
+
         url = (
             f"https://translate.googleapis.com/translate_a/single?"
             f"client=gtx&sl={source}&tl={target}&dt=t&q={urllib.parse.quote(text)}"

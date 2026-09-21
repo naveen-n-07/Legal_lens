@@ -88,6 +88,43 @@ export default function StatutoryInspectionReport({ inspection, scannedSides = [
     return false;
   };
 
+  // Convert a raw field_name / rule_name into a human-readable label for the report UI
+  const getRuleFriendlyName = (rule) => {
+    if (!rule) return 'Statutory Requirement';
+    // Prefer an explicit human-readable name from the backend
+    if (rule.rule_name && rule.rule_name !== rule.rule_id) return rule.rule_name;
+    const fieldRaw = rule.field_name || rule.field || rule.rule_id || '';
+    const FIELD_LABELS = {
+      mrp: 'Maximum Retail Price (MRP)',
+      mrp_inclusive_tax: 'MRP — Tax Inclusion Clause',
+      mrp_label_format: 'MRP Label Format',
+      mrp_rounding: 'MRP Rounding Compliance',
+      net_quantity: 'Net Quantity Declaration',
+      net_quantity_unit: 'Net Quantity — SI Unit',
+      unit_of_measurement: 'Unit of Measurement',
+      quantity_by_number_wording: 'Quantity by Count / Wording',
+      manufacturer: 'Manufacturer / Packer Address',
+      manufacturer_or_importer_name_address: 'Manufacturer / Importer Name & Address',
+      manufacturing_date: 'Manufacturing / Packing Date',
+      month_year_of_manufacture: 'Month-Year of Manufacture',
+      expiry_date: 'Expiry / Best Before Date',
+      best_before_use_by: 'Best Before / Use By Date',
+      consumer_care: 'Consumer Care Details',
+      customer_care: 'Customer Care Contact',
+      fssai_license: 'FSSAI License Number',
+      generic_name: 'Generic / Common Name',
+      common_generic_name: 'Common Generic Name',
+      ingredients: 'Ingredient List',
+      ingredient_list: 'Ingredient List',
+      country_of_origin: 'Country of Origin',
+      batch_number: 'Batch / Lot Number',
+      barcode: 'Barcode / EAN',
+      nutrition_declaration: 'Nutrition Information',
+    };
+    const normalised = String(fieldRaw).toLowerCase().replace(/[\s-]+/g, '_');
+    return FIELD_LABELS[normalised] || fieldRaw.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) || 'Statutory Requirement';
+  };
+
   const bypassedRulesList = allRules.filter(r => isBypassedRule(r));
   const violationsList = allRules.filter(r => String(r.status || '').toUpperCase().trim() === 'FAIL' && !isBypassedRule(r));
   const passedRulesList = allRules.filter(r => String(r.status || '').toUpperCase().trim() === 'PASS' && !isBypassedRule(r));
@@ -164,13 +201,14 @@ export default function StatutoryInspectionReport({ inspection, scannedSides = [
 
   const annotatedImage = resolveImageSource(
     inspection.annotated_image_b64 ||
+    inspection.evidence_image_url ||
     inspection.annotated_image_url ||
     inspection.annotated_url ||
-    inspection.previewUrl ||
-    inspection.dewarped_image_url ||
+    inspection.annotated_urls?.[0] ||
+    inspection.processed_image_url ||
     inspection.processed_url ||
-    inspection.original_image_url ||
-    scannedSides[0]?.snapshotUrl
+    scannedSides[0]?.snapshotUrl ||
+    inspection.previewUrl
   );
   const rawImage = resolveImageSource(
     inspection.original_image_url ||
@@ -182,9 +220,11 @@ export default function StatutoryInspectionReport({ inspection, scannedSides = [
   const [showRawImage, setShowRawImage] = useState(false);
 
   // --- MULTI-IMAGE RESOLUTION LOGIC ---
-  const annotatedImagesList = Array.isArray(inspection.annotated_images_b64) && inspection.annotated_images_b64.length > 0
-    ? inspection.annotated_images_b64.map(b64 => resolveImageSource(b64))
-    : (annotatedImage ? [annotatedImage] : []);
+  const annotatedImagesList = Array.isArray(inspection.annotated_urls) && inspection.annotated_urls.length > 0
+    ? inspection.annotated_urls.map(url => resolveImageSource(url))
+    : (Array.isArray(inspection.annotated_images_b64) && inspection.annotated_images_b64.length > 0
+      ? inspection.annotated_images_b64.map(b64 => resolveImageSource(b64))
+      : (annotatedImage ? [annotatedImage] : []));
     
   const rawImagesList = Array.isArray(inspection.original_urls) && inspection.original_urls.length > 0
     ? inspection.original_urls.map(url => resolveImageSource(url))
@@ -376,19 +416,16 @@ export default function StatutoryInspectionReport({ inspection, scannedSides = [
 
           {/* Hero Visual Evidence Container */}
           <div className="relative rounded-2xl overflow-hidden bg-slate-950 border border-slate-800 flex items-center justify-center min-h-[300px] p-2">
-            <div className={`grid gap-4 w-full ${rawImagesList.length > 1 ? 'grid-cols-2' : 'grid-cols-1'}`}>
-              {rawImagesList.map((imgSrc, idx) => {
-                // Collect annotations for this image panel (currently mapping all applicable rules to first panel usually, or filtering by image_id)
-                // In future, inspection.applicable_rules could have image_id
+            <div className={`grid gap-4 w-full ${imagesToShow.length > 1 ? 'grid-cols-2' : 'grid-cols-1'}`}>
+              {imagesToShow.map((imgSrc, idx) => {
                 return (
-                  <div key={idx} className="relative flex justify-center bg-black/40 rounded-xl overflow-hidden">
-                    <ImageOverlay 
-                      imgSrc={imgSrc} 
+                  <div key={idx} className="relative flex justify-center bg-black/40 rounded-xl overflow-hidden p-1">
+                    <img 
+                      src={imgSrc} 
                       alt={`Packaging Visual Evidence Panel ${idx + 1}`} 
-                      showAnnotations={!showRawImage}
-                      annotations={inspection.applicable_rules} 
+                      className="w-full h-auto max-h-[600px] object-contain rounded-xl shadow-lg border border-slate-800"
                     />
-                    {rawImagesList.length > 1 && (
+                    {imagesToShow.length > 1 && (
                       <div className="absolute top-2 left-2 px-2 py-1 bg-slate-900/80 border border-slate-700 text-slate-300 text-[10px] font-mono rounded-lg shadow-sm">
                         PANEL {idx + 1}
                       </div>
@@ -399,13 +436,13 @@ export default function StatutoryInspectionReport({ inspection, scannedSides = [
             </div>
             
             {/* Top Right Floating Badge */}
-            <div className="absolute top-3 right-3 px-3 py-1.5 bg-slate-900/85 backdrop-blur-md border border-slate-700 text-white rounded-xl text-[11px] font-mono font-bold flex items-center space-x-1.5 shadow-md">
+            <div className="absolute top-3 right-3 px-3 py-1.5 bg-slate-900/85 backdrop-blur-md border border-slate-700 text-white rounded-xl text-[11px] font-mono font-bold flex items-center space-x-1.5 shadow-md z-20">
               <span className="w-2 h-2 rounded-full bg-red-500 animate-ping"></span>
               <span>METRIX-LM Vision Guard</span>
             </div>
 
             {/* Bottom Left Mode Label */}
-            <div className="absolute bottom-3 left-3 px-3 py-1 bg-slate-900/80 backdrop-blur-sm text-slate-300 rounded-lg text-[10px] font-mono border border-slate-700">
+            <div className="absolute bottom-3 left-3 px-3 py-1 bg-slate-900/80 backdrop-blur-sm text-slate-300 rounded-lg text-[10px] font-mono border border-slate-700 z-20">
               {showRawImage ? "Mode: Original Packaging Photo" : "Mode: Explainable AI Statutory Bounding Boxes"}
             </div>
           </div>
@@ -596,43 +633,132 @@ export default function StatutoryInspectionReport({ inspection, scannedSides = [
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5 text-xs">
           <div className="p-2.5 bg-slate-50 rounded-xl border border-slate-200">
             <span className="text-xs text-slate-400 font-bold uppercase block">Generic Name</span>
-            <span className="font-bold text-sm text-slate-800 truncate block mt-0.5">{declarations.generic_name?.value || declarations.common_generic_name?.value || '⚠️ Not Detected / Review'}</span>
+            {(declarations.generic_name?.value || declarations.common_generic_name?.value)
+              ? <span className="font-bold text-sm text-slate-800 truncate block mt-0.5">{declarations.generic_name?.value || declarations.common_generic_name?.value}</span>
+              : <span className="inline-flex items-center mt-1 px-2 py-0.5 rounded bg-amber-50 border border-amber-200 text-amber-700 font-black text-[10px] uppercase">⚠ Review</span>
+            }
           </div>
           <div className="p-2.5 bg-slate-50 rounded-xl border border-slate-200">
             <span className="text-xs text-slate-400 font-bold uppercase block">Ingredients</span>
-            <span className="font-bold text-sm text-slate-800 truncate block mt-0.5" title={declarations.ingredients?.value || declarations.ingredient_list?.value || ''}>{declarations.ingredients?.value || declarations.ingredient_list?.value || '⚠️ Not Detected / Review'}</span>
+            {(declarations.ingredients?.value || declarations.ingredient_list?.value)
+              ? <span className="font-bold text-sm text-slate-800 truncate block mt-0.5" title={declarations.ingredients?.value || declarations.ingredient_list?.value}>{declarations.ingredients?.value || declarations.ingredient_list?.value}</span>
+              : <span className="inline-flex items-center mt-1 px-2 py-0.5 rounded bg-amber-50 border border-amber-200 text-amber-700 font-black text-[10px] uppercase">⚠ Review</span>
+            }
           </div>
-          <div className="p-2.5 bg-slate-50 rounded-xl border border-slate-200">
-            <span className="text-xs text-slate-400 font-bold uppercase block">MRP (Tax Incl.)</span>
-            <span className="font-bold text-sm text-slate-800 truncate block mt-0.5">{declarations.mrp?.value || '⚠️ Cannot Verify / Not Detected'}</span>
+          <div className="p-2.5 bg-slate-50 rounded-xl border border-slate-200 col-span-2 sm:col-span-1">
+            <span className="text-xs text-slate-400 font-bold uppercase block">MRP — Rule 6(1)(a)</span>
+            {(() => {
+              const mrp = declarations.mrp;
+              const verdict = mrp?.verdict;
+              const priceStr = mrp?.price_formatted
+                ? `₹ ${mrp.price_formatted}`
+                : mrp?.value != null
+                  ? `₹ ${Number(mrp.value).toFixed(2)}`
+                  : null;
+              const taxOk = mrp?.tax_in_mrp_block || mrp?.tax_inclusive_stated;
+              const conf = mrp?.confidence ? `${Number(mrp.confidence).toFixed(1)}%` : null;
+              const reason = mrp?.mrp_violation_reason || mrp?.reason || null;
+
+              if (!mrp || !mrp.value) {
+                return (
+                  <span className="inline-flex items-center space-x-1 mt-1 px-2 py-0.5 rounded-md bg-amber-50 border border-amber-200 text-amber-700 font-black text-[10px] uppercase tracking-wide">
+                    <span>🟡</span><span>CANNOT VERIFY</span>
+                  </span>
+                );
+              }
+              if (verdict === 'CONFORMING' || (mrp.value && taxOk)) {
+                return (
+                  <div className="mt-1 space-y-0.5">
+                    <span className="font-black text-sm text-emerald-700 font-mono block">{priceStr}</span>
+                    <span className="inline-flex items-center space-x-1 px-2 py-0.5 rounded-md bg-emerald-50 border border-emerald-200 text-emerald-700 font-black text-[10px] uppercase tracking-wide">
+                      <span>🟢</span><span>CONFORMING</span>
+                    </span>
+                    <span className="text-[10px] text-slate-400 font-mono block">Incl. taxes ✓ {conf && `• ${conf}`}</span>
+                  </div>
+                );
+              }
+              if (verdict === 'VIOLATION' || (mrp.value && !taxOk)) {
+                return (
+                  <div className="mt-1 space-y-0.5">
+                    <span className="font-black text-sm text-red-700 font-mono block">{priceStr}</span>
+                    <span className="inline-flex items-center space-x-1 px-2 py-0.5 rounded-md bg-red-50 border border-red-300 text-red-700 font-black text-[10px] uppercase tracking-wide">
+                      <span>🔴</span><span>VIOLATION</span>
+                    </span>
+                    <span className="text-[10px] text-red-500 font-medium block leading-tight" title={reason}>
+                      {taxOk === false ? 'Tax clause missing from MRP block' : (reason ? reason.slice(0, 60) + '…' : 'Format/Tax violation')}
+                    </span>
+                  </div>
+                );
+              }
+              // CANNOT_VERIFY / low confidence
+              return (
+                <div className="mt-1 space-y-0.5">
+                  {priceStr && <span className="font-bold text-sm text-slate-500 font-mono block">{priceStr}</span>}
+                  <span className="inline-flex items-center space-x-1 px-2 py-0.5 rounded-md bg-amber-50 border border-amber-200 text-amber-700 font-black text-[10px] uppercase tracking-wide">
+                    <span>🟡</span><span>CANNOT VERIFY</span>
+                  </span>
+                  {conf && <span className="text-[10px] text-slate-400 font-mono block">OCR: {conf} (below 85% threshold)</span>}
+                </div>
+              );
+            })()}
           </div>
           <div className="p-2.5 bg-slate-50 rounded-xl border border-slate-200">
             <span className="text-xs text-slate-400 font-bold uppercase block">Net Quantity</span>
-            <span className="font-bold text-sm text-slate-800 truncate block mt-0.5">{declarations.net_quantity?.value || '⚠️ Cannot Verify / Not Detected'}</span>
+            {declarations.net_quantity?.value
+              ? <span className="font-bold text-sm text-slate-800 truncate block mt-0.5">{declarations.net_quantity.value}</span>
+              : <span className="inline-flex items-center mt-1 px-2 py-0.5 rounded bg-amber-50 border border-amber-200 text-amber-700 font-black text-[10px] uppercase">⚠ Not Detected</span>
+            }
           </div>
           <div className="p-2.5 bg-slate-50 rounded-xl border border-slate-200">
             <span className="text-xs text-slate-400 font-bold uppercase block">Batch / Lot No.</span>
-            <span className="font-bold text-sm text-slate-800 truncate block mt-0.5">{declarations.batch_number?.value || '⚠️ Cannot Verify / Not Detected'}</span>
+            {declarations.batch_number?.value
+              ? (
+                <span className="font-black text-sm text-emerald-700 font-mono block mt-0.5">
+                  {declarations.batch_number.value}
+                </span>
+              )
+              : (
+                <span className="inline-flex items-center space-x-1 mt-1 px-2 py-0.5 rounded-md bg-red-100 border border-red-300 text-red-700 font-black text-[10px] uppercase tracking-wide">
+                  <span>⛔</span>
+                  <span>INVALID — NOT FOUND</span>
+                </span>
+              )
+            }
           </div>
           <div className="p-2.5 bg-slate-50 rounded-xl border border-slate-200">
             <span className="text-xs text-slate-400 font-bold uppercase block">Mfg / Pkd Date</span>
-            <span className="font-bold text-sm text-slate-800 truncate block mt-0.5">{declarations.manufacturing_date?.value || '⚠️ Cannot Verify / Not Detected'}</span>
+            {declarations.manufacturing_date?.value
+              ? <span className="font-bold text-sm text-slate-800 truncate block mt-0.5">{declarations.manufacturing_date.value}</span>
+              : <span className="inline-flex items-center mt-1 px-2 py-0.5 rounded bg-amber-50 border border-amber-200 text-amber-700 font-black text-[10px] uppercase">⚠ Not Detected</span>
+            }
           </div>
           <div className="p-2.5 bg-slate-50 rounded-xl border border-slate-200">
             <span className="text-xs text-slate-400 font-bold uppercase block">Expiry / Use By</span>
-            <span className="font-bold text-sm text-slate-800 truncate block mt-0.5">{declarations.expiry_date?.value || '⚠️ Cannot Verify / Not Detected'}</span>
+            {declarations.expiry_date?.value
+              ? <span className="font-bold text-sm text-slate-800 truncate block mt-0.5">{declarations.expiry_date.value}</span>
+              : <span className="inline-flex items-center mt-1 px-2 py-0.5 rounded bg-amber-50 border border-amber-200 text-amber-700 font-black text-[10px] uppercase">⚠ Not Detected</span>
+            }
           </div>
           <div className="p-2.5 bg-slate-50 rounded-xl border border-slate-200">
             <span className="text-xs text-slate-400 font-bold uppercase block">Unit Sale Price</span>
-            <span className="font-bold text-sm text-slate-800 truncate block mt-0.5">{declarations.unit_sale_price?.value || '⚠️ Cannot Verify / Not Detected'}</span>
+            {declarations.unit_sale_price?.value
+              ? <span className="font-bold text-sm text-slate-800 truncate block mt-0.5">{declarations.unit_sale_price.value}</span>
+              : <span className="inline-flex items-center mt-1 px-2 py-0.5 rounded bg-amber-50 border border-amber-200 text-amber-700 font-black text-[10px] uppercase">⚠ Not Detected</span>
+            }
           </div>
           <div className="p-2.5 bg-slate-50 rounded-xl border border-slate-200">
             <span className="text-xs text-slate-400 font-bold uppercase block">FSSAI License</span>
-            <span className="font-bold text-sm text-slate-800 truncate block mt-0.5">{declarations.fssai_license?.value || declarations.fssai?.value || '⚠️ Cannot Verify / Not Detected'}</span>
+            {(declarations.fssai_license?.value || declarations.fssai?.value)
+              ? <span className="font-bold text-sm text-slate-800 truncate block mt-0.5 font-mono">{declarations.fssai_license?.value || declarations.fssai?.value}</span>
+              : <span className="inline-flex items-center mt-1 px-2 py-0.5 rounded bg-amber-50 border border-amber-200 text-amber-700 font-black text-[10px] uppercase">⚠ Not Detected</span>
+            }
           </div>
           <div className="p-2.5 bg-slate-50 rounded-xl border border-slate-200">
             <span className="text-xs text-slate-400 font-bold uppercase block">Manufacturer / Packer</span>
-            <span className="font-bold text-sm text-slate-800 truncate block mt-0.5">{declarations.manufacturer?.value || declarations.packer?.value || '⚠️ Cannot Verify / Not Detected'}</span>
+            {(declarations.manufacturer?.value || declarations.packer?.value)
+              ? <span className="font-bold text-sm text-slate-800 truncate block mt-0.5">{declarations.manufacturer?.value || declarations.packer?.value}</span>
+              : <span className="inline-flex items-center mt-1 px-2 py-0.5 rounded bg-amber-50 border border-amber-200 text-amber-700 font-black text-[10px] uppercase">⚠ Not Detected</span>
+            }
           </div>
         </div>
       </div>
@@ -696,18 +822,7 @@ export default function StatutoryInspectionReport({ inspection, scannedSides = [
               <span className="font-mono text-xs">({needsReviewList.length})</span>
             </button>
 
-            <button
-              type="button"
-              onClick={() => setRuleFilter('na')}
-              className={`px-3.5 py-1.5 rounded-xl font-bold text-sm transition flex items-center space-x-1.5 ${
-                ruleFilter === 'na'
-                  ? 'bg-slate-700 text-white shadow-xs'
-                  : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-50'
-              }`}
-            >
-              <span>⚪ Bypassed / N/A</span>
-              <span className="font-mono text-xs">({bypassedRulesList.length})</span>
-            </button>
+
           </div>
 
           {/* View Format Switcher */}
@@ -771,17 +886,19 @@ export default function StatutoryInspectionReport({ inspection, scannedSides = [
                       <div key={idx} className="p-4 bg-white border border-red-200 rounded-xl space-y-3 shadow-xs">
                         <div className="flex items-center justify-between flex-wrap gap-2">
                           <span className="font-black text-red-900 text-sm flex items-center space-x-1.5">
-                            <span>❌ AGAINST RULE —</span>
-                            <span>{ruleId}</span>
-                            <span className="text-slate-500 font-bold">({fieldName})</span>
+                            <span>❌</span>
+                            <span>{getRuleFriendlyName(viol)}</span>
                           </span>
-                          <span className={`px-2.5 py-0.5 font-mono font-black text-xs rounded-md ${
-                            severity === 'CRITICAL' || severity === 'HIGH'
-                              ? 'bg-red-600 text-white'
-                              : 'bg-amber-100 text-amber-800'
-                          }`}>
-                            {severity} VIOLATION
-                          </span>
+                          <div className="flex items-center space-x-1.5">
+                            <span className="text-[10px] font-mono text-slate-400">{ruleId}</span>
+                            <span className={`px-2.5 py-0.5 font-mono font-black text-xs rounded-md ${
+                              severity === 'CRITICAL' || severity === 'HIGH'
+                                ? 'bg-red-600 text-white'
+                                : 'bg-amber-100 text-amber-800'
+                            }`}>
+                              {severity} VIOLATION
+                            </span>
+                          </div>
                         </div>
 
                         {/* Logical Link Chain Grid */}
@@ -828,17 +945,19 @@ export default function StatutoryInspectionReport({ inspection, scannedSides = [
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {passedRulesList.map((rule, idx) => {
-                    const rTitle = rule.rule_name || rule.field_name || rule.rule_id || `Rule #${idx + 1}`;
                     const observed = rule.detected_evidence || rule.extracted_value || rule.observed || declarations[rule.field_name]?.value || 'Verified';
                     const reason = rule.reason || rule.explanation || 'Declaration was successfully detected and satisfies the configured rule.';
 
                     return (
                       <div key={idx} className="p-3.5 bg-emerald-50/40 border border-emerald-100 rounded-xl space-y-2 text-xs">
                         <div className="flex items-center justify-between">
-                          <span className="font-bold text-sm text-slate-900">✅ {rTitle}</span>
-                          <span className="px-2.5 py-0.5 bg-emerald-100 text-emerald-800 font-mono font-black text-xs rounded-md">
-                            FOLLOWED
-                          </span>
+                          <span className="font-bold text-sm text-slate-900">✅ {getRuleFriendlyName(rule)}</span>
+                          <div className="flex items-center space-x-1.5">
+                            <span className="text-[10px] font-mono text-slate-400">{rule.rule_id}</span>
+                            <span className="px-2.5 py-0.5 bg-emerald-100 text-emerald-800 font-mono font-black text-xs rounded-md">
+                              FOLLOWED
+                            </span>
+                          </div>
                         </div>
 
                         <div className="text-xs text-slate-700">
@@ -869,11 +988,14 @@ export default function StatutoryInspectionReport({ inspection, scannedSides = [
                     <div key={idx} className="p-3.5 bg-white border border-amber-200 rounded-xl text-xs space-y-1.5">
                       <div className="flex items-center justify-between">
                         <span className="font-bold text-sm text-amber-950">
-                          ⚠️ {item.rule_name || item.field_name || item.rule_id || 'Declaration Requirement'}
+                          ⚠️ {getRuleFriendlyName(item)}
                         </span>
-                        <span className="px-2.5 py-0.5 bg-amber-100 text-amber-800 font-mono font-black text-xs rounded-md">
-                          CANNOT VERIFY
-                        </span>
+                        <div className="flex items-center space-x-1.5">
+                          <span className="text-[10px] font-mono text-slate-400">{item.rule_id}</span>
+                          <span className="px-2.5 py-0.5 bg-amber-100 text-amber-800 font-mono font-black text-xs rounded-md">
+                            CANNOT VERIFY
+                          </span>
+                        </div>
                       </div>
                       <p className="text-xs text-amber-900 font-medium leading-relaxed">
                         {item.reason || item.explanation || 'The image/OCR confidence is insufficient to reliably verify this declaration. Requires visual officer confirmation.'}
@@ -884,48 +1006,6 @@ export default function StatutoryInspectionReport({ inspection, scannedSides = [
               </div>
             )}
 
-            {/* 4. OPTIONAL / BYPASSED DECLARATIONS SECTION */}
-            {(ruleFilter === 'all' || ruleFilter === 'na') && bypassedRulesList.length > 0 && (
-              <div className="bg-slate-50 border border-slate-200 p-4 rounded-2xl space-y-3.5">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-2 text-slate-800 font-black text-sm uppercase tracking-wider">
-                    <Info className="w-4 h-4 text-slate-500" />
-                    <span>⚪ Optional / Bypassed Declarations ({bypassedRulesList.length})</span>
-                  </div>
-                  <span className="text-xs font-mono font-bold text-slate-500 bg-white px-2.5 py-1 rounded-md border border-slate-200">
-                    Not Required on this Pack
-                  </span>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {bypassedRulesList.map((item, idx) => {
-                    const rTitle = item.rule_name || item.field_name || item.rule_id || `Rule #${idx + 1}`;
-                    const observed = item.detected_evidence || item.extracted_value || item.observed || declarations[item.field_name]?.value || 'Cannot Verify / Not Detected';
-                    const reason = item.reason || item.explanation || 'Optional declaration not detected; statutory check bypassed.';
-
-                    return (
-                      <div key={idx} className="p-3.5 bg-white border border-slate-200 rounded-xl space-y-2 text-xs">
-                        <div className="flex items-center justify-between">
-                          <span className="font-bold text-sm text-slate-800">⚪ {rTitle}</span>
-                          <span className="px-2.5 py-0.5 bg-slate-100 text-slate-600 border border-slate-300 font-mono font-black text-xs rounded-md">
-                            ⚪ BYPASSED / N/A
-                          </span>
-                        </div>
-
-                        <div className="text-xs text-slate-600">
-                          <span className="text-slate-400 font-bold uppercase text-xs block">Detected Evidence</span>
-                          <span className="font-mono font-bold text-slate-500 text-sm block mt-0.5">{String(observed)}</span>
-                        </div>
-
-                        <div className="text-xs text-slate-500 font-medium leading-relaxed">
-                          {reason}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
 
           </div>
         )}
@@ -1017,7 +1097,7 @@ export default function StatutoryInspectionReport({ inspection, scannedSides = [
         <p className="text-slate-700 leading-relaxed font-medium">
           The scanned package was identified as <b>{productName}</b> under the <b>{category}</b> commodity classification. 
           Evaluation was conducted against <b>{totalRulesCount}</b> statutory requirements under the Legal Metrology (Packaged Commodities) Rules, 2011. 
-          The analysis confirmed <b>{passedRulesList.length}</b> compliant declarations (✅ FOLLOWED), <b>{violationsList.length}</b> non-compliant violations (❌ AGAINST RULE), <b>{needsReviewList.length}</b> items requiring manual officer review (⚠️ CANNOT VERIFY), and <b>{bypassedRulesList.length}</b> optional declarations bypassed (⚪ BYPASSED / N/A).
+          The analysis confirmed <b>{passedRulesList.length}</b> compliant declarations (✅ FOLLOWED), <b>{violationsList.length}</b> non-compliant violations (❌ AGAINST RULE), and <b>{needsReviewList.length}</b> items requiring manual officer review (⚠️ CANNOT VERIFY).
         </p>
 
         {violationsList.length > 0 ? (

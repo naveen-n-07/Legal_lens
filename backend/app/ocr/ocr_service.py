@@ -118,7 +118,7 @@ class PaddleOCRService:
             # 2. Try PaddleOCR
             try:
                 from paddleocr import PaddleOCR  # type: ignore
-                cls._engine_instance = PaddleOCR(use_angle_cls=True, lang='en', show_log=False)
+                cls._engine_instance = PaddleOCR(use_angle_cls=True, lang='en')
                 cls._engine_name = "PaddleOCR"
                 logger.info(f"[OCR] Engine: {cls._engine_name}")
                 logger.info("[OCR] OCR engine initialized successfully (use_angle_cls=True, lang='en')")
@@ -193,7 +193,8 @@ class PaddleOCRService:
 
         if ("RapidOCR" in engine_name or "Synthetic" in engine_name) and callable(engine):
             try:
-                result, elapse = engine(img)
+                from typing import Callable as _Callable
+                result, elapse = (_Callable)(engine)(img)  # type: ignore[operator]
                 if result:
                     for item in result:
                         box = item[0]  # [[x1,y1], [x2,y2], [x3,y3], [x4,y4]]
@@ -205,10 +206,10 @@ class PaddleOCRService:
 
                         # Invert all 4 polygon vertices individually
                         mapped_pts = [cls._map_point_to_orig(pt[0], pt[1], rotation, scale, orig_h, orig_w) for pt in box]
-                        x1 = int(round(max(0, min(p[0] for p in mapped_pts))))
-                        y1 = int(round(max(0, min(p[1] for p in mapped_pts))))
-                        x2 = int(round(min(orig_w - 1, max(p[0] for p in mapped_pts))))
-                        y2 = int(round(min(orig_h - 1, max(p[1] for p in mapped_pts))))
+                        x1 = round(max(0, min(p[0] for p in mapped_pts)))
+                        y1 = round(max(0, min(p[1] for p in mapped_pts)))
+                        x2 = round(min(orig_w - 1, max(p[0] for p in mapped_pts)))
+                        y2 = round(min(orig_h - 1, max(p[1] for p in mapped_pts)))
 
                         if x2 <= x1: x2 = x1 + 1
                         if y2 <= y1: y2 = y1 + 1
@@ -236,10 +237,10 @@ class PaddleOCRService:
                             continue
 
                         mapped_pts = [cls._map_point_to_orig(pt[0], pt[1], rotation, scale, orig_h, orig_w) for pt in box]
-                        x1 = int(round(max(0, min(p[0] for p in mapped_pts))))
-                        y1 = int(round(max(0, min(p[1] for p in mapped_pts))))
-                        x2 = int(round(min(orig_w - 1, max(p[0] for p in mapped_pts))))
-                        y2 = int(round(min(orig_h - 1, max(p[1] for p in mapped_pts))))
+                        x1 = round(max(0, min(p[0] for p in mapped_pts)))
+                        y1 = round(max(0, min(p[1] for p in mapped_pts)))
+                        x2 = round(min(orig_w - 1, max(p[0] for p in mapped_pts)))
+                        y2 = round(min(orig_h - 1, max(p[1] for p in mapped_pts)))
 
                         if x2 <= x1: x2 = x1 + 1
                         if y2 <= y1: y2 = y1 + 1
@@ -269,10 +270,10 @@ class PaddleOCRService:
                         rh = float(data['height'][i])
                         t_box = [[rx, ry], [rx + rw, ry], [rx + rw, ry + rh], [rx, ry + rh]]
                         mapped_pts = [cls._map_point_to_orig(pt[0], pt[1], rotation, scale, orig_h, orig_w) for pt in t_box]
-                        x1 = int(round(max(0, min(p[0] for p in mapped_pts))))
-                        y1 = int(round(max(0, min(p[1] for p in mapped_pts))))
-                        x2 = int(round(min(orig_w - 1, max(p[0] for p in mapped_pts))))
-                        y2 = int(round(min(orig_h - 1, max(p[1] for p in mapped_pts))))
+                        x1 = round(max(0, min(p[0] for p in mapped_pts)))
+                        y1 = round(max(0, min(p[1] for p in mapped_pts)))
+                        x2 = round(min(orig_w - 1, max(p[0] for p in mapped_pts)))
+                        y2 = round(min(orig_h - 1, max(p[1] for p in mapped_pts)))
 
                         if x2 <= x1: x2 = x1 + 1
                         if y2 <= y1: y2 = y1 + 1

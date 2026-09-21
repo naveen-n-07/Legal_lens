@@ -163,8 +163,8 @@ async def scan_endpoint(
         # 3. Multi-Pass OCR Execution using MetrixOCRPipeline
         from app.ocr.pipeline import MetrixOCRPipeline
         from app.ocr.declaration_extractor import DeclarationExtractor
-        
-        pipeline = MetrixOCRPipeline()
+
+        pipeline = MetrixOCRPipeline.get_instance()
         try:
             pipeline_results = pipeline.process(img)
             ocr_success = pipeline_results.get("success", True)
@@ -201,10 +201,20 @@ async def scan_endpoint(
         raw_text_block = "\n".join(raw_text_lines)
         file_decls = DeclarationExtractor.parse_declarations(raw_text_block, merged_ocr_results)
         
-        # Mix in strict pipeline matches
+        # Mix in strict pipeline matches (preserve bbox for evidence box rendering)
         for k in ["mrp", "fssai_license", "manufacturing_date", "expiry_date"]:
-            if pipeline_results.get(k):
-                file_decls[k] = {"value": str(pipeline_results[k]), "confidence": 95.0, "detected": True, "source": "MetrixOCRPipeline"}
+            pipeline_val = pipeline_results.get(k)
+            if pipeline_val:
+                if isinstance(pipeline_val, dict):
+                    file_decls[k] = {
+                        "value": str(pipeline_val.get("value", "")),
+                        "confidence": 95.0,
+                        "detected": True,
+                        "source": "MetrixOCRPipeline",
+                        "bbox": pipeline_val.get("bbox")
+                    }
+                else:
+                    file_decls[k] = {"value": str(pipeline_val), "confidence": 95.0, "detected": True, "source": "MetrixOCRPipeline"}
 
         all_declarations_list.append(file_decls)
 
@@ -458,6 +468,14 @@ async def scan_endpoint(
             r.get("bbox") or 
             (r.get("evidence") or {}).get("bounding_box")
         )
+
+        if str(f_name).lower() in ["mrp_inclusive_tax", "tax_inclusive", "inclusive_tax"]:
+            for ocr_item in merged_ocr_results:
+                ocr_txt = str(ocr_item.get("text", "")).lower()
+                ocr_box = ocr_item.get("bbox") or ocr_item.get("polygon")
+                if ocr_box and any(kw in ocr_txt for kw in ["incl", "tax", "inclusive", "inclusie", "taes"]):
+                    ev_bbox = ocr_box
+                    break
 
         if not ev_bbox:
             # Fallback bbox from related core declarations
