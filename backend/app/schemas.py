@@ -93,6 +93,13 @@ class OfficerVerifyRequest(BaseModel):
     decision: str  # 7A COMPLIANT, 7B VIOLATION, REJECTED
     comments: Optional[str] = ""
 
+class OverridePayload(BaseModel):
+    verdict: str  # 7A COMPLIANT, 7B VIOLATION
+    justification_note: str
+    declarations: Optional[Dict[str, Any]] = None
+    rule_statuses: Optional[Dict[str, Any]] = None
+    officer_comments: Optional[str] = None
+
 class AnalyticsResponse(BaseModel):
     total_inspections: int
     compliant_count: int

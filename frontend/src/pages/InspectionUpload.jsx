@@ -19,8 +19,9 @@ import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import { runInspectionAnalysis } from '../services/inspectionService';
 import StatutoryInspectionReport from '../components/StatutoryInspectionReport';
+import MobileInspectionUpload from '../components/MobileInspectionUpload';
 
-export default function InspectionUpload() {
+export default function InspectionUpload({ user }) {
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
   const videoRef = useRef(null);
@@ -160,31 +161,38 @@ export default function InspectionUpload() {
   }));
 
   return (
-    <div className="p-8 max-w-7xl mx-auto space-y-8 font-sans">
-      
-      {/* Header Banner */}
-      <div className="bg-white border border-[#E2E8F0] p-6 rounded-3xl shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <div className="inline-flex items-center space-x-2 px-3 py-1 bg-red-50 text-red-700 text-xs font-black rounded-lg border border-red-200 mb-2">
-            <ShieldCheck className="w-3.5 h-3.5" />
-            <span>New Statutory Packaging Inspection Registration</span>
-          </div>
-          <h1 className="text-2xl font-black text-[#1E293B]">Create New Statutory Commodity Inspection</h1>
-          <p className="text-xs text-[#64748B] font-semibold mt-0.5">
-            Register packaging audit details, upload multi-side label photos or capture live, and execute automated OCR and Legal Metrology rule verification.
-          </p>
-        </div>
+    <>
+      {/* Mobile-First Camera & Fast Inspection Shell (< 768px) */}
+      <div className="md:hidden">
+        <MobileInspectionUpload user={user} />
       </div>
 
-      {errorMessage && (
-        <div className="p-4 bg-red-50 border border-red-200 text-red-700 text-xs font-black rounded-2xl flex items-center space-x-3">
-          <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
-          <span>{errorMessage}</span>
+      {/* Desktop Widescreen Studio (>= 768px) */}
+      <div className="hidden md:block p-8 max-w-7xl mx-auto space-y-8 font-sans">
+        
+        {/* Header Banner */}
+        <div className="bg-white border border-[#E2E8F0] p-6 rounded-3xl shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <div className="inline-flex items-center space-x-2 px-3 py-1 bg-red-50 text-red-700 text-xs font-black rounded-lg border border-red-200 mb-2">
+              <ShieldCheck className="w-3.5 h-3.5" />
+              <span>New Statutory Packaging Inspection Registration</span>
+            </div>
+            <h1 className="text-2xl font-black text-[#1E293B]">Create New Statutory Commodity Inspection</h1>
+            <p className="text-xs text-[#64748B] font-semibold mt-0.5">
+              Register packaging audit details, upload multi-side label photos or capture live, and execute automated OCR and Legal Metrology rule verification.
+            </p>
+          </div>
         </div>
-      )}
 
-      {/* Main Grid Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        {errorMessage && (
+          <div className="p-4 bg-red-50 border border-red-200 text-red-700 text-xs font-black rounded-2xl flex items-center space-x-3">
+            <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
+            <span>{errorMessage}</span>
+          </div>
+        )}
+
+        {/* Main Grid Layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         
         {/* Left Column: Form & Image Inputs (5 Cols) */}
         <div className="lg:col-span-5 space-y-6">
@@ -385,5 +393,6 @@ export default function InspectionUpload() {
       </div>
 
     </div>
+    </>
   );
 }

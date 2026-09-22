@@ -11,7 +11,7 @@
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
-  ShieldCheck, Users, Gavel, History, UserPlus, CheckCircle2,
+  ShieldCheck, ShieldAlert, Users, Gavel, History, UserPlus, CheckCircle2,
   AlertCircle, Search, RefreshCw, Lock, BarChart3, Activity,
   Zap, Database, GitBranch, AlertTriangle, FileText, MapPin,
   UserCheck, Clock, ChevronDown, ChevronRight, X, Eye,
@@ -23,8 +23,10 @@ import {
 import {
   fetchAllUsers, createUser, updateUserRole,
   fetchAllRules, toggleRuleStatus, updateRuleParam, syncRuleVersion,
-  fetchInspectionsSummary, fetchAuditLogs, fetchInspections, assignWork, clearSystemLogs
+  fetchInspectionsSummary, fetchAuditLogs, fetchInspections, assignWork, clearSystemLogs,
+  fetchAdjudicationOverrides
 } from '../services/adminService';
+import AdminNotificationBell from '../components/AdminNotificationBell';
 import { formatDateTime, getRelativeTime, parseServerDate } from '../utils/dateUtils';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -147,6 +149,7 @@ export default function AdminControl({ user }) {
   const [users, setUsers] = useState([]);
   const [rules, setRules] = useState([]);
   const [auditLogs, setAuditLogs] = useState([]);
+  const [overrides, setOverrides] = useState([]);
   const [summary, setSummary] = useState(null);
   const [inspections, setInspections] = useState([]);
   const [loading, setLoading] = useState({});
@@ -184,6 +187,10 @@ export default function AdminControl({ user }) {
         const res = await fetchInspections();
         setInspections(Array.isArray(res.data) ? res.data : []);
       }
+      if (t === 'overrides') {
+        const res = await fetchAdjudicationOverrides(100);
+        setOverrides(Array.isArray(res.data) ? res.data : []);
+      }
     } catch (err) {
       console.warn('Admin load error:', err);
       // Provide graceful fallback data
@@ -216,11 +223,12 @@ export default function AdminControl({ user }) {
 
   // ─── TAB DEFINITIONS ──────────────────────────────────────────────────────────
   const TABS = [
-    { id: 'overview', label: 'Command Center',      icon: BarChart3 },
-    { id: 'rules',    label: 'Rule Engine Studio',  icon: Gavel },
-    { id: 'dispatch', label: 'Work Assignment',     icon: Send },
-    { id: 'users',    label: 'User & RBAC Matrix',  icon: Users },
-    { id: 'logs',     label: 'Audit Log Stream',    icon: History },
+    { id: 'overview',  label: 'Command Center',                 icon: BarChart3 },
+    { id: 'overrides', label: 'Adjudication Overrides & Alerts', icon: ShieldAlert },
+    { id: 'rules',     label: 'Rule Engine Studio',             icon: Gavel },
+    { id: 'dispatch',  label: 'Work Assignment',                icon: Send },
+    { id: 'users',     label: 'User & RBAC Matrix',             icon: Users },
+    { id: 'logs',      label: 'Audit Log Stream',               icon: History },
   ];
 
   // ══════════════════════════════════════════════════════════════════════════════
@@ -1052,6 +1060,281 @@ export default function AdminControl({ user }) {
   };
 
   // ══════════════════════════════════════════════════════════════════════════════
+  // TAB 6 — ADJUDICATION OVERRIDES & AUDIT ALERTS
+  // ══════════════════════════════════════════════════════════════════════════════
+  const AdjudicationOverridesTab = () => {
+    const [search, setSearch] = useState('');
+    const [filterVerdict, setFilterVerdict] = useState('ALL');
+    const [selectedSnapshot, setSelectedSnapshot] = useState(null);
+
+    const filtered = overrides.filter(ov => {
+      const matchSearch = !search ||
+        ov.inspection_id?.toLowerCase().includes(search.toLowerCase()) ||
+        ov.amended_by_name?.toLowerCase().includes(search.toLowerCase()) ||
+        ov.amended_by_user_id?.toLowerCase().includes(search.toLowerCase()) ||
+        ov.justification_note?.toLowerCase().includes(search.toLowerCase()) ||
+        ov.product_name?.toLowerCase().includes(search.toLowerCase());
+      
+      const matchVerdict = filterVerdict === 'ALL' ||
+        (filterVerdict === 'TO_7A' && (ov.new_verdict || '').includes('7A')) ||
+        (filterVerdict === 'TO_7B' && (ov.new_verdict || '').includes('7B'));
+
+      return matchSearch && matchVerdict;
+    });
+
+    const to7ACount = overrides.filter(o => (o.new_verdict || '').includes('7A')).length;
+    const to7BCount = overrides.filter(o => (o.new_verdict || '').includes('7B')).length;
+    const uniqueOfficers = new Set(overrides.map(o => o.amended_by_user_id)).size;
+
+    return (
+      <div className="space-y-6">
+        {/* KPI Strip */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <KpiCard icon={History} label="Total Overrides Logged" value={overrides.length} color="red" sub="Immutable audit ledger records" />
+          <KpiCard icon={CheckCircle2} label="Overridden to 7A Compliant" value={to7ACount} color="green" sub="Reviewer approved as compliant" />
+          <KpiCard icon={AlertTriangle} label="Overridden to 7B Violation" value={to7BCount} color="red" sub="Reviewer flagged statutory non-compliance" />
+          <KpiCard icon={UserCheck} label="Active Reviewing Officers" value={uniqueOfficers} color="purple" sub="Senior officers executing amendments" />
+        </div>
+
+        {/* Filter Bar */}
+        <div className="bg-white border border-slate-200 p-4 rounded-2xl shadow-sm flex flex-col sm:flex-row items-center justify-between gap-3">
+          <div className="relative flex-1 w-full">
+            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
+            <input
+              type="text"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              placeholder="Search by Inspection ID, Reviewing Officer, Justification Note, or Product..."
+              className="w-full pl-9 pr-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-[#7a1c1c] font-semibold text-slate-900"
+            />
+          </div>
+
+          <div className="flex items-center gap-2 w-full sm:w-auto">
+            <Filter className="w-3.5 h-3.5 text-slate-500" />
+            <select
+              value={filterVerdict}
+              onChange={e => setFilterVerdict(e.target.value)}
+              className="px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl text-slate-800 font-bold focus:outline-none focus:border-[#7a1c1c] cursor-pointer"
+            >
+              <option value="ALL">All Verdict Adjustments ({overrides.length})</option>
+              <option value="TO_7A">Overridden to 7A Compliant ({to7ACount})</option>
+              <option value="TO_7B">Overridden to 7B Violation ({to7BCount})</option>
+            </select>
+          </div>
+        </div>
+
+        {/* Overrides Table */}
+        <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+          <div className="px-5 py-3 border-b border-slate-100 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <ShieldAlert className="w-4 h-4 text-[#7a1c1c]" />
+              <span className="text-xs font-black text-slate-800 uppercase tracking-wider">
+                Adjudication Overrides & Statutory Audit Alerts Ledger ({filtered.length})
+              </span>
+            </div>
+            <span className="px-2 py-0.5 text-[10px] bg-emerald-50 text-emerald-700 border border-emerald-200 rounded font-black font-mono">
+              SECTION 36 AUDIT TRAIL
+            </span>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-xs">
+              <thead>
+                <tr className="bg-slate-50 text-slate-600 font-black uppercase tracking-wider border-b border-slate-200">
+                  <th className="p-3 text-left w-36">Timestamp</th>
+                  <th className="p-3 text-left">Inspection & Commodity</th>
+                  <th className="p-3 text-left">Reviewing Officer</th>
+                  <th className="p-3 text-left">Verdict Modification</th>
+                  <th className="p-3 text-left">Statutory Justification Note</th>
+                  <th className="p-3 text-center w-28">Audit Evidence</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {filtered.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="p-12 text-center text-slate-400">
+                      <ShieldCheck className="w-8 h-8 mx-auto text-slate-300 mb-2" />
+                      <p className="font-bold text-sm">No Adjudication Overrides Found</p>
+                      <p className="text-xs text-slate-400 mt-0.5">When a Reviewing Officer overrides an inspection verdict, the immutable audit snapshot and alert will appear here in real-time.</p>
+                    </td>
+                  </tr>
+                ) : (
+                  filtered.map((item, idx) => {
+                    const isNew7A = (item.new_verdict || '').includes('7A');
+                    const isOld7A = (item.old_verdict || '').includes('7A');
+                    const changedFieldsCount = item.changed_fields ? Object.keys(item.changed_fields).length : 0;
+
+                    return (
+                      <tr key={item.id || idx} className="hover:bg-slate-50/80 align-top transition">
+                        <td className="p-3 font-mono text-[10px] text-slate-400 whitespace-nowrap">
+                          <div className="font-bold text-slate-700">{fmtDate(item.timestamp)}</div>
+                          <div className="text-slate-400">{relTime(item.timestamp)}</div>
+                        </td>
+
+                        <td className="p-3">
+                          <div className="font-mono font-black text-slate-900 flex items-center gap-1.5">
+                            <span className="px-1.5 py-0.5 bg-slate-100 text-[#7a1c1c] rounded border border-slate-200">
+                              {item.inspection_id}
+                            </span>
+                          </div>
+                          <div className="font-bold text-slate-700 mt-1 text-[11px] truncate max-w-[180px]">
+                            {item.product_name || "Packaged Commodity"}
+                          </div>
+                        </td>
+
+                        <td className="p-3">
+                          <div className="font-black text-slate-900">{item.amended_by_name}</div>
+                          <div className="font-mono text-[10px] text-slate-500">{item.amended_by_user_id}</div>
+                        </td>
+
+                        <td className="p-3">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className={`px-2 py-0.5 text-[10px] font-black rounded border line-through opacity-60 ${
+                              isOld7A ? 'bg-emerald-50 text-emerald-800 border-emerald-300' : 'bg-rose-50 text-rose-800 border-rose-300'
+                            }`}>
+                              {item.old_verdict || 'PREVIOUS'}
+                            </span>
+                            <span className="text-slate-400 font-black">➔</span>
+                            <span className={`px-2.5 py-0.5 text-[10px] font-black rounded-md border shadow-sm ${
+                              isNew7A ? 'bg-emerald-100 text-emerald-900 border-emerald-400' : 'bg-rose-100 text-rose-900 border-rose-400'
+                            }`}>
+                              {item.new_verdict || 'UPDATED'}
+                            </span>
+                          </div>
+                          {changedFieldsCount > 0 && (
+                            <div className="mt-1.5 flex items-center gap-1">
+                              <span className="text-[10px] bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded font-bold">
+                                {changedFieldsCount} field{changedFieldsCount > 1 ? 's' : ''} amended
+                              </span>
+                            </div>
+                          )}
+                        </td>
+
+                        <td className="p-3 max-w-sm">
+                          <div className="bg-amber-50/70 border border-amber-200/80 rounded-xl p-2.5 text-[11px] text-slate-800 font-medium leading-relaxed">
+                            <div className="font-bold text-[10px] text-amber-900 uppercase tracking-wider mb-1 flex items-center gap-1">
+                              <FileText className="w-3 h-3 text-amber-700" />
+                              <span>Statutory Reason:</span>
+                            </div>
+                            "{item.justification_note || "No justification recorded."}"
+                          </div>
+                        </td>
+
+                        <td className="p-3 text-center">
+                          <button
+                            onClick={() => setSelectedSnapshot(item)}
+                            className="px-3 py-1.5 bg-[#7a1c1c] hover:bg-[#601212] text-white font-black text-[11px] rounded-lg transition shadow flex items-center gap-1 mx-auto whitespace-nowrap"
+                          >
+                            <Eye className="w-3 h-3" />
+                            <span>Inspect Diff</span>
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Snapshot Diff Modal */}
+        {selectedSnapshot && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
+            <div className="bg-white rounded-3xl shadow-2xl border border-slate-200 max-w-3xl w-full max-h-[90vh] flex flex-col overflow-hidden">
+              
+              {/* Header */}
+              <div className="bg-gradient-to-r from-[#7a1c1c] via-[#8B1E1E] to-[#601212] text-white p-5 flex items-center justify-between flex-shrink-0">
+                <div className="space-y-0.5">
+                  <div className="flex items-center gap-2 text-xs font-bold text-red-200">
+                    <span className="font-mono bg-black/30 px-2 py-0.5 rounded text-white">{selectedSnapshot.inspection_id}</span>
+                    <span>•</span>
+                    <span>Amended by {selectedSnapshot.amended_by_name}</span>
+                  </div>
+                  <h3 className="text-xl font-black text-white">Immutable Adjudication Audit Snapshot</h3>
+                </div>
+                <button
+                  onClick={() => setSelectedSnapshot(null)}
+                  className="p-1.5 bg-black/20 hover:bg-black/40 text-white rounded-xl transition"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Body */}
+              <div className="p-6 overflow-y-auto space-y-5 text-xs">
+                {/* Meta details */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-slate-50 p-3.5 rounded-xl border border-slate-200">
+                  <div>
+                    <span className="text-slate-500 font-bold block text-[10px]">TIMESTAMP:</span>
+                    <strong className="text-slate-900 font-mono">{fmtDate(selectedSnapshot.timestamp)}</strong>
+                  </div>
+                  <div>
+                    <span className="text-slate-500 font-bold block text-[10px]">OFFICER ID:</span>
+                    <strong className="text-slate-900 font-mono">{selectedSnapshot.amended_by_user_id}</strong>
+                  </div>
+                  <div>
+                    <span className="text-slate-500 font-bold block text-[10px]">OLD VERDICT:</span>
+                    <strong className="text-slate-900 font-bold">{selectedSnapshot.old_verdict}</strong>
+                  </div>
+                  <div>
+                    <span className="text-slate-500 font-bold block text-[10px]">NEW VERDICT:</span>
+                    <strong className="text-emerald-700 font-black">{selectedSnapshot.new_verdict}</strong>
+                  </div>
+                </div>
+
+                {/* Justification */}
+                <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl space-y-1">
+                  <span className="text-[10px] font-black uppercase tracking-wider text-amber-900">
+                    Officer's Statutory Reason for Amendment:
+                  </span>
+                  <p className="text-slate-800 font-semibold leading-relaxed">
+                    "{selectedSnapshot.justification_note}"
+                  </p>
+                </div>
+
+                {/* Side by side state diff */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="bg-slate-900 rounded-xl p-4 text-white space-y-2 border border-slate-800">
+                    <div className="flex items-center justify-between pb-2 border-b border-slate-800">
+                      <span className="text-xs font-black uppercase text-rose-400">Previous Snapshot State</span>
+                      <span className="text-[10px] bg-slate-800 px-2 py-0.5 rounded font-mono text-slate-300">BEFORE</span>
+                    </div>
+                    <pre className="text-[10px] font-mono text-slate-300 max-h-64 overflow-y-auto whitespace-pre-wrap bg-slate-950 p-3 rounded-lg">
+                      {JSON.stringify(selectedSnapshot.previous_state, null, 2) || '—'}
+                    </pre>
+                  </div>
+
+                  <div className="bg-slate-900 rounded-xl p-4 text-white space-y-2 border border-slate-800">
+                    <div className="flex items-center justify-between pb-2 border-b border-slate-800">
+                      <span className="text-xs font-black uppercase text-emerald-400">Updated Snapshot State</span>
+                      <span className="text-[10px] bg-slate-800 px-2 py-0.5 rounded font-mono text-slate-300">AFTER</span>
+                    </div>
+                    <pre className="text-[10px] font-mono text-emerald-300 max-h-64 overflow-y-auto whitespace-pre-wrap bg-slate-950 p-3 rounded-lg">
+                      {JSON.stringify(selectedSnapshot.updated_state, null, 2) || '—'}
+                    </pre>
+                  </div>
+                </div>
+              </div>
+
+              {/* Footer */}
+              <div className="p-4 bg-slate-100 border-t border-slate-200 flex items-center justify-between flex-shrink-0">
+                <span className="text-xs text-slate-500 font-bold">Tamper-Proof Audit Record # {selectedSnapshot.id}</span>
+                <button
+                  onClick={() => setSelectedSnapshot(null)}
+                  className="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-800 font-black text-xs rounded-xl transition"
+                >
+                  Close Snapshot
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  // ══════════════════════════════════════════════════════════════════════════════
   // RENDER
   // ══════════════════════════════════════════════════════════════════════════════
   return (
@@ -1064,59 +1347,55 @@ export default function AdminControl({ user }) {
       {confirm && <ConfirmModal {...confirm} />}
 
       {/* ── Page Header ─────────────────────────────────────────────────────── */}
-      <div className="bg-gradient-to-r from-[#7a1c1c] via-[#8B1E1E] to-[#601212] text-white px-6 md:px-8 py-6 shadow-xl border-b border-red-900/40">
+      <div className="bg-gradient-to-r from-[#5E1212] via-[#7A1C1C] to-[#4A1010] text-white px-6 md:px-8 py-6 shadow-md border-b border-red-900/40">
         <div className="max-w-7xl mx-auto flex flex-col lg:flex-row lg:items-center justify-between gap-5">
 
           <div className="space-y-2">
             {/* Badge Strip */}
             <div className="flex flex-wrap items-center gap-2">
-              <div className="inline-flex items-center space-x-2 px-3 py-1 bg-black/30 text-white text-xs font-black rounded-lg border border-white/20 backdrop-blur-sm">
-                <div className="h-2 w-5 rounded flex overflow-hidden">
-                  <div className="w-1/3 bg-[#FF9933]" /><div className="w-1/3 bg-white" /><div className="w-1/3 bg-[#138808]" />
-                </div>
-                <span>DEPT. OF CONSUMER AFFAIRS · LEGAL METROLOGY</span>
-              </div>
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-400 text-slate-950 text-xs font-black rounded-lg">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-400 text-slate-950 text-2xs font-black rounded-md uppercase font-mono tracking-wider shadow-xs">
                 <ShieldCheck className="w-3.5 h-3.5" /> ADMIN COMMAND & CONTROL
               </span>
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-white/15 text-white text-xs font-bold rounded-lg border border-white/20">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-white/15 text-white text-2xs font-bold rounded-md border border-white/20 font-mono">
                 <Cpu className="w-3.5 h-3.5 text-amber-300" />
-                <span>Engine: <strong className="font-black">{summary?.engine_version || 'v2.1'}</strong></span>
+                <span>Engine: <strong className="font-black font-mono">{summary?.engine_version || 'v2.1'}</strong></span>
               </span>
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-500/20 text-emerald-300 text-xs font-extrabold rounded-lg border border-emerald-500/40">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-emerald-500/20 text-emerald-300 text-2xs font-extrabold rounded-md border border-emerald-500/40 font-mono">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
                 SYSTEM ONLINE
               </span>
             </div>
 
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight leading-tight">
+            <h1 className="text-2xl sm:text-3xl font-black tracking-tight leading-tight text-white font-display">
               Admin Command & Control Dashboard
             </h1>
-            <p className="text-sm text-red-100 font-semibold">
-              Govern platform users, dynamically manage statutory rules, dispatch inspections and monitor system-wide compliance telemetry.
+            <p className="text-xs text-red-100 font-semibold max-w-2xl leading-relaxed">
+              Govern platform users, dynamically manage statutory rules, dispatch inspections, and monitor system-wide compliance telemetry.
             </p>
 
-            <div className="flex flex-wrap gap-3 text-xs font-bold text-red-100/80 pt-1">
-              <div className="flex items-center gap-1.5 bg-black/20 px-3 py-1 rounded-md">
-                <UserCheck className="w-3.5 h-3.5 text-amber-300" />
+            <div className="flex flex-wrap gap-2.5 text-2xs font-bold text-red-100/90 pt-1">
+              <div className="flex items-center gap-1.5 bg-black/20 px-2.5 py-1 rounded-md border border-white/10">
+                <UserCheck className="w-3 h-3 text-amber-300" />
                 Admin: <strong className="text-white">{user?.name || 'System Administrator'}</strong>
               </div>
-              <div className="flex items-center gap-1.5 bg-black/20 px-3 py-1 rounded-md">
-                <Database className="w-3.5 h-3.5 text-red-200" />
+              <div className="flex items-center gap-1.5 bg-black/20 px-2.5 py-1 rounded-md border border-white/10">
+                <Database className="w-3 h-3 text-red-200" />
                 Rules: <strong className="text-white font-mono">{summary?.active_rule_count ?? '—'}</strong> active
               </div>
-              <div className="flex items-center gap-1.5 bg-black/20 px-3 py-1 rounded-md">
-                <Globe className="w-3.5 h-3.5 text-emerald-300" />
+              <div className="flex items-center gap-1.5 bg-black/20 px-2.5 py-1 rounded-md border border-white/10">
+                <Globe className="w-3 h-3 text-emerald-300" />
                 Total Scans: <strong className="text-white font-mono">{summary?.total_scans ?? '—'}</strong>
               </div>
             </div>
           </div>
 
-          <button onClick={() => loadData(activeTab, true)} disabled={refreshing}
-            className="flex-shrink-0 px-5 py-3 bg-white/20 hover:bg-white/30 text-white font-black text-xs rounded-xl border border-white/30 transition flex items-center gap-2 active:scale-95 disabled:opacity-70 self-start lg:self-center">
-            <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
-            {refreshing ? 'REFRESHING...' : 'REFRESH'}
-          </button>
+          <div className="flex items-center gap-3 self-start lg:self-center">
+            <button onClick={() => loadData(activeTab, true)} disabled={refreshing}
+              className="flex-shrink-0 px-4 py-2.5 bg-white/15 hover:bg-white/25 text-white font-bold text-xs rounded-xl border border-white/25 transition flex items-center gap-2 active:scale-95 disabled:opacity-70 cursor-pointer shadow-xs">
+              <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? 'animate-spin' : ''}`} />
+              <span>{refreshing ? 'Refreshing...' : 'Refresh Telemetry'}</span>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -1132,6 +1411,11 @@ export default function AdminControl({ user }) {
               }`}>
               <Icon className="w-3.5 h-3.5" />
               {label}
+              {id === 'overrides' && overrides.length > 0 && (
+                <span className="ml-1 px-1.5 py-0.5 text-[9px] bg-rose-500 text-white rounded-full font-black">
+                  {overrides.length}
+                </span>
+              )}
               {id === 'dispatch' && summary?.pending_review > 0 && (
                 <span className="ml-1 px-1.5 py-0.5 text-[9px] bg-amber-400 text-slate-900 rounded-full font-black">
                   {summary.pending_review}
@@ -1149,11 +1433,12 @@ export default function AdminControl({ user }) {
 
       {/* ── Tab Content ─────────────────────────────────────────────────────── */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 py-7">
-        {activeTab === 'overview' && <OverviewTab />}
-        {activeTab === 'rules'    && <RuleEngineTab />}
-        {activeTab === 'dispatch' && <DispatchTab />}
-        {activeTab === 'users'    && <UsersTab />}
-        {activeTab === 'logs'     && <AuditLogsTab />}
+        {activeTab === 'overview'  && <OverviewTab />}
+        {activeTab === 'overrides' && <AdjudicationOverridesTab />}
+        {activeTab === 'rules'     && <RuleEngineTab />}
+        {activeTab === 'dispatch'  && <DispatchTab />}
+        {activeTab === 'users'     && <UsersTab />}
+        {activeTab === 'logs'      && <AuditLogsTab />}
       </div>
     </div>
   );

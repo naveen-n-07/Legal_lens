@@ -13,8 +13,9 @@ from typing import Optional, Dict, Any, List, Tuple
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, status, Response  # type: ignore
 from sqlalchemy.orm import Session  # type: ignore
 from app.database import get_db
-from app.models import InspectionRecord, User, AuditLog, to_iso_utc
-from app.auth import get_current_user, get_current_user_optional, require_inspector_or_officer
+from app.models import InspectionRecord, User, AuditLog, ReportAmendment, AdminNotification, to_iso_utc
+from app.auth import get_current_user, get_current_user_optional, require_inspector_or_officer, require_reviewing_officer
+from app.schemas import OverridePayload
 from app.ocr.preprocessing import OpenCVPreprocessor
 from app.ocr.ocr_service import PaddleOCRService, decode_barcode
 from app.ocr.declaration_extractor import DeclarationExtractor
@@ -987,6 +988,243 @@ def verify_inspection(
     db.commit()
 
     return {"status": "SUCCESS", "message": f"Inspection {inspection_id} verified by {officer_name}", "decision": record.officer_decision}
+
+@router.patch("/{inspection_id}/override")
+async def override_inspection_verdict(
+    inspection_id: str,
+    payload: OverridePayload,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_reviewing_officer)
+):
+    """
+    Reviewing Officer Adjudication Override & Real-Time Amendment:
+    Allows reviewing officers to override/amend statutory compliance verdicts,
+    modify extracted declaration fields, and update rule evaluations with mandatory
+    statutory justification.
+    Automatically captures immutable diffs and alerts System Administrators in real-time.
+    """
+    record = db.query(InspectionRecord).filter(InspectionRecord.id == inspection_id).first()
+    if not record:
+        raise HTTPException(status_code=404, detail=f"Inspection record '{inspection_id}' not found.")
+
+    if not payload.justification_note or not payload.justification_note.strip():
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Mandatory justification note is required to execute a statutory verdict override."
+        )
+
+    # 1. Capture previous state snapshot
+    old_verdict = record.officer_decision or record.overall_status or "PENDING"
+    old_declarations = record.get_technical_matrix()
+    old_checks = record.get_checks()
+    old_violations = record.get_violations()
+
+    previous_state = {
+        "verdict": old_verdict,
+        "declarations": old_declarations,
+        "checks": old_checks,
+        "violations": old_violations,
+        "route_7b_triggered": record.route_7b_triggered
+    }
+
+    # 2. Normalize and apply new verdict
+    raw_verdict = (payload.verdict or "").strip().upper()
+    if "7A" in raw_verdict or "COMPLIANT" in raw_verdict:
+        new_verdict = "7A COMPLIANT"
+        record.route_7b_triggered = False
+    elif "7B" in raw_verdict or "VIOLATION" in raw_verdict:
+        new_verdict = "7B VIOLATION"
+        record.route_7b_triggered = True
+    else:
+        new_verdict = raw_verdict or "7A COMPLIANT"
+
+    record.overall_status = new_verdict
+    record.officer_decision = new_verdict
+    record.officer_comments = payload.justification_note.strip()
+    record.officer_id = current_user.id
+    record.officer_name = current_user.name
+    record.verified_at = datetime.now(timezone.utc)
+
+    # 3. Update declarations if provided
+    diff_declarations = {}
+    updated_declarations = dict(old_declarations) if isinstance(old_declarations, dict) else {}
+    if payload.declarations:
+        for k, v in payload.declarations.items():
+            old_val = updated_declarations.get(k)
+            if isinstance(v, dict):
+                updated_declarations[k] = v
+                new_str = v.get("value", str(v))
+            else:
+                updated_declarations[k] = {
+                    "value": str(v),
+                    "confidence": 100.0,
+                    "source": "MANUAL_REVIEWER_OVERRIDE",
+                    "extracted_value": str(v)
+                }
+                new_str = str(v)
+            diff_declarations[k] = {"from": old_val, "to": new_str}
+        
+        record.set_json_field("technical_matrix_json", updated_declarations)
+
+    # 4. Update specific rule checks if provided
+    diff_rules = {}
+    updated_checks = list(old_checks) if isinstance(old_checks, list) else []
+    if payload.rule_statuses:
+        for rule_key, target_status in payload.rule_statuses.items():
+            is_comp = (str(target_status).upper() in ["COMPLIANT", "PASS", "TRUE", "7A COMPLIANT", "VALID", "1"])
+            matched = False
+            for chk in updated_checks:
+                if (chk.get("rule_id") == rule_key or 
+                    chk.get("field_name") == rule_key or 
+                    chk.get("expected_rule") == rule_key or
+                    chk.get("rule_name") == rule_key):
+                    old_stat = chk.get("is_compliant")
+                    chk["is_compliant"] = is_comp
+                    chk["status"] = "COMPLIANT" if is_comp else "VIOLATION"
+                    chk["overridden_by"] = current_user.name
+                    chk["override_reason"] = payload.justification_note.strip()
+                    diff_rules[rule_key] = {"from": "COMPLIANT" if old_stat else "VIOLATION", "to": "COMPLIANT" if is_comp else "VIOLATION"}
+                    matched = True
+            if not matched:
+                updated_checks.append({
+                    "rule_id": rule_key,
+                    "field_name": rule_key,
+                    "is_compliant": is_comp,
+                    "status": "COMPLIANT" if is_comp else "VIOLATION",
+                    "overridden_by": current_user.name,
+                    "override_reason": payload.justification_note.strip()
+                })
+                diff_rules[rule_key] = {"from": "UNKNOWN", "to": "COMPLIANT" if is_comp else "VIOLATION"}
+        
+        record.set_json_field("checks_json", updated_checks)
+
+    # Reconcile violations list
+    if new_verdict == "7A COMPLIANT" and not payload.rule_statuses:
+        record.set_json_field("violations_json", [])
+    elif new_verdict == "7A COMPLIANT":
+        remaining_violations = [c for c in updated_checks if not c.get("is_compliant")]
+        record.set_json_field("violations_json", remaining_violations)
+
+    updated_state = {
+        "verdict": new_verdict,
+        "declarations": record.get_technical_matrix(),
+        "checks": record.get_checks(),
+        "violations": record.get_violations(),
+        "route_7b_triggered": record.route_7b_triggered
+    }
+
+    diff_summary = {
+        "verdict": {"from": old_verdict, "to": new_verdict},
+        "modified_declarations": diff_declarations,
+        "modified_rules": diff_rules,
+        "justification": payload.justification_note.strip()
+    }
+
+    # 5. Record immutable ReportAmendment entry
+    amendment = ReportAmendment(
+        inspection_id=record.id,
+        amended_by_user_id=current_user.id,
+        amended_by_name=current_user.name,
+        amended_by_role=current_user.role,
+        previous_verdict=old_verdict,
+        new_verdict=new_verdict,
+        justification_note=payload.justification_note.strip(),
+        previous_state_json=json.dumps(previous_state, default=str),
+        updated_state_json=json.dumps(updated_state, default=str),
+        diff_summary_json=json.dumps(diff_summary, default=str),
+        timestamp=datetime.now(timezone.utc)
+    )
+    db.add(amendment)
+
+    # 6. Generate Automated Admin Notification
+    severity = "ALERT" if ("VIOLATION" in old_verdict and "COMPLIANT" in new_verdict) or ("COMPLIANT" in old_verdict and "VIOLATION" in new_verdict) else "WARNING"
+    admin_notif = AdminNotification(
+        title="Statutory Report Amended by Reviewer",
+        message=f"Inspection {record.id} ({record.product_name}) was amended by Reviewing Officer {current_user.name}. Verdict updated from '{old_verdict}' to '{new_verdict}'.",
+        severity=severity,
+        inspection_id=record.id,
+        reviewer_id=current_user.id,
+        reviewer_name=current_user.name,
+        metadata_json=json.dumps({
+            "diff_summary": diff_summary,
+            "product_name": record.product_name,
+            "category": record.category,
+            "location": record.location,
+            "justification": payload.justification_note.strip()
+        }, default=str),
+        is_read=False,
+        created_at=datetime.now(timezone.utc)
+    )
+    db.add(admin_notif)
+
+    # 7. Audit log insertion
+    audit = AuditLog(
+        user_id=current_user.id,
+        user_name=current_user.name,
+        action="ADJUDICATION_OVERRIDE",
+        resource_id=record.id,
+        details=f"Officer {current_user.name} amended report {record.id}: Verdict '{old_verdict}' -> '{new_verdict}'. Justification: {payload.justification_note.strip()}",
+        timestamp=datetime.now(timezone.utc)
+    )
+    db.add(audit)
+    db.commit()
+    db.refresh(amendment)
+    db.refresh(admin_notif)
+    db.refresh(record)
+
+    # 8. Real-Time WebSocket broadcast
+    try:
+        from app.api.ws_manager import ws_manager
+        import asyncio
+        asyncio.ensure_future(ws_manager.broadcast({
+            "event": "ADMIN_NOTIFICATION",
+            "data": admin_notif.to_dict()
+        }))
+        asyncio.ensure_future(ws_manager.broadcast({
+            "event": "INSPECTION_OVERRIDDEN",
+            "data": {
+                "id": record.id,
+                "overall_status": record.overall_status,
+                "officer_decision": record.officer_decision,
+                "route_7b_triggered": record.route_7b_triggered,
+                "amended_by": current_user.name,
+                "diff_summary": diff_summary
+            }
+        }))
+    except Exception as ws_err:
+        logger.warning(f"[WS] Override broadcast failed: {ws_err}")
+
+    return {
+        "status": "SUCCESS",
+        "message": f"Statutory inspection {record.id} successfully amended.",
+        "inspection": {
+            "id": record.id,
+            "overall_status": record.overall_status,
+            "officer_decision": record.officer_decision,
+            "officer_comments": record.officer_comments,
+            "verified_at": to_iso_utc(record.verified_at),
+            "declarations": record.get_technical_matrix(),
+            "checks": record.get_checks(),
+            "violations": record.get_violations()
+        },
+        "amendment": amendment.to_dict(),
+        "notification": admin_notif.to_dict()
+    }
+
+@router.get("/{inspection_id}/amendments")
+def get_inspection_amendments(
+    inspection_id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user_optional)
+):
+    """
+    Returns the immutable audit amendment trail and verdict diffs for an inspection.
+    """
+    amendments = db.query(ReportAmendment).filter(
+        ReportAmendment.inspection_id == inspection_id
+    ).order_by(ReportAmendment.timestamp.desc()).all()
+    
+    return [a.to_dict() for a in amendments]
 
 @router.post("/batch")
 async def process_batch_inspections(

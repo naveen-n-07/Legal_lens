@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import Navbar from './components/Navbar';
-import Sidebar from './components/Sidebar';
-import Footer from './components/Footer';
+import ExecutiveLayout from './components/ExecutiveLayout';
 
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
@@ -20,7 +18,6 @@ import AdminControl from './pages/AdminControl';
 
 export default function App() {
   const [user, setUser] = useState(null);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   useEffect(() => {
     const storedUser = localStorage.getItem('metrix_user');
@@ -39,6 +36,7 @@ export default function App() {
 
   const handleLogout = () => {
     localStorage.removeItem('metrix_token');
+    localStorage.removeItem('token');
     localStorage.removeItem('metrix_user');
     setUser(null);
   };
@@ -57,73 +55,61 @@ export default function App() {
   };
 
   return (
-    <div className="h-screen bg-[#F8F9FA] flex flex-col font-sans overflow-hidden">
-      <Navbar user={user} onLogout={handleLogout} />
+    <ExecutiveLayout user={user} onLogout={handleLogout}>
+      <Routes>
+        <Route path="/" element={<Navigate to={getDefaultLandingRoute()} replace />} />
+        
+        {/* Role-Sensitive Dashboard */}
+        <Route 
+          path="/dashboard" 
+          element={
+            role === 'admin' 
+              ? <AdminControl user={user} /> 
+              : role === 'reviewing_officer' 
+                ? <ReviewingOfficerDashboard user={user} /> 
+                : <InspectorDashboard user={user} />
+          } 
+        />
+        
+        {/* Field Inspector Core Routes */}
+        <Route path="/scanner" element={<LiveScanner />} />
+        <Route path="/scan" element={<ScanPortal />} />
+        <Route path="/inspection/new" element={<InspectionUpload user={user} />} />
+        <Route path="/profile" element={<InspectorProfile user={user} />} />
+        
+        {/* Common Inspection History & Reports */}
+        <Route path="/history" element={<AuditHistory user={user} />} />
+        <Route path="/reports" element={<Reports user={user} />} />
 
-      <div className="flex-1 flex min-h-0 overflow-hidden">
-        <Sidebar user={user} collapsed={sidebarCollapsed} setCollapsed={setSidebarCollapsed} />
+        {/* Dedicated FIFO Officer Review Queue (Route 7B) */}
+        <Route 
+          path="/officer/review" 
+          element={
+            (role === 'reviewing_officer' || role === 'admin') 
+              ? <OfficerReviewQueue user={user} /> 
+              : <Navigate to={getDefaultLandingRoute()} replace />
+          } 
+        />
 
-        <main className="flex-1 overflow-y-auto bg-[#F8F9FA] flex flex-col justify-between">
-          <div className="flex-1">
-            <Routes>
-              <Route path="/" element={<Navigate to={getDefaultLandingRoute()} replace />} />
-              
-              {/* Role-Sensitive Dashboard */}
-              <Route 
-                path="/dashboard" 
-                element={
-                  role === 'admin' 
-                    ? <AdminControl /> 
-                    : role === 'reviewing_officer' 
-                      ? <ReviewingOfficerDashboard user={user} /> 
-                      : <InspectorDashboard user={user} />
-                } 
-              />
-              
-              {/* Field Inspector Core Routes */}
-              <Route path="/scanner" element={<LiveScanner />} />
-              <Route path="/scan" element={<ScanPortal />} />
-              <Route path="/inspection/new" element={<InspectionUpload />} />
-              <Route path="/profile" element={<InspectorProfile user={user} />} />
-              
-              {/* Common Inspection History & Reports */}
-              <Route path="/history" element={<AuditHistory user={user} />} />
-              <Route path="/reports" element={<Reports user={user} />} />
+        <Route 
+          path="/officer/adjudicate" 
+          element={
+            (role === 'reviewing_officer' || role === 'admin') 
+              ? <OfficerReview user={user} /> 
+              : <Navigate to={getDefaultLandingRoute()} replace />
+          } 
+        />
 
-              {/* Dedicated FIFO Officer Review Queue (Route 7B) */}
-              <Route 
-                path="/officer/review" 
-                element={
-                  (role === 'reviewing_officer' || role === 'admin') 
-                    ? <OfficerReviewQueue user={user} /> 
-                    : <Navigate to={getDefaultLandingRoute()} replace />
-                } 
-              />
+        {/* Controller / Admin Only Routes */}
+        <Route 
+          path="/admin/control" 
+          element={
+            role === 'admin' ? <AdminControl user={user} /> : <Navigate to={getDefaultLandingRoute()} replace />
+          } 
+        />
 
-              <Route 
-                path="/officer/adjudicate" 
-                element={
-                  (role === 'reviewing_officer' || role === 'admin') 
-                    ? <OfficerReview /> 
-                    : <Navigate to={getDefaultLandingRoute()} replace />
-                } 
-              />
-
-              {/* Controller / Admin Only Routes */}
-              <Route 
-                path="/admin/control" 
-                element={
-                  role === 'admin' ? <AdminControl /> : <Navigate to={getDefaultLandingRoute()} replace />
-                } 
-              />
-
-              <Route path="*" element={<Navigate to={getDefaultLandingRoute()} replace />} />
-            </Routes>
-          </div>
-
-          <Footer />
-        </main>
-      </div>
-    </div>
+        <Route path="*" element={<Navigate to={getDefaultLandingRoute()} replace />} />
+      </Routes>
+    </ExecutiveLayout>
   );
 }

@@ -71,3 +71,24 @@ export const clearSystemLogs = () =>
 
 export const fetchInspections = () => api.get('/inspections');
 
+// ─── Real-Time Admin Notifications & Adjudication Overrides ──────────────────
+
+export const fetchAdminNotifications = (unreadOnly = false, limit = 50) =>
+  api.get(`/admin/notifications?unread_only=${unreadOnly}&limit=${limit}`);
+
+export const markNotificationRead = (notificationId) =>
+  api.patch(`/admin/notifications/${notificationId}/read`);
+
+export const markAllNotificationsRead = () =>
+  api.post('/admin/notifications/mark-all-read');
+
+export const fetchAdjudicationOverrides = (limit = 100) =>
+  api.get(`/admin/overrides?limit=${limit}`);
+
+export const overrideInspectionVerdict = (inspectionId, payload) =>
+  api.patch(`/inspections/${inspectionId}/override`, payload);
+
+export const fetchInspectionAmendments = (inspectionId) =>
+  api.get(`/inspections/${inspectionId}/amendments`);
+
+

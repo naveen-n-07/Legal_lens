@@ -264,3 +264,66 @@ class ImmutableAuditArchive(Base):
     overall_status = Column(String, nullable=True)
     officer_decision = Column(String, nullable=True)
 
+class ReportAmendment(Base):
+    __tablename__ = "report_amendments"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    inspection_id = Column(String, nullable=False, index=True)
+    amended_by_user_id = Column(String, nullable=False)
+    amended_by_name = Column(String, nullable=False)
+    amended_by_role = Column(String, nullable=False, default="reviewing_officer")
+    
+    previous_verdict = Column(String, nullable=False)
+    new_verdict = Column(String, nullable=False)
+    justification_note = Column(Text, nullable=False)
+    
+    previous_state_json = Column(Text, nullable=True)
+    updated_state_json = Column(Text, nullable=True)
+    diff_summary_json = Column(Text, nullable=True)
+    
+    timestamp = Column(DateTime, default=utc_now)
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "id": self.id,
+            "inspection_id": self.inspection_id,
+            "amended_by_user_id": self.amended_by_user_id,
+            "amended_by_name": self.amended_by_name,
+            "amended_by_role": self.amended_by_role,
+            "previous_verdict": self.previous_verdict,
+            "new_verdict": self.new_verdict,
+            "justification_note": self.justification_note,
+            "previous_state": json.loads(self.previous_state_json) if self.previous_state_json else {},
+            "updated_state": json.loads(self.updated_state_json) if self.updated_state_json else {},
+            "diff_summary": json.loads(self.diff_summary_json) if self.diff_summary_json else {},
+            "timestamp": to_iso_utc(self.timestamp)
+        }
+
+class AdminNotification(Base):
+    __tablename__ = "admin_notifications"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    title = Column(String, nullable=False)
+    message = Column(Text, nullable=False)
+    severity = Column(String, nullable=False, default="WARNING")  # INFO, WARNING, ALERT, CRITICAL
+    inspection_id = Column(String, nullable=True, index=True)
+    reviewer_id = Column(String, nullable=True)
+    reviewer_name = Column(String, nullable=True)
+    is_read = Column(Boolean, nullable=False, default=False)
+    metadata_json = Column(Text, nullable=True)
+    created_at = Column(DateTime, default=utc_now)
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "id": self.id,
+            "title": self.title,
+            "message": self.message,
+            "severity": self.severity,
+            "inspection_id": self.inspection_id,
+            "reviewer_id": self.reviewer_id,
+            "reviewer_name": self.reviewer_name,
+            "is_read": bool(self.is_read),
+            "metadata": json.loads(self.metadata_json) if self.metadata_json else {},
+            "created_at": to_iso_utc(self.created_at)
+        }
+

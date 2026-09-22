@@ -170,20 +170,6 @@ app.include_router(detection_router)
 app.include_router(scanner_router)
 app.include_router(ws_router)
 
-from app.api.ws_manager import ws_manager
-from fastapi import WebSocket, WebSocketDisconnect
-
-@app.websocket("/ws/notifications")
-async def direct_ws_notifications(websocket: WebSocket):
-    await ws_manager.connect(websocket)
-    try:
-        while True:
-            await websocket.receive_text()
-    except (WebSocketDisconnect, Exception):
-        pass
-    finally:
-        await ws_manager.disconnect(websocket)
-
 @app.get("/")
 def root():
     return {

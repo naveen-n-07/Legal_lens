@@ -37,10 +37,12 @@ import {
   ChevronDown,
   Bell,
   Wifi,
-  WifiOff
+  WifiOff,
+  Edit3
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import StatusBadge from '../components/StatusBadge';
+import ReviewerEditModal from '../components/ReviewerEditModal';
 import api from '../services/api';
 import { formatDateTime, parseServerDate, getElapsedWaitTime, getRelativeTime } from '../utils/dateUtils';
 
@@ -87,6 +89,7 @@ export default function ReviewingOfficerDashboard({ user, initialFilter = 'all' 
   const [submittingAction, setSubmittingAction] = useState(false);
   const [actionSuccessMsg, setActionSuccessMsg] = useState('');
   const [actionErrorMsg, setActionErrorMsg] = useState('');
+  const [editModalOpen, setEditModalOpen] = useState(false);
 
   // Real-time WebSocket state
   const wsRef = useRef(null);
@@ -1079,6 +1082,14 @@ export default function ReviewingOfficerDashboard({ user, initialFilter = 'all' 
               </div>
 
               <div className="flex items-center space-x-2">
+                <button
+                  onClick={() => setEditModalOpen(true)}
+                  className="px-3.5 py-2 bg-amber-400 hover:bg-amber-300 text-slate-950 rounded-xl font-black text-xs transition flex items-center space-x-1.5 shadow"
+                  title="Override OCR extraction, rule statuses, or statutory verdict"
+                >
+                  <Edit3 className="w-3.5 h-3.5" />
+                  <span>Edit / Override Verdict</span>
+                </button>
                 <a
                   href={`/api/v1/inspections/${selectedInspection.id}/report/pdf`}
                   target="_blank"
@@ -1598,15 +1609,41 @@ export default function ReviewingOfficerDashboard({ user, initialFilter = 'all' 
               <div>
                 Statutory Reference: <span className="text-slate-900 font-mono">Sec. 36 Legal Metrology Act, 2009</span>
               </div>
-              <button
-                onClick={handleCloseModal}
-                className="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-800 rounded-xl font-black text-xs transition"
-              >
-                Close Audit View
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setEditModalOpen(true)}
+                  className="px-4 py-2 bg-amber-400 hover:bg-amber-300 text-slate-950 rounded-xl font-black text-xs transition flex items-center gap-1.5 shadow"
+                >
+                  <Edit3 className="w-3.5 h-3.5" />
+                  <span>Edit / Override Verdict</span>
+                </button>
+                <button
+                  onClick={handleCloseModal}
+                  className="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-800 rounded-xl font-black text-xs transition"
+                >
+                  Close Audit View
+                </button>
+              </div>
             </div>
           </div>
         </div>
+      )}
+
+      {/* Reviewer Adjudication Override Modal */}
+      {selectedInspection && (
+        <ReviewerEditModal
+          isOpen={editModalOpen}
+          onClose={() => setEditModalOpen(false)}
+          inspection={modalDetails || selectedInspection}
+          onSuccess={(updated) => {
+            if (updated) {
+              setModalDetails(prev => ({ ...prev, ...updated }));
+              setSelectedInspection(prev => ({ ...prev, ...updated }));
+              setActionSuccessMsg(`Verdict & Declarations amended successfully by ${officerName}. Immutable audit logged.`);
+            }
+            fetchDashboardData();
+          }}
+        />
       )}
 
     </div>

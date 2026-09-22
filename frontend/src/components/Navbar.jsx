@@ -9,6 +9,7 @@ import {
   ShieldCheck,
   ChevronDown
 } from 'lucide-react';
+import AdminNotificationBell from './AdminNotificationBell';
 
 export default function Navbar({ user, onLogout }) {
   const userName = user?.name || user?.user_name || 'Official User';
@@ -113,8 +114,14 @@ export default function Navbar({ user, onLogout }) {
           </button>
         </form>
 
-        {/* Right User & Role Indicator Badge */}
+        {/* Right User & Role Indicator Badge + Admin Notification Bell */}
         <div className="flex items-center space-x-4 flex-shrink-0">
+          {role === 'admin' && (
+            <div className="flex items-center">
+              <AdminNotificationBell user={user} />
+            </div>
+          )}
+
           <div className="flex items-center space-x-3 pl-4 border-l border-slate-200">
             <div className="w-10 h-10 bg-slate-800 text-white rounded-full flex items-center justify-center font-black text-sm shadow border border-slate-700 uppercase">
               {userName.split(' ').map(n => n[0]).join('').slice(0, 2)}

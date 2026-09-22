@@ -11,6 +11,7 @@ from app.database import get_db
 from app.models import (
     User, ComplianceRuleDB, AuditLog, InspectionRecord,
     OCRResultDB, DeclarationDB, ScanSession, ImmutableAuditArchive,
+    ReportAmendment, AdminNotification,
     to_iso_utc
 )
 from app.auth import get_password_hash, require_admin, log_audit_action, VALID_ROLES
@@ -251,7 +252,7 @@ def clear_system_logs_and_inspections(
 ):
     """
     Admin Only: Purges all historic inspection records, audit logs, scan sessions,
-    immutable audit archive, declarations, and OCR results to start completely fresh from 0.
+    immutable audit archive, declarations, report amendments, notifications, and OCR results to start completely fresh from 0.
     Preserves users, roles, and compliance rules.
     """
     db.query(InspectionRecord).delete()
@@ -260,6 +261,8 @@ def clear_system_logs_and_inspections(
     db.query(DeclarationDB).delete()
     db.query(ScanSession).delete()
     db.query(ImmutableAuditArchive).delete()
+    db.query(ReportAmendment).delete()
+    db.query(AdminNotification).delete()
     
     init_log = AuditLog(
         user_id=current_admin.id,
@@ -273,8 +276,75 @@ def clear_system_logs_and_inspections(
     
     return {
         "success": True,
-        "message": "All past inspections and audit logs successfully purged. System reset to 0."
+        "message": "All past inspections, audit logs, amendments, and notifications successfully purged. System reset to 0."
     }
+
+# ─── Admin Notification Feed & Adjudication Overrides ─────────────────────────
+
+@router.get("/notifications")
+def get_admin_notifications(
+    unread_only: bool = False,
+    limit: int = 50,
+    db: Session = Depends(get_db),
+    current_admin: User = Depends(require_admin)
+):
+    """
+    Admin Only: View all real-time system notifications (including reviewer adjudication overrides).
+    """
+    query = db.query(AdminNotification)
+    if unread_only:
+        query = query.filter(AdminNotification.is_read == False)
+    
+    notifications = query.order_by(AdminNotification.created_at.desc()).limit(limit).all()
+    unread_count = db.query(AdminNotification).filter(AdminNotification.is_read == False).count()
+    
+    return {
+        "notifications": [n.to_dict() for n in notifications],
+        "unread_count": unread_count,
+        "total": len(notifications)
+    }
+
+@router.patch("/notifications/{notification_id}/read")
+def mark_notification_as_read(
+    notification_id: int,
+    db: Session = Depends(get_db),
+    current_admin: User = Depends(require_admin)
+):
+    """
+    Admin Only: Mark specific alert notification as read.
+    """
+    notif = db.query(AdminNotification).filter(AdminNotification.id == notification_id).first()
+    if not notif:
+        raise HTTPException(status_code=404, detail="Notification not found")
+    
+    notif.is_read = True
+    db.commit()
+    return {"success": True, "id": notification_id, "is_read": True}
+
+@router.post("/notifications/mark-all-read")
+def mark_all_notifications_read(
+    db: Session = Depends(get_db),
+    current_admin: User = Depends(require_admin)
+):
+    """
+    Admin Only: Mark all unread notifications as read in bulk.
+    """
+    db.query(AdminNotification).filter(AdminNotification.is_read == False).update({"is_read": True})
+    db.commit()
+    return {"success": True, "message": "All notifications marked as read."}
+
+@router.get("/overrides")
+def get_all_adjudication_overrides(
+    limit: int = 100,
+    db: Session = Depends(get_db),
+    current_admin: User = Depends(require_admin)
+):
+    """
+    Admin Only: View complete ledger of reviewer adjudication amendments and diff histories.
+    """
+    amendments = db.query(ReportAmendment).order_by(ReportAmendment.timestamp.desc()).limit(limit).all()
+    return [a.to_dict() for a in amendments]
+
 
 
 # ─── Rule Engine Version Management ─────────────────────────────────────────
